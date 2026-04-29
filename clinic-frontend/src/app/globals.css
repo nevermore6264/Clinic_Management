@@ -324,6 +324,55 @@ html.app-ready body {
   box-shadow: 0 6px 16px rgba(234, 88, 12, 0.35);
 }
 
+/* ========== Service type page button accents ========== */
+.service-type-page .btn-service-export {
+  background: linear-gradient(180deg, #16a34a 0%, #15803d 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 6px 14px rgba(22, 163, 74, 0.24);
+}
+.service-type-page .btn-service-export:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.32);
+}
+
+.service-type-page .btn-service-nav {
+  background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 6px 14px rgba(2, 132, 199, 0.22);
+}
+.service-type-page .btn-service-nav:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 8px 18px rgba(2, 132, 199, 0.28);
+}
+
+.service-type-page .btn-service-edit {
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 5px 12px rgba(37, 99, 235, 0.24);
+}
+.service-type-page .btn-service-edit:hover {
+  filter: brightness(1.04);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.3);
+}
+
+.service-type-page .btn-service-delete {
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 5px 12px rgba(220, 38, 38, 0.24);
+}
+.service-type-page .btn-service-delete:hover:not(:disabled) {
+  filter: brightness(1.04);
+  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.32);
+}
+
 .bg-primary {
   background-color: var(--clinic-teal) !important;
 }

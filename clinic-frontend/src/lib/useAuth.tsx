@@ -7,6 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { notify } from "@/lib/notify";
 
 export interface NguoiDung {
   tenDangNhap: string;
@@ -68,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     if (!res.ok) {
       const text = await res.text();
+      notify.error(text || "Đăng nhập thất bại");
       throw new Error(text || "Đăng nhập thất bại");
     }
     const data = await res.json();
@@ -80,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     setUser(nd);
     localStorage.setItem("user", JSON.stringify(nd));
+    notify.success("Đăng nhập thành công");
   };
 
   const logout = () => {
@@ -87,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    notify.info("Bạn đã đăng xuất");
   };
 
   return (

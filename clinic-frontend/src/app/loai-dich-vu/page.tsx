@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Alert, Button, Card, Form, Table } from "react-bootstrap";
+import { Alert, Button, Card, Form, Modal, Table } from "react-bootstrap";
 import Link from "next/link";
 import { serviceTypesApi, type LoaiDichVu } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
+import { notify } from "@/lib/notify";
 
 export default function ServiceTypesPage() {
   const { user, loading } = useAuth();
@@ -13,8 +14,12 @@ export default function ServiceTypesPage() {
   const [list, setList] = useState<LoaiDichVu[]>([]);
   const [tenLoaiDichVu, setTenLoaiDichVu] = useState("");
   const [dangSuaId, setDangSuaId] = useState<number | null>(null);
+  const [tenDangSua, setTenDangSua] = useState("");
   const [error, setError] = useState("");
   const [tenLoaiDichVuError, setTenLoaiDichVuError] = useState("");
+  const [tenDangSuaError, setTenDangSuaError] = useState("");
+  const [mucCanXoa, setMucCanXoa] = useState<LoaiDichVu | null>(null);
+  const [dangXoa, setDangXoa] = useState(false);
 
   const napDuLieu = async () => {
     try {
@@ -39,14 +44,25 @@ export default function ServiceTypesPage() {
 
   const resetForm = () => {
     setTenLoaiDichVu("");
-    setDangSuaId(null);
     setTenLoaiDichVuError("");
+  };
+
+  const resetInlineEdit = () => {
+    setDangSuaId(null);
+    setTenDangSua("");
+    setTenDangSuaError("");
   };
 
   const validateTenLoaiDichVu = (value: string): string => {
     const ten = value.trim();
     if (!ten) return "Vui lòng nhập tên loại dịch vụ.";
     if (ten.length < 3) return "Tên loại dịch vụ cần tối thiểu 3 ký tự.";
+    const tenDaTonTai = list.some(
+      (item) =>
+        item.tenLoaiDichVu.trim().toLocaleLowerCase() ===
+          ten.toLocaleLowerCase() && item.id !== dangSuaId,
+    );
+    if (tenDaTonTai) return "Tên loại dịch vụ đã tồn tại.";
     return "";
   };
 
@@ -58,11 +74,7 @@ export default function ServiceTypesPage() {
     if (loiTen) return;
     const ten = tenLoaiDichVu.trim();
     try {
-      if (dangSuaId) {
-        await serviceTypesApi.update(dangSuaId, { tenLoaiDichVu: ten });
-      } else {
-        await serviceTypesApi.create({ tenLoaiDichVu: ten });
-      }
+      await serviceTypesApi.create({ tenLoaiDichVu: ten });
       resetForm();
       await napDuLieu();
     } catch (e: unknown) {
@@ -72,59 +84,112 @@ export default function ServiceTypesPage() {
 
   const handleEdit = (item: LoaiDichVu) => {
     setDangSuaId(item.id);
-    setTenLoaiDichVu(item.tenLoaiDichVu);
-    setTenLoaiDichVuError("");
+    setTenDangSua(item.tenLoaiDichVu);
+    setTenDangSuaError("");
   };
 
-  const handleDelete = async (id: number) => {
+  const handleSaveInline = async (id: number) => {
     setError("");
+    const loiTen = validateTenLoaiDichVu(tenDangSua);
+    setTenDangSuaError(loiTen);
+    if (loiTen) return;
     try {
-      await serviceTypesApi.delete(id);
+      await serviceTypesApi.update(id, { tenLoaiDichVu: tenDangSua.trim() });
+      resetInlineEdit();
       await napDuLieu();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Không xóa được loại dịch vụ");
+      setError(e instanceof Error ? e.message : "Không cập nhật được loại dịch vụ");
     }
+  };
+
+  const handleDelete = (id: number) => {
+    setError("");
+    const item = list.find((x) => x.id === id);
+    if (!item) return;
+    setMucCanXoa(item);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!mucCanXoa) return;
+    setDangXoa(true);
+    try {
+      await serviceTypesApi.delete(mucCanXoa.id);
+      await napDuLieu();
+      setMucCanXoa(null);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Không xóa được loại dịch vụ");
+    } finally {
+      setDangXoa(false);
+    }
+  };
+
+  const handleExportCsv = () => {
+    if (list.length === 0) {
+      notify.warning("Chưa có dữ liệu để xuất CSV");
+      return;
+    }
+
+    const csvEscape = (value: string) => `"${value.replace(/"/g, '""')}"`;
+    const header = ["MaLoaiDichVu", "TenLoaiDichVu"];
+    const rows = list.map((item) => [String(item.id), csvEscape(item.tenLoaiDichVu)]);
+    const content = [header.join(","), ...rows.map((row) => row.join(","))].join("\n");
+
+    const bom = "\uFEFF";
+    const blob = new Blob([bom + content], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    const now = new Date();
+    const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}-${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
+    anchor.href = url;
+    anchor.download = `loai-dich-vu-${stamp}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
   };
 
   if (!user?.cacVaiTro.includes("QUAN_TRI")) return null;
 
   return (
-    <div>
+    <div className="service-type-page">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Quản lý loại dịch vụ</h2>
-        <Button as={Link} href="/dich-vu" variant="outline-primary">
-          <i className="bi bi-hospital me-2" aria-hidden />
-          Đến trang dịch vụ
-        </Button>
+        <div className="d-flex gap-2">
+          <Button className="btn-service-export" onClick={handleExportCsv}>
+            <i className="bi bi-filetype-csv me-2" aria-hidden />
+            Export CSV
+          </Button>
+          <Button as={Link} href="/dich-vu" className="btn-service-nav">
+            <i className="bi bi-hospital me-2" aria-hidden />
+            Đến trang dịch vụ
+          </Button>
+        </div>
       </div>
 
       <Card className="mb-4">
         <Card.Body>
-          <Form onSubmit={handleSubmit} noValidate className="d-flex gap-2 flex-wrap">
-            <Form.Control
-              placeholder="Ví dụ: Khám tổng quát, Cận lâm sàng..."
-              value={tenLoaiDichVu}
-              onChange={(e) => {
-                const value = e.target.value;
-                setTenLoaiDichVu(value);
-                if (tenLoaiDichVuError) {
-                  setTenLoaiDichVuError(validateTenLoaiDichVu(value));
-                }
-              }}
-              isInvalid={Boolean(tenLoaiDichVuError)}
-            />
-            <Form.Control.Feedback type="invalid">
-              {tenLoaiDichVuError}
-            </Form.Control.Feedback>
-            <Button type="submit">
-              <i className={`bi ${dangSuaId ? "bi-check2-circle" : "bi-plus-circle"} me-2`} aria-hidden />
-              {dangSuaId ? "Cập nhật" : "Thêm loại"}
-            </Button>
-            {dangSuaId ? (
-              <Button type="button" variant="secondary" onClick={resetForm}>
-                Hủy sửa
+          <Form onSubmit={handleSubmit} noValidate>
+            <div className="d-flex align-items-start gap-2">
+              <div className="flex-grow-1">
+                <Form.Control
+                  placeholder="Ví dụ: Khám tổng quát, Cận lâm sàng..."
+                  value={tenLoaiDichVu}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setTenLoaiDichVu(value);
+                    if (tenLoaiDichVuError) {
+                      setTenLoaiDichVuError(validateTenLoaiDichVu(value));
+                    }
+                  }}
+                  isInvalid={Boolean(tenLoaiDichVuError)}
+                />
+                <Form.Control.Feedback type="invalid">
+                  {tenLoaiDichVuError}
+                </Form.Control.Feedback>
+              </div>
+              <Button type="submit" className="text-nowrap">
+                <i className="bi bi-plus-circle me-2" aria-hidden />
+                Thêm loại
               </Button>
-            ) : null}
+            </div>
           </Form>
         </Card.Body>
       </Card>
@@ -142,21 +207,67 @@ export default function ServiceTypesPage() {
           <tbody>
             {list.map((item) => (
               <tr key={item.id}>
-                <td>{item.tenLoaiDichVu}</td>
+                <td>
+                  {dangSuaId === item.id ? (
+                    <>
+                      <Form.Control
+                        value={tenDangSua}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setTenDangSua(value);
+                          if (tenDangSuaError) {
+                            setTenDangSuaError(validateTenLoaiDichVu(value));
+                          }
+                        }}
+                        isInvalid={Boolean(tenDangSuaError)}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {tenDangSuaError}
+                      </Form.Control.Feedback>
+                    </>
+                  ) : (
+                    item.tenLoaiDichVu
+                  )}
+                </td>
                 <td className="text-end">
+                  {dangSuaId === item.id ? (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        className="me-2"
+                        onClick={() => handleSaveInline(item.id)}
+                      >
+                        <i className="bi bi-check2 me-1" aria-hidden />
+                        Lưu
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="me-2"
+                        onClick={resetInlineEdit}
+                      >
+                        <i className="bi bi-x-lg me-1" aria-hidden />
+                        Hủy
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      size="sm"
+                      className="btn-service-edit me-2"
+                      onClick={() => handleEdit(item)}
+                    >
+                      <i className="bi bi-pencil-square me-1" aria-hidden />
+                      Sửa
+                    </Button>
+                  )}
                   <Button
                     size="sm"
-                    variant="outline-primary"
-                    className="me-2"
-                    onClick={() => handleEdit(item)}
-                  >
-                    Sửa
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline-danger"
+                    className="btn-service-delete"
                     onClick={() => handleDelete(item.id)}
+                    disabled={dangSuaId === item.id}
                   >
+                    <i className="bi bi-trash me-1" aria-hidden />
                     Xóa
                   </Button>
                 </td>
@@ -172,6 +283,32 @@ export default function ServiceTypesPage() {
           </tbody>
         </Table>
       </Card>
+
+      <Modal
+        show={Boolean(mucCanXoa)}
+        onHide={() => setMucCanXoa(null)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Xác nhận xóa</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Bạn có chắc muốn xóa loại dịch vụ{" "}
+          <strong>{mucCanXoa?.tenLoaiDichVu}</strong> không?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setMucCanXoa(null)}
+            disabled={dangXoa}
+          >
+            Hủy
+          </Button>
+          <Button variant="danger" onClick={handleConfirmDelete} disabled={dangXoa}>
+            {dangXoa ? "Đang xóa..." : "Xóa"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

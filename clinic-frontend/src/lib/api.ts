@@ -1,3 +1,5 @@
+import { notify, notifyMessageByMethod } from "@/lib/notify";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081/api";
 
 function getToken(): string | null {
@@ -5,22 +7,43 @@ function getToken(): string | null {
   return localStorage.getItem("token");
 }
 
-export async function api<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
+type ApiOptions = RequestInit & {
+  notifySuccess?: boolean;
+  notifySuccessMessage?: string;
+  notifyError?: boolean;
+};
+
+export async function api<T>(path: string, options: ApiOptions = {}): Promise<T> {
   const token = getToken();
+  const {
+    notifySuccess = true,
+    notifySuccessMessage,
+    notifyError = true,
+    ...requestOptions
+  } = options;
   const headers: HeadersInit = {
     "Content-Type": "application/json",
-    ...(options.headers as Record<string, string>),
+    ...(requestOptions.headers as Record<string, string>),
   };
   if (token)
     (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const method = (requestOptions.method || "GET").toUpperCase();
+  const res = await fetch(`${API_BASE}${path}`, { ...requestOptions, headers });
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(text || `HTTP ${res.status}`);
+    const message = text || `HTTP ${res.status}`;
+    if (notifyError && typeof window !== "undefined") {
+      notify.error(message);
+    }
+    throw new Error(message);
+  }
+  if (
+    notifySuccess &&
+    typeof window !== "undefined" &&
+    ["POST", "PUT", "PATCH", "DELETE"].includes(method)
+  ) {
+    notify.success(notifySuccessMessage || notifyMessageByMethod[method]);
   }
   if (res.status === 204) return undefined as T;
   return res.json();

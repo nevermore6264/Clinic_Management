@@ -277,7 +277,7 @@ export default function ServiceTypesPage() {
                   ) : (
                     <Button
                       size="sm"
-                      className="btn-service-edit me-2"
+                      className="btn-action-edit me-2"
                       onClick={() => handleEdit(item)}
                     >
                       <i className="bi bi-pencil-square me-1" aria-hidden />
@@ -286,7 +286,7 @@ export default function ServiceTypesPage() {
                   )}
                   <Button
                     size="sm"
-                    className="btn-service-delete"
+                    className="btn-action-delete"
                     onClick={() => handleDelete(item.id)}
                     disabled={dangSuaId === item.id || (demDichVuTheoLoai.get(item.id) ?? 0) > 0}
                     title={

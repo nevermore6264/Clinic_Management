@@ -109,10 +109,10 @@ export default function PatientsPage() {
                   <td className="text-end text-nowrap">
                     <Button
                       size="sm"
-                      variant="outline-primary"
+                      variant="primary"
                       as={Link}
                       href={`/benh-nhan/${p.id}`}
-                      className="me-1"
+                      className="me-1 btn-action-edit"
                     >
                       <i className="bi bi-pencil me-1" />
                       Sửa

@@ -173,8 +173,8 @@ export default function PhieuChiPage() {
                 <td>
                   <Button
                     size="sm"
-                    variant="outline-primary"
-                    className="me-1"
+                    variant="primary"
+                    className="me-1 btn-action-edit"
                     onClick={() => openEdit(p)}
                   >
                     Sửa
@@ -182,7 +182,8 @@ export default function PhieuChiPage() {
                   {user?.cacVaiTro.includes("QUAN_TRI") && (
                     <Button
                       size="sm"
-                      variant="outline-danger"
+                      variant="danger"
+                      className="btn-action-delete"
                       onClick={() => p.id && xoa(p.id)}
                     >
                       Xóa

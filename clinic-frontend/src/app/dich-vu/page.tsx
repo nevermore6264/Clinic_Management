@@ -5,7 +5,12 @@ import { useRouter } from "next/navigation";
 import { Table, Button, Card, Alert, Modal, Form } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
-import { serviceTypesApi, servicesApi, type DichVu, type LoaiDichVu } from "@/lib/api";
+import {
+  serviceTypesApi,
+  servicesApi,
+  type DichVu,
+  type LoaiDichVu,
+} from "@/lib/api";
 
 function formatVndInput(value?: number) {
   if (value === undefined || value === null || Number.isNaN(value)) return "";
@@ -49,7 +54,8 @@ export default function ServicesPage() {
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
-    if (user && !user.cacVaiTro.includes("QUAN_TRI")) router.replace("/bang-dieu-khien");
+    if (user && !user.cacVaiTro.includes("QUAN_TRI"))
+      router.replace("/bang-dieu-khien");
   }, [user, loading, router]);
 
   const napDuLieu = async () => {
@@ -63,10 +69,13 @@ export default function ServicesPage() {
       setForm((prev) => ({
         ...prev,
         maLoaiDichVu:
-          prev.maLoaiDichVu ?? (danhSachLoai.length > 0 ? danhSachLoai[0].id : undefined),
+          prev.maLoaiDichVu ??
+          (danhSachLoai.length > 0 ? danhSachLoai[0].id : undefined),
       }));
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Không tải được dữ liệu dịch vụ");
+      setError(
+        e instanceof Error ? e.message : "Không tải được dữ liệu dịch vụ",
+      );
     }
   };
 
@@ -88,7 +97,9 @@ export default function ServicesPage() {
     if (!ten) return "Vui lòng nhập tên loại dịch vụ.";
     if (ten.length < 3) return "Tên loại dịch vụ cần tối thiểu 3 ký tự.";
     const trung = loaiDichVu.some(
-      (item) => item.tenLoaiDichVu.trim().toLocaleLowerCase() === ten.toLocaleLowerCase(),
+      (item) =>
+        item.tenLoaiDichVu.trim().toLocaleLowerCase() ===
+        ten.toLocaleLowerCase(),
     );
     if (trung) return "Tên loại dịch vụ đã tồn tại.";
     return "";
@@ -105,12 +116,16 @@ export default function ServicesPage() {
       setTenLoaiDichVu("");
       await napDuLieu();
     } catch (e: unknown) {
-      setModalError(e instanceof Error ? e.message : "Không thêm được loại dịch vụ");
+      setModalError(
+        e instanceof Error ? e.message : "Không thêm được loại dịch vụ",
+      );
     }
   };
 
   const danhSachLoaiDichVuLoc = loaiDichVu.filter((item) =>
-    item.tenLoaiDichVu.toLocaleLowerCase().includes(tuKhoaLoaiDichVu.trim().toLocaleLowerCase()),
+    item.tenLoaiDichVu
+      .toLocaleLowerCase()
+      .includes(tuKhoaLoaiDichVu.trim().toLocaleLowerCase()),
   );
 
   const danhSachDichVuLoc = list.filter((item) => {
@@ -149,7 +164,14 @@ export default function ServicesPage() {
     }
 
     const csvEscape = (value: string) => `"${value.replace(/"/g, '""')}"`;
-    const header = ["MaDichVu", "LoaiDichVu", "TenDichVu", "MoTa", "DonGia", "TrangThai"];
+    const header = [
+      "MaDichVu",
+      "LoaiDichVu",
+      "TenDichVu",
+      "MoTa",
+      "DonGia",
+      "TrangThai",
+    ];
     const rows = list.map((item) => [
       String(item.id),
       csvEscape(item.tenLoaiDichVu || "Chưa phân loại"),
@@ -158,7 +180,10 @@ export default function ServicesPage() {
       String(item.gia ?? 0),
       item.hoatDong ? "Dang ap dung" : "Ngung",
     ]);
-    const content = [header.join(","), ...rows.map((row) => row.join(","))].join("\n");
+    const content = [
+      header.join(","),
+      ...rows.map((row) => row.join(",")),
+    ].join("\n");
     const bom = "\uFEFF";
     const blob = new Blob([bom + content], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -242,11 +267,7 @@ export default function ServicesPage() {
             <i className="bi bi-filetype-csv me-2" aria-hidden />
             Export CSV
           </Button>
-          <Button
-            as={Link}
-            href="/loai-dich-vu"
-            className="btn-service-nav"
-          >
+          <Button as={Link} href="/loai-dich-vu" className="btn-service-nav">
             <i className="bi bi-tags me-2" aria-hidden />
             Đến loại dịch vụ
           </Button>
@@ -263,9 +284,8 @@ export default function ServicesPage() {
       )}
       <Card className="mb-3">
         <Card.Body>
-          <div className="d-flex gap-2 flex-wrap align-items-end">
+          <div className="d-flex gap-2 flex-wrap align-items-center">
             <Form.Group style={{ minWidth: 260 }}>
-              <Form.Label className="mb-1">Lọc theo loại dịch vụ</Form.Label>
               <Form.Select
                 value={boLocLoaiDichVu}
                 onChange={(e) => setBoLocLoaiDichVu(e.target.value)}
@@ -279,7 +299,6 @@ export default function ServicesPage() {
               </Form.Select>
             </Form.Group>
             <Form.Group className="flex-grow-1" style={{ minWidth: 280 }}>
-              <Form.Label className="mb-1">Tìm theo tên dịch vụ</Form.Label>
               <Form.Control
                 placeholder="Nhập tên dịch vụ cần tìm..."
                 value={tuKhoaTenDichVu}
@@ -288,6 +307,7 @@ export default function ServicesPage() {
             </Form.Group>
             <Button
               variant="secondary"
+              className="align-self-center"
               onClick={() => {
                 setBoLocLoaiDichVu("");
                 setTuKhoaTenDichVu("");
@@ -341,7 +361,9 @@ export default function ServicesPage() {
                     <Form.Control
                       size="sm"
                       value={formSua.ten || ""}
-                      onChange={(e) => setFormSua({ ...formSua, ten: e.target.value })}
+                      onChange={(e) =>
+                        setFormSua({ ...formSua, ten: e.target.value })
+                      }
                     />
                   ) : (
                     s.ten
@@ -352,7 +374,9 @@ export default function ServicesPage() {
                     <Form.Control
                       size="sm"
                       value={formSua.moTa || ""}
-                      onChange={(e) => setFormSua({ ...formSua, moTa: e.target.value })}
+                      onChange={(e) =>
+                        setFormSua({ ...formSua, moTa: e.target.value })
+                      }
                     />
                   ) : (
                     s.moTa || "—"
@@ -366,7 +390,10 @@ export default function ServicesPage() {
                       inputMode="numeric"
                       value={formatVndInput(formSua.gia)}
                       onChange={(e) =>
-                        setFormSua({ ...formSua, gia: parseVndInput(e.target.value) })
+                        setFormSua({
+                          ...formSua,
+                          gia: parseVndInput(e.target.value),
+                        })
                       }
                     />
                   ) : (
@@ -391,7 +418,11 @@ export default function ServicesPage() {
                 <td>
                   {dangSuaId === s.id ? (
                     <>
-                      <Button size="sm" className="me-2" onClick={() => luuSua(s.id)}>
+                      <Button
+                        size="sm"
+                        className="me-2"
+                        onClick={() => luuSua(s.id)}
+                      >
                         <i className="bi bi-check2 me-1" aria-hidden />
                         Lưu
                       </Button>
@@ -404,7 +435,7 @@ export default function ServicesPage() {
                     <>
                       <Button
                         size="sm"
-                        className="btn-service-edit me-2"
+                        className="btn-action-edit me-2"
                         onClick={() => batDauSua(s)}
                       >
                         <i className="bi bi-pencil-square me-1" aria-hidden />
@@ -412,7 +443,7 @@ export default function ServicesPage() {
                       </Button>
                       <Button
                         size="sm"
-                        className="btn-service-delete"
+                        className="btn-action-delete"
                         onClick={() => setXoaId(s.id)}
                       >
                         <i className="bi bi-trash me-1" aria-hidden />
@@ -456,7 +487,8 @@ export default function ServicesPage() {
                       onChange={(e) => {
                         const value = e.target.value;
                         setTenLoaiDichVu(value);
-                        if (tenLoaiDichVuError) setTenLoaiDichVuError(validateTenLoaiDichVu(value));
+                        if (tenLoaiDichVuError)
+                          setTenLoaiDichVuError(validateTenLoaiDichVu(value));
                       }}
                       isInvalid={Boolean(tenLoaiDichVuError)}
                     />
@@ -484,7 +516,9 @@ export default function ServicesPage() {
                   </span>
                 ))}
                 {danhSachLoaiDichVuLoc.length === 0 ? (
-                  <span className="text-muted small">Không tìm thấy loại dịch vụ phù hợp.</span>
+                  <span className="text-muted small">
+                    Không tìm thấy loại dịch vụ phù hợp.
+                  </span>
                 ) : null}
               </div>
             </>
@@ -495,7 +529,10 @@ export default function ServicesPage() {
                 <Form.Select
                   value={form.maLoaiDichVu ?? ""}
                   onChange={(e) =>
-                    setForm({ ...form, maLoaiDichVu: Number(e.target.value) || undefined })
+                    setForm({
+                      ...form,
+                      maLoaiDichVu: Number(e.target.value) || undefined,
+                    })
                   }
                   required
                   disabled={loaiDichVu.length === 0}
@@ -543,7 +580,9 @@ export default function ServicesPage() {
                   type="switch"
                   label="Đang áp dụng"
                   checked={form.hoatDong !== false}
-                  onChange={(e) => setForm({ ...form, hoatDong: e.target.checked })}
+                  onChange={(e) =>
+                    setForm({ ...form, hoatDong: e.target.checked })
+                  }
                 />
               </Form.Group>
               <div className="d-flex justify-content-end gap-2">
@@ -564,15 +603,23 @@ export default function ServicesPage() {
       <Modal show={xoaId !== null} onHide={() => setXoaId(null)} centered>
         <Modal.Header closeButton>
           <Modal.Title>
-            <i className="bi bi-exclamation-triangle-fill text-danger me-2" aria-hidden />
+            <i
+              className="bi bi-exclamation-triangle-fill text-danger me-2"
+              aria-hidden
+            />
             Xác nhận xóa
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          Bạn có chắc muốn xóa dịch vụ <strong>{dichVuCanXoa?.ten}</strong> không?
+          Bạn có chắc muốn xóa dịch vụ <strong>{dichVuCanXoa?.ten}</strong>{" "}
+          không?
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setXoaId(null)} disabled={dangXoa}>
+          <Button
+            variant="secondary"
+            onClick={() => setXoaId(null)}
+            disabled={dangXoa}
+          >
             <i className="bi bi-x-circle me-2" aria-hidden />
             Hủy
           </Button>

@@ -349,28 +349,45 @@ html.app-ready body {
   box-shadow: 0 8px 18px rgba(2, 132, 199, 0.28);
 }
 
-.service-type-page .btn-service-edit {
+.btn-action-edit,
+.service-type-page .btn-service-edit,
+.btn-thuoc-action-edit.btn-primary {
   background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%) !important;
   border: none !important;
   color: #fff !important;
   font-weight: 600;
   box-shadow: 0 5px 12px rgba(37, 99, 235, 0.24);
 }
-.service-type-page .btn-service-edit:hover {
+.btn-action-edit:hover,
+.service-type-page .btn-service-edit:hover,
+.btn-thuoc-action-edit.btn-primary:hover {
   filter: brightness(1.04);
   box-shadow: 0 6px 14px rgba(37, 99, 235, 0.3);
 }
 
-.service-type-page .btn-service-delete {
+.btn-action-delete,
+.service-type-page .btn-service-delete,
+.btn-thuoc-action-delete.btn-danger {
   background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%) !important;
   border: none !important;
   color: #fff !important;
   font-weight: 600;
   box-shadow: 0 5px 12px rgba(220, 38, 38, 0.24);
 }
-.service-type-page .btn-service-delete:hover:not(:disabled) {
+.btn-action-delete:hover:not(:disabled),
+.service-type-page .btn-service-delete:hover:not(:disabled),
+.btn-thuoc-action-delete.btn-danger:hover:not(:disabled) {
   filter: brightness(1.04);
   box-shadow: 0 6px 14px rgba(220, 38, 38, 0.32);
+}
+
+.btn-action-edit,
+.btn-action-delete,
+.btn-thuoc-action-stop.btn-warning {
+  --bs-btn-padding-y: 0.25rem;
+  --bs-btn-padding-x: 0.5rem;
+  --bs-btn-font-size: 0.875rem;
+  --bs-btn-line-height: 1.5;
 }
 
 .bg-primary {
@@ -457,6 +474,91 @@ html.app-ready body {
 }
 .clinic-stepper__node[aria-current="step"]:disabled {
   opacity: 1;
+}
+
+/* Modal wizard — nút Quay lại (outline xám) & Tiếp tục (gradient xanh) */
+.btn-thuoc-wizard-back.btn-danger {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #dc2626;
+  --bs-btn-border-color: #dc2626;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #b91c1c;
+  --bs-btn-hover-border-color: #991b1b;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #991b1b;
+  --bs-btn-active-border-color: #7f1d1d;
+  font-weight: 500;
+  padding-inline: 1rem;
+  border-radius: var(--clinic-radius-sm, 10px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.28);
+}
+.btn-thuoc-wizard-back.btn-danger:hover {
+  box-shadow: 0 6px 16px rgba(185, 28, 28, 0.34);
+}
+
+.btn-thuoc-wizard-next.btn-primary {
+  background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  border: none !important;
+  font-weight: 600;
+  padding-inline: 1.1rem;
+  border-radius: var(--clinic-radius-sm, 10px);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+.btn-thuoc-wizard-next.btn-primary:hover {
+  filter: brightness(1.04);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.38);
+}
+
+.btn-thuoc-action-stop.btn-warning {
+  --bs-btn-color: #78350f;
+  --bs-btn-bg: #facc15;
+  --bs-btn-border-color: #facc15;
+  --bs-btn-hover-color: #78350f;
+  --bs-btn-hover-bg: #eab308;
+  --bs-btn-hover-border-color: #ca8a04;
+  --bs-btn-active-color: #78350f;
+  --bs-btn-active-bg: #ca8a04;
+  --bs-btn-active-border-color: #a16207;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(234, 179, 8, 0.25);
+}
+
+.thuoc-action-btn {
+  min-height: 31px;
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.25rem !important;
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+}
+
+.thuoc-status-tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.24rem 0.62rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  border: 1px solid transparent;
+}
+
+.thuoc-status-tag--active {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #86efac;
+}
+
+.thuoc-status-tag--inactive {
+  background: #e2e8f0;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+
+.thuoc-status-tag--warning {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
 }
 
 /* ========== Cards ========== */

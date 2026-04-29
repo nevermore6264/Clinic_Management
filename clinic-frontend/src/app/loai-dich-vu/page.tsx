@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert, Button, Card, Form, Modal, Table } from "react-bootstrap";
 import Link from "next/link";
-import { serviceTypesApi, type LoaiDichVu } from "@/lib/api";
+import { serviceTypesApi, servicesApi, type DichVu, type LoaiDichVu } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { notify } from "@/lib/notify";
 
@@ -12,6 +12,7 @@ export default function ServiceTypesPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [list, setList] = useState<LoaiDichVu[]>([]);
+  const [danhSachDichVu, setDanhSachDichVu] = useState<DichVu[]>([]);
   const [tenLoaiDichVu, setTenLoaiDichVu] = useState("");
   const [dangSuaId, setDangSuaId] = useState<number | null>(null);
   const [tenDangSua, setTenDangSua] = useState("");
@@ -23,12 +24,25 @@ export default function ServiceTypesPage() {
 
   const napDuLieu = async () => {
     try {
-      const data = await serviceTypesApi.list();
-      setList(data);
+      const [loaiDichVu, dichVu] = await Promise.all([
+        serviceTypesApi.list(),
+        servicesApi.list(),
+      ]);
+      setList(loaiDichVu);
+      setDanhSachDichVu(dichVu);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Không tải được loại dịch vụ");
     }
   };
+
+  const demDichVuTheoLoai = useMemo(() => {
+    const dem = new Map<number, number>();
+    danhSachDichVu.forEach((dichVu) => {
+      if (!dichVu.maLoaiDichVu) return;
+      dem.set(dichVu.maLoaiDichVu, (dem.get(dichVu.maLoaiDichVu) ?? 0) + 1);
+    });
+    return dem;
+  }, [danhSachDichVu]);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -106,6 +120,13 @@ export default function ServiceTypesPage() {
     setError("");
     const item = list.find((x) => x.id === id);
     if (!item) return;
+    const soLuongDichVu = demDichVuTheoLoai.get(item.id) ?? 0;
+    if (soLuongDichVu > 0) {
+      setError(
+        `Không thể xóa loại dịch vụ "${item.tenLoaiDichVu}" vì đang có ${soLuongDichVu} dịch vụ thuộc loại này.`,
+      );
+      return;
+    }
     setMucCanXoa(item);
   };
 
@@ -201,6 +222,7 @@ export default function ServiceTypesPage() {
           <thead>
             <tr>
               <th>Loại dịch vụ</th>
+              <th className="text-center">Số dịch vụ</th>
               <th className="text-end">Thao tác</th>
             </tr>
           </thead>
@@ -229,6 +251,7 @@ export default function ServiceTypesPage() {
                     item.tenLoaiDichVu
                   )}
                 </td>
+                <td className="text-center">{demDichVuTheoLoai.get(item.id) ?? 0}</td>
                 <td className="text-end">
                   {dangSuaId === item.id ? (
                     <>
@@ -265,7 +288,12 @@ export default function ServiceTypesPage() {
                     size="sm"
                     className="btn-service-delete"
                     onClick={() => handleDelete(item.id)}
-                    disabled={dangSuaId === item.id}
+                    disabled={dangSuaId === item.id || (demDichVuTheoLoai.get(item.id) ?? 0) > 0}
+                    title={
+                      (demDichVuTheoLoai.get(item.id) ?? 0) > 0
+                        ? "Không thể xóa vì đang có dịch vụ thuộc loại này"
+                        : undefined
+                    }
                   >
                     <i className="bi bi-trash me-1" aria-hidden />
                     Xóa
@@ -275,7 +303,7 @@ export default function ServiceTypesPage() {
             ))}
             {list.length === 0 ? (
               <tr>
-                <td colSpan={2} className="text-center text-muted py-4">
+                <td colSpan={3} className="text-center text-muted py-4">
                   Chưa có loại dịch vụ nào.
                 </td>
               </tr>

@@ -615,7 +615,21 @@ export interface Thuoc {
   tenThuoc: string;
   donVi?: string;
   hoatChat?: string;
+  hamLuong?: string;
+  dangBaoChe?: string;
+  duongDung?: string;
+  hangSanXuat?: string;
+  nuocSanXuat?: string;
+  soDangKy?: string;
+  soLo?: string;
+  hanSuDung?: string;
+  giaNhap?: number;
   giaBan?: number;
+  tonKho?: number;
+  mucTonToiThieu?: number;
+  chiDinh?: string;
+  chongChiDinh?: string;
+  tacDungPhu?: string;
   hoatDong?: boolean;
 }
 

@@ -380,6 +380,85 @@ html.app-ready body {
   color: var(--clinic-teal-dark) !important;
 }
 
+/* ========== Bootstrap-style stepper (thuốc / wizard) ========== */
+.clinic-stepper__row {
+  --bs-gutter-x: 0.75rem;
+}
+.clinic-stepper__cell {
+  padding: 0.85rem 0.65rem;
+  border-radius: var(--clinic-radius-sm);
+  border: 1px solid var(--clinic-border);
+  background: var(--clinic-bg-elevated);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+.clinic-stepper__cell--active {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.12),
+    0 8px 20px rgba(37, 99, 235, 0.08);
+}
+.clinic-stepper__hint {
+  font-size: 0.72rem;
+  line-height: 1.35;
+  margin-top: 0.25rem;
+}
+.clinic-stepper__title {
+  line-height: 1.3;
+}
+
+.clinic-stepper__circle {
+  width: 2.35rem;
+  height: 2.35rem;
+  font-size: 0.95rem;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.clinic-stepper__circle--pending {
+  background: var(--clinic-bg);
+  color: var(--clinic-muted);
+  border: 2px solid var(--clinic-border);
+}
+.clinic-stepper__circle--active {
+  background: linear-gradient(
+    180deg,
+    var(--clinic-blue-bright),
+    var(--clinic-blue-dark)
+  );
+  color: #fff;
+  border: 2px solid transparent;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+.clinic-stepper__circle--done {
+  background: linear-gradient(180deg, #34d399 0%, var(--clinic-success) 100%);
+  color: #fff;
+  border: 2px solid transparent;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.28);
+}
+
+.clinic-stepper__node--clickable:not(:disabled):hover .clinic-stepper__circle {
+  transform: scale(1.06);
+}
+.clinic-stepper__node--clickable:not(:disabled):focus-visible {
+  outline: none;
+}
+.clinic-stepper__node--clickable:not(:disabled):focus-visible .clinic-stepper__circle {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
+}
+
+.clinic-stepper__node:disabled {
+  cursor: default;
+}
+.clinic-stepper__node:disabled:not([aria-current="step"]) {
+  opacity: 0.78;
+}
+.clinic-stepper__node--clickable:not(:disabled) {
+  cursor: pointer;
+}
+.clinic-stepper__node[aria-current="step"]:disabled {
+  opacity: 1;
+}
+
 /* ========== Cards ========== */
 .card {
   border: 1px solid var(--clinic-border);

@@ -170,6 +170,13 @@ export function NavBar() {
             {user.cacVaiTro.includes("QUAN_TRI") && (
               <>
                 <NavLinkItem
+                  href="/loai-dich-vu"
+                  active={pathname.startsWith("/loai-dich-vu")}
+                  icon="bi-tags"
+                >
+                  Loại dịch vụ
+                </NavLinkItem>
+                <NavLinkItem
                   href="/dich-vu"
                   active={pathname.startsWith("/dich-vu")}
                   icon="bi-hospital"
@@ -200,7 +207,7 @@ export function NavBar() {
               </>
             )}
           </Nav>
-          <Nav className="ms-lg-auto align-items-lg-center gap-2 border-top border-lg-0 border-secondary border-opacity-25 pt-3 pt-lg-0 mt-2 mt-lg-0">
+          <Nav className="ms-lg-auto align-items-lg-center gap-2 pt-3 pt-lg-0 mt-2 mt-lg-0">
             <div className="d-none d-lg-flex nav-user-summary">
               <span className="nav-user-summary__name">
                 {user.hoTen || user.tenDangNhap}

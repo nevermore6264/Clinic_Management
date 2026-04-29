@@ -32,9 +32,14 @@ export default function ServicesPage() {
     <div>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Quản lý dịch vụ & bảng giá</h2>
-        <Button as={Link} href="/dich-vu/new">
-          Thêm dịch vụ
-        </Button>
+        <div className="d-flex gap-2">
+          <Button as={Link} href="/loai-dich-vu" variant="outline-primary">
+            Quản lý loại dịch vụ
+          </Button>
+          <Button as={Link} href="/dich-vu/new">
+            Thêm dịch vụ
+          </Button>
+        </div>
       </div>
       {error && (
         <Alert variant="danger" dismissible onClose={() => setError("")}>
@@ -45,6 +50,7 @@ export default function ServicesPage() {
         <Table responsive hover className="mb-0">
           <thead>
             <tr>
+              <th>Loại dịch vụ</th>
               <th>Tên dịch vụ</th>
               <th>Mô tả</th>
               <th>Đơn giá</th>
@@ -55,6 +61,7 @@ export default function ServicesPage() {
           <tbody>
             {list.map((s) => (
               <tr key={s.id}>
+                <td>{s.tenLoaiDichVu || "Chưa phân loại"}</td>
                 <td>{s.ten}</td>
                 <td>{s.moTa || "—"}</td>
                 <td>{s.gia?.toLocaleString("vi-VN")}đ</td>

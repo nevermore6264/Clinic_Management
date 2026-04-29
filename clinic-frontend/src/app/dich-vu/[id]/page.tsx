@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Card, Form, Button, Alert } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
-import { servicesApi, type DichVu } from "@/lib/api";
+import { serviceTypesApi, servicesApi, type DichVu, type LoaiDichVu } from "@/lib/api";
 
 export default function EditServicePage() {
   const params = useParams();
@@ -14,6 +14,7 @@ export default function EditServicePage() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [form, setForm] = useState<Partial<DichVu>>({});
+  const [loaiDichVu, setLoaiDichVu] = useState<LoaiDichVu[]>([]);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -27,6 +28,16 @@ export default function EditServicePage() {
       .then(setForm)
       .catch((e) => setError(e.message));
   }, [user, id]);
+
+  useEffect(() => {
+    if (!user?.cacVaiTro.includes("QUAN_TRI")) return;
+    serviceTypesApi
+      .list()
+      .then(setLoaiDichVu)
+      .catch((e: unknown) =>
+        setError(e instanceof Error ? e.message : "Không tải được loại dịch vụ"),
+      );
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +61,28 @@ export default function EditServicePage() {
       <Card>
         <Card.Body>
           <Form onSubmit={handleSubmit}>
+            <Form.Group className="mb-3">
+              <Form.Label className="required">Loại dịch vụ</Form.Label>
+              <Form.Select
+                value={form.maLoaiDichVu ?? ""}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    maLoaiDichVu: Number(e.target.value) || undefined,
+                  })
+                }
+                required
+              >
+                <option value="" disabled>
+                  Chọn loại dịch vụ
+                </option>
+                {loaiDichVu.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.tenLoaiDichVu}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label className="required">Tên dịch vụ</Form.Label>
               <Form.Control

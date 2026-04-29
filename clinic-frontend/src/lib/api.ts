@@ -96,6 +96,22 @@ export const dichVuApi = {
   xoa: (id: number) => api<void>(`/dich-vu/${id}`, { method: "DELETE" }),
 };
 
+export const loaiDichVuApi = {
+  danhSach: () => api<LoaiDichVu[]>("/loai-dich-vu"),
+  layTheoMa: (id: number) => api<LoaiDichVu>(`/loai-dich-vu/${id}`),
+  tao: (data: Partial<LoaiDichVu>) =>
+    api<LoaiDichVu>("/loai-dich-vu", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  capNhat: (id: number, data: Partial<LoaiDichVu>) =>
+    api<LoaiDichVu>(`/loai-dich-vu/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  xoa: (id: number) => api<void>(`/loai-dich-vu/${id}`, { method: "DELETE" }),
+};
+
 export const lichHenApi = {
   danhSach: (tuNgay: string, denNgay: string, page = 0, size = 20) =>
     api<{ content: LichHen[]; totalElements: number }>(
@@ -366,6 +382,14 @@ export const servicesApi = {
   update: dichVuApi.capNhat,
   delete: dichVuApi.xoa,
 };
+export const serviceTypesApi = {
+  ...loaiDichVuApi,
+  list: loaiDichVuApi.danhSach,
+  get: loaiDichVuApi.layTheoMa,
+  create: loaiDichVuApi.tao,
+  update: loaiDichVuApi.capNhat,
+  delete: loaiDichVuApi.xoa,
+};
 export const appointmentsApi = {
   ...lichHenApi,
   list: lichHenApi.danhSach,
@@ -505,10 +529,17 @@ export interface BacSi {
 
 export interface DichVu {
   id: number;
+  maLoaiDichVu?: number;
+  tenLoaiDichVu?: string;
   ten: string;
   moTa?: string;
   gia: number;
   hoatDong?: boolean;
+}
+
+export interface LoaiDichVu {
+  id: number;
+  tenLoaiDichVu: string;
 }
 
 export type TrangThaiLichHen = string;

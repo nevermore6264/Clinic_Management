@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface DichVuRepository extends JpaRepository<DichVu, Long> {
     List<DichVu> findByHoatDongTrue();
+    long countByLoaiDichVuId(Long maLoaiDichVu);
 }

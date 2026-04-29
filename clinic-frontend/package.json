@@ -1,0 +1,27 @@
+{
+  "name": "clinic-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 4009",
+    "build": "next build",
+    "start": "next start -p 4009",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@stomp/stompjs": "^7.0.0",
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.13.1",
+    "next": "14.2.5",
+    "react": "^18.3.1",
+    "react-bootstrap": "^2.10.2",
+    "react-dom": "^18.3.1",
+    "sockjs-client": "^1.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5"
+  }
+}

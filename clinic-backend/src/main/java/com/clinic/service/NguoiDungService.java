@@ -71,10 +71,18 @@ public class NguoiDungService {
     }
 
     @Transactional
-    public void voHieuHoa(Long id) {
+    public void khoaTaiKhoan(Long id) {
         NguoiDung nd = nguoiDungRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng: " + id));
         nd.setHoatDong(false);
+        nguoiDungRepository.save(nd);
+    }
+
+    @Transactional
+    public void moKhoaTaiKhoan(Long id) {
+        NguoiDung nd = nguoiDungRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng: " + id));
+        nd.setHoatDong(true);
         nguoiDungRepository.save(nd);
     }
 

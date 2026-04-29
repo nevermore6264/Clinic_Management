@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Table, Button, Form, Alert, Modal } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
-import { usersApi, type ThongTinNguoiDungDto } from "@/lib/api";
+import { patientsApi, usersApi, type BenhNhan, type ThongTinNguoiDungDto } from "@/lib/api";
 
 const ROLES = ["QUAN_TRI", "LE_TAN", "BAC_SI", "THU_NGAN", "BENH_NHAN"];
 
@@ -39,19 +39,31 @@ export default function UsersPage() {
     username: "",
     password: "",
     fullName: "",
-    roles: ["LE_TAN"] as string[],
+    role: "LE_TAN",
   });
+  const [danhSachBenhNhan, setDanhSachBenhNhan] = useState<BenhNhan[]>([]);
+  const [benhNhanDaChon, setBenhNhanDaChon] = useState("");
   const [editForm, setEditForm] = useState({
     fullName: "",
     email: "",
     phone: "",
-    roles: ["LE_TAN"] as string[],
+    role: "LE_TAN",
   });
+  const [xacNhanKhoa, setXacNhanKhoa] = useState<
+    null | { loai: "khoa" | "mo"; nguoi: ThongTinNguoiDungDto }
+  >(null);
+  const [dangKhoa, setDangKhoa] = useState(false);
 
   const loadUsers = () =>
     usersApi
       .list()
       .then(setList)
+      .catch((e) => setError(e.message));
+
+  const loadPatients = () =>
+    patientsApi
+      .list(0, 500)
+      .then((r) => setDanhSachBenhNhan(r.content ?? []))
       .catch((e) => setError(e.message));
 
   useEffect(() => {
@@ -64,15 +76,28 @@ export default function UsersPage() {
     loadUsers();
   }, [user]);
 
+  useEffect(() => {
+    if (!showCreate) return;
+    loadPatients();
+  }, [showCreate]);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    const laTaiKhoanBenhNhan = createForm.role === "BENH_NHAN";
+    const benhNhanChon = danhSachBenhNhan.find((bn) => String(bn.id) === benhNhanDaChon);
+    if (laTaiKhoanBenhNhan && !benhNhanChon) {
+      setError("Vui lòng chọn bệnh nhân trước khi tạo tài khoản.");
+      return;
+    }
     try {
       await usersApi.create({
         username: createForm.username,
         password: createForm.password,
-        fullName: createForm.fullName || undefined,
-        roles: createForm.roles,
+        fullName: laTaiKhoanBenhNhan
+          ? benhNhanChon?.hoTen
+          : createForm.fullName || undefined,
+        roles: [createForm.role],
       });
       await loadUsers();
       setShowCreate(false);
@@ -80,38 +105,24 @@ export default function UsersPage() {
         username: "",
         password: "",
         fullName: "",
-        roles: ["LE_TAN"],
+        role: "LE_TAN",
       });
+      setBenhNhanDaChon("");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Lỗi");
     }
   };
 
-  const toggleRole = (role: string) => {
-    setCreateForm((f) => ({
-      ...f,
-      roles: f.roles.includes(role)
-        ? f.roles.filter((r) => r !== role)
-        : [...f.roles, role],
-    }));
-  };
-
-  const toggleEditRole = (role: string) => {
-    setEditForm((f) => ({
-      ...f,
-      roles: f.roles.includes(role)
-        ? f.roles.filter((r) => r !== role)
-        : [...f.roles, role],
-    }));
-  };
-
   const openEdit = (u: ThongTinNguoiDungDto) => {
     setEditingUser(u);
+    const dauTien = u.cacVaiTro?.length ? [...u.cacVaiTro][0] : null;
+    const vaiTroHienTai =
+      dauTien && ROLES.includes(dauTien) ? dauTien : "LE_TAN";
     setEditForm({
       fullName: u.hoTen || "",
       email: u.thuDienTu || "",
       phone: u.soDienThoai || "",
-      roles: u.cacVaiTro?.length ? u.cacVaiTro : ["LE_TAN"],
+      role: vaiTroHienTai,
     });
     setShowEdit(true);
   };
@@ -125,7 +136,7 @@ export default function UsersPage() {
         fullName: editForm.fullName,
         email: editForm.email || undefined,
         phone: editForm.phone || undefined,
-        roles: editForm.roles,
+        roles: [editForm.role],
       });
       await loadUsers();
       setShowEdit(false);
@@ -135,17 +146,52 @@ export default function UsersPage() {
     }
   };
 
-  const handleDisable = async (u: ThongTinNguoiDungDto) => {
+  const moHopThoaiKhoa = (u: ThongTinNguoiDungDto) => {
     if (!u.id || !u.hoatDong) return;
-    if (!confirm(`Disable tài khoản ${u.tenDangNhap}?`)) return;
+    if (user?.maNguoiDung != null && u.id === user.maNguoiDung) {
+      setError("Không thể khóa tài khoản bạn đang đăng nhập.");
+      return;
+    }
+    setError("");
+    setXacNhanKhoa({ loai: "khoa", nguoi: u });
+  };
+
+  const moHopThoaiMoKhoa = (u: ThongTinNguoiDungDto) => {
+    if (!u.id || u.hoatDong) return;
+    setError("");
+    setXacNhanKhoa({ loai: "mo", nguoi: u });
+  };
+
+  const dongHopThoaiKhoa = useCallback(() => {
+    if (!dangKhoa) setXacNhanKhoa(null);
+  }, [dangKhoa]);
+
+  const thucHienKhoaHoacMoKhoa = async () => {
+    const tacVu = xacNhanKhoa;
+    if (!tacVu?.nguoi?.id) return;
+    const { loai, nguoi } = tacVu;
+    setDangKhoa(true);
     setError("");
     try {
-      await usersApi.disable(u.id);
+      if (loai === "khoa") await usersApi.lock(nguoi.id);
+      else await usersApi.unlock(nguoi.id);
       await loadUsers();
+      setXacNhanKhoa(null);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Lỗi");
+    } finally {
+      setDangKhoa(false);
     }
   };
+
+  useEffect(() => {
+    if (!xacNhanKhoa) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") dongHopThoaiKhoa();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [xacNhanKhoa, dongHopThoaiKhoa]);
 
   const danhSachLoc = list.filter((u) => {
     const keyword = tuKhoa.trim().toLocaleLowerCase();
@@ -156,7 +202,8 @@ export default function UsersPage() {
     const khopTuKhoa = !keyword || text.includes(keyword);
     const khopTrangThai =
       boLocTrangThai === "tat-ca" ||
-      (boLocTrangThai === "hoat-dong" ? u.hoatDong : !u.hoatDong);
+      (boLocTrangThai === "hoat-dong" && u.hoatDong) ||
+      (boLocTrangThai === "bi-khoa" && !u.hoatDong);
     const khopVaiTro =
       boLocVaiTro === "tat-ca" || Boolean(u.cacVaiTro?.includes(boLocVaiTro));
     return khopTuKhoa && khopTrangThai && khopVaiTro;
@@ -171,7 +218,7 @@ export default function UsersPage() {
         u.thuDienTu ?? "",
         u.soDienThoai ?? "",
         (u.cacVaiTro ?? []).join("|"),
-        u.hoatDong ? "Hoat dong" : "Vo hieu",
+        u.hoatDong ? "Hoat dong" : "Da khoa",
       ]),
     ];
     const csv = rows
@@ -230,7 +277,7 @@ export default function UsersPage() {
               >
                 <option value="tat-ca">Tất cả trạng thái</option>
                 <option value="hoat-dong">Hoạt động</option>
-                <option value="vo-hieu">Vô hiệu</option>
+                <option value="bi-khoa">Đã khóa</option>
               </Form.Select>
             </div>
             <div className="col-md-3">
@@ -294,7 +341,7 @@ export default function UsersPage() {
                       u.hoatDong ? "user-status-tag--active" : "user-status-tag--inactive"
                     }`}
                   >
-                    {u.hoatDong ? "Hoạt động" : "Ẩn"}
+                    {u.hoatDong ? "Hoạt động" : "Đã khóa"}
                   </span>
                 </td>
                 <td className="text-nowrap">
@@ -306,15 +353,33 @@ export default function UsersPage() {
                     <i className="bi bi-pencil-square me-1" aria-hidden />
                     Sửa
                   </Button>
-                  <Button
-                    size="sm"
-                    className="btn-action-delete"
-                    onClick={() => handleDisable(u)}
-                    disabled={!u.hoatDong}
-                  >
-                    <i className="bi bi-slash-circle me-1" aria-hidden />
-                    Disable
-                  </Button>
+                  {u.hoatDong ? (
+                    <Button
+                      size="sm"
+                      className="btn-action-delete"
+                      onClick={() => moHopThoaiKhoa(u)}
+                      disabled={
+                        user?.maNguoiDung != null && u.id === user.maNguoiDung
+                      }
+                      title={
+                        user?.maNguoiDung != null && u.id === user.maNguoiDung
+                          ? "Không thể khóa chính tài khoản đang đăng nhập"
+                          : undefined
+                      }
+                    >
+                      <i className="bi bi-lock-fill me-1" aria-hidden />
+                      Khóa
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      className="btn-action-edit"
+                      onClick={() => moHopThoaiMoKhoa(u)}
+                    >
+                      <i className="bi bi-unlock-fill me-1" aria-hidden />
+                      Mở khóa
+                    </Button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -329,7 +394,57 @@ export default function UsersPage() {
         </Table>
       </Card>
 
-      <Modal show={showCreate} onHide={() => setShowCreate(false)}>
+      {xacNhanKhoa ? (
+        <div
+          className="clinic-confirm-overlay"
+          role="presentation"
+          onClick={dongHopThoaiKhoa}
+        >
+          <div
+            className="clinic-confirm-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="xac-nhan-khoa-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="xac-nhan-khoa-title" className="h6 fw-bold mb-2">
+              {xacNhanKhoa.loai === "khoa" ? "Khóa tài khoản?" : "Mở khóa tài khoản?"}
+            </h3>
+            <p className="text-muted small mb-3 mb-md-4">
+              {xacNhanKhoa.loai === "khoa" ? (
+                <>
+                  Khóa tài khoản <strong>{xacNhanKhoa.nguoi.tenDangNhap}</strong>? Người dùng
+                  sẽ không đăng nhập được cho đến khi được mở khóa.
+                </>
+              ) : (
+                <>
+                  Mở khóa tài khoản <strong>{xacNhanKhoa.nguoi.tenDangNhap}</strong>?
+                </>
+              )}
+            </p>
+            <div className="d-flex gap-2 justify-content-end flex-wrap">
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={dangKhoa}
+                onClick={dongHopThoaiKhoa}
+              >
+                Hủy
+              </Button>
+              <Button
+                type="button"
+                variant={xacNhanKhoa.loai === "khoa" ? "danger" : "primary"}
+                disabled={dangKhoa}
+                onClick={thucHienKhoaHoacMoKhoa}
+              >
+                {dangKhoa ? "Đang xử lý…" : xacNhanKhoa.loai === "khoa" ? "Khóa" : "Mở khóa"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <Modal show={showCreate} onHide={() => setShowCreate(false)} centered>
         <Modal.Header closeButton>Tạo tài khoản</Modal.Header>
         <Form onSubmit={handleCreate}>
           <Modal.Body>
@@ -355,29 +470,51 @@ export default function UsersPage() {
               />
             </Form.Group>
             <Form.Group className="mb-2">
-              <Form.Label>Họ tên</Form.Label>
-              <Form.Control
-                value={createForm.fullName}
-                onChange={(e) =>
-                  setCreateForm({ ...createForm, fullName: e.target.value })
-                }
-              />
+              {createForm.role === "BENH_NHAN" ? (
+                <>
+                  <Form.Label className="required">Chọn bệnh nhân</Form.Label>
+                  <Form.Select
+                    value={benhNhanDaChon}
+                    onChange={(e) => setBenhNhanDaChon(e.target.value)}
+                    required
+                  >
+                    <option value="">-- Chọn bệnh nhân --</option>
+                    {danhSachBenhNhan.map((bn) => (
+                      <option key={bn.id} value={bn.id}>
+                        {bn.hoTen} {bn.soDienThoai ? `- ${bn.soDienThoai}` : ""}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </>
+              ) : (
+                <>
+                  <Form.Label>Họ tên</Form.Label>
+                  <Form.Control
+                    value={createForm.fullName}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, fullName: e.target.value })
+                    }
+                  />
+                </>
+              )}
             </Form.Group>
             <Form.Group>
-              <Form.Label>Vai trò</Form.Label>
-              <div className="d-flex flex-wrap gap-2">
+              <Form.Label className="required">Vai trò</Form.Label>
+              <Form.Select
+                value={createForm.role}
+                onChange={(e) => {
+                  const role = e.target.value;
+                  setCreateForm((f) => ({ ...f, role }));
+                  if (role !== "BENH_NHAN") setBenhNhanDaChon("");
+                }}
+                required
+              >
                 {ROLES.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    className={`role-chip ${createForm.roles.includes(r) ? "role-chip--active" : ""}`}
-                    onClick={() => toggleRole(r)}
-                    aria-pressed={createForm.roles.includes(r)}
-                  >
+                  <option key={r} value={r}>
                     {ROLE_LABELS[r] ?? r}
-                  </button>
+                  </option>
                 ))}
-              </div>
+              </Form.Select>
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>
@@ -395,6 +532,7 @@ export default function UsersPage() {
 
       <Modal
         show={showEdit}
+        centered
         onHide={() => {
           setShowEdit(false);
           setEditingUser(null);
@@ -428,20 +566,18 @@ export default function UsersPage() {
               />
             </Form.Group>
             <Form.Group>
-              <Form.Label>Vai trò</Form.Label>
-              <div className="d-flex flex-wrap gap-2">
+              <Form.Label className="required">Vai trò</Form.Label>
+              <Form.Select
+                value={editForm.role}
+                onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                required
+              >
                 {ROLES.map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    className={`role-chip ${editForm.roles.includes(r) ? "role-chip--active" : ""}`}
-                    onClick={() => toggleEditRole(r)}
-                    aria-pressed={editForm.roles.includes(r)}
-                  >
+                  <option key={r} value={r}>
                     {ROLE_LABELS[r] ?? r}
-                  </button>
+                  </option>
                 ))}
-              </div>
+              </Form.Select>
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>

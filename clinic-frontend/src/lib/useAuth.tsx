@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -28,6 +29,32 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+/** Không hiển thị JSON/technical message cho người dùng khi đăng nhập sai. */
+function thongBaoLoiDangNhap(body: string): string {
+  const fallback = "Đăng nhập thất bại";
+  const raw = body.trim();
+  if (!raw) return fallback;
+  try {
+    const j = JSON.parse(raw) as { message?: string };
+    if (j.message) {
+      const m = j.message.toLowerCase();
+      if (
+        m.includes("bad credentials") ||
+        m.includes("invalid user") ||
+        m.includes("disabled") ||
+        m.includes("locked")
+      ) {
+        return fallback;
+      }
+    }
+  } catch {
+    /* không phải JSON — lỗi mạng / text thuần */
+  }
+  if (raw.startsWith("{")) return fallback;
+  const out = raw.length > 200 ? fallback : raw;
+  return out.trim() || fallback;
+}
+
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
@@ -40,18 +67,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const t = localStorage.getItem("token");
-    const u = localStorage.getItem("user");
-    if (t && u) {
-      setTokenState(t);
-      try {
-        setUser(JSON.parse(u));
-      } catch {
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
+    try {
+      const t = localStorage.getItem("token");
+      const u = localStorage.getItem("user");
+      if (t && u) {
+        setTokenState(t);
+        try {
+          setUser(JSON.parse(u));
+        } catch {
+          localStorage.removeItem("user");
+          localStorage.removeItem("token");
+        }
       }
+    } catch {
+      /* localStorage có thể throw (private mode, chặn cookie…) */
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const setToken = (t: string | null) => {
@@ -60,30 +92,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     else localStorage.removeItem("token");
   };
 
-  const login = async (tenDangNhap: string, matKhau: string) => {
+  const login = useCallback(async (tenDangNhap: string, matKhau: string) => {
     const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
-    const res = await fetch(`${base}/api/xac-thuc/dang-nhap`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tenDangNhap, matKhau }),
-    });
+    let res: Response;
+    try {
+      res = await fetch(`${base}/api/xac-thuc/dang-nhap`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tenDangNhap, matKhau }),
+      });
+    } catch {
+      const msg =
+        "Không kết nối được máy chủ. Kiểm tra backend đang chạy và địa chỉ API.";
+      notify.error(msg);
+      throw new Error(msg);
+    }
     if (!res.ok) {
       const text = await res.text();
-      notify.error(text || "Đăng nhập thất bại");
-      throw new Error(text || "Đăng nhập thất bại");
+      const thongBao = thongBaoLoiDangNhap(text);
+      notify.error(thongBao);
+      throw new Error(thongBao);
     }
-    const data = await res.json();
-    setToken(data.token);
+    let data: Record<string, unknown>;
+    try {
+      data = await res.json();
+    } catch {
+      const msg = "Phản hồi đăng nhập không hợp lệ.";
+      notify.error(msg);
+      throw new Error(msg);
+    }
+    const token = data.token;
+    if (typeof token !== "string" || !token.trim()) {
+      const msg = "Phản hồi đăng nhập thiếu token.";
+      notify.error(msg);
+      throw new Error(msg);
+    }
+    setToken(token);
+    const vt = data.cacVaiTro;
     const nd: NguoiDung = {
-      tenDangNhap: data.tenDangNhap,
-      hoTen: data.hoTen ?? "",
-      cacVaiTro: data.cacVaiTro ? Array.from(data.cacVaiTro) : [],
-      maNguoiDung: data.maNguoiDung,
+      tenDangNhap:
+        typeof data.tenDangNhap === "string" ? data.tenDangNhap : tenDangNhap,
+      hoTen: typeof data.hoTen === "string" ? data.hoTen : "",
+      cacVaiTro: vt != null ? Array.from(vt as Iterable<string>) : [],
+      maNguoiDung:
+        typeof data.maNguoiDung === "number"
+          ? data.maNguoiDung
+          : typeof data.maNguoiDung === "string"
+            ? Number(data.maNguoiDung) || 0
+            : 0,
     };
     setUser(nd);
     localStorage.setItem("user", JSON.stringify(nd));
     notify.success("Đăng nhập thành công");
-  };
+  }, []);
 
   const logout = () => {
     setUser(null);

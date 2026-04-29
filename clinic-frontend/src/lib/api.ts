@@ -94,8 +94,12 @@ export const nguoiDungApi = {
       method: "PUT",
       body: JSON.stringify(data),
     }),
-  voHieu: (id: number) =>
-    api<void>(`/nguoi-dung/${id}/vo-hieu`, {
+  khoa: (id: number) =>
+    api<void>(`/nguoi-dung/${id}/khoa`, {
+      method: "PATCH",
+    }),
+  moKhoa: (id: number) =>
+    api<void>(`/nguoi-dung/${id}/mo-khoa`, {
       method: "PATCH",
     }),
 };
@@ -423,7 +427,8 @@ export const usersApi = {
       soDienThoai: data.phone,
       cacVaiTro: data.roles,
     }),
-  disable: nguoiDungApi.voHieu,
+  lock: nguoiDungApi.khoa,
+  unlock: nguoiDungApi.moKhoa,
 };
 export const doctorsApi = {
   ...bacSiApi,

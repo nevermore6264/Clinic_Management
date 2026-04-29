@@ -39,10 +39,17 @@ public class NguoiDungController {
         return ResponseEntity.ok(nguoiDungService.capNhat(id, yeuCau));
     }
 
-    @PatchMapping("/{id}/vo-hieu")
+    @PatchMapping("/{id}/khoa")
     @PreAuthorize("hasRole('QUAN_TRI')")
-    public ResponseEntity<Void> voHieu(@PathVariable Long id) {
-        nguoiDungService.voHieuHoa(id);
+    public ResponseEntity<Void> khoa(@PathVariable Long id) {
+        nguoiDungService.khoaTaiKhoan(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/{id}/mo-khoa")
+    @PreAuthorize("hasRole('QUAN_TRI')")
+    public ResponseEntity<Void> moKhoa(@PathVariable Long id) {
+        nguoiDungService.moKhoaTaiKhoan(id);
         return ResponseEntity.noContent().build();
     }
 }

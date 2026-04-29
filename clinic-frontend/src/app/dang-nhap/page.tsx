@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Form, Button, Alert, InputGroup } from "react-bootstrap";
+import { Card, Form, Button, Alert, InputGroup, Spinner } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
 
 export default function LoginPage() {
@@ -13,10 +13,11 @@ export default function LoginPage() {
   const { login, user } = useAuth();
   const router = useRouter();
 
-  if (user) {
-    router.replace("/bang-dieu-khien");
-    return null;
-  }
+  useEffect(() => {
+    if (user) {
+      router.replace("/bang-dieu-khien");
+    }
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,13 +25,28 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(username, password);
-      router.push("/bang-dieu-khien");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Đăng nhập thất bại");
+      const msg =
+        err instanceof Error && err.message?.trim()
+          ? err.message.trim()
+          : "Đăng nhập thất bại";
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
+
+  /* Chỉ treo UI khi đã có phiên và đang chuyển — không chặn vì loading auth */
+  if (user) {
+    return (
+      <div className="login-bg d-flex align-items-center justify-content-center min-vh-100">
+        <div className="text-center">
+          <Spinner animation="border" variant="primary" role="status" />
+          <p className="text-muted small mt-3 mb-0">Đang chuyển trang…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="login-bg">

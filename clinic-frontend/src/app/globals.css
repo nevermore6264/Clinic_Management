@@ -1388,6 +1388,27 @@ html.app-ready body {
   border: 1px solid var(--clinic-border);
   box-shadow: var(--clinic-shadow-lg);
 }
+
+/* Xác nhận (khóa / mở khóa tài khoản) — không dùng React-Bootstrap Modal */
+.clinic-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1080;
+  background: rgba(15, 23, 42, 0.48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.clinic-confirm-panel {
+  background: var(--clinic-bg-elevated);
+  border-radius: var(--clinic-radius);
+  border: 1px solid var(--clinic-border);
+  box-shadow: var(--clinic-shadow-lg);
+  max-width: 420px;
+  width: 100%;
+  padding: 1.25rem 1.35rem;
+}
 .alert {
   border-radius: var(--clinic-radius-sm) !important;
   border: none;

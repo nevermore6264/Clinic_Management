@@ -17,7 +17,7 @@ public class ThuocController {
 
     private final ThuocService thuocService;
 
-    /** Danh mục đang dùng — dùng khi kê đơn. */
+    
     @GetMapping("/dang-hoat-dong")
     public ResponseEntity<List<ThuocDto>> dangHoatDong() {
         return ResponseEntity.ok(thuocService.danhSachDangHoatDong());
@@ -49,8 +49,8 @@ public class ThuocController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('QUAN_TRI')")
-    public ResponseEntity<Void> voHieuHoa(@PathVariable Long id) {
-        thuocService.voHieuHoa(id);
+    public ResponseEntity<Void> xoa(@PathVariable Long id) {
+        thuocService.xoa(id);
         return ResponseEntity.noContent().build();
     }
 }

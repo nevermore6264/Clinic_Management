@@ -35,7 +35,7 @@ public class JwtBoLocXacThuc extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(xacThuc);
             }
         } catch (Exception e) {
-            // bo qua
+            
         }
         chain.doFilter(request, response);
     }

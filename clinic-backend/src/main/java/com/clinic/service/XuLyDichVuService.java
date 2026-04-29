@@ -17,6 +17,7 @@ public class XuLyDichVuService {
 
     private final DichVuRepository dichVuRepository;
     private final LoaiDichVuRepository loaiDichVuRepository;
+    private final NhatKyHeThongService nhatKyHeThongService;
 
     @Transactional(readOnly = true)
     public List<DichVuDto> timTatCaDangHoatDong() {
@@ -32,21 +33,42 @@ public class XuLyDichVuService {
     public DichVuDto tao(DichVuDto dto) {
         DichVu dv = new DichVu();
         mapTuDto(dto, dv);
-        return sangDto(dichVuRepository.save(dv));
+        DichVu daLuu = dichVuRepository.save(dv);
+        nhatKyHeThongService.ghi("dich_vu", daLuu.getId(), "TAO", null, tomTat(daLuu));
+        return sangDto(daLuu);
     }
 
     @Transactional
     public DichVuDto capNhat(Long ma, DichVuDto dto) {
         DichVu dv = dichVuRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy dịch vụ: " + ma));
+        String giaTriCu = tomTat(dv);
+        boolean hoatDongCu = dv.isHoatDong();
         mapTuDto(dto, dv);
-        return sangDto(dichVuRepository.save(dv));
+        DichVu daLuu = dichVuRepository.save(dv);
+        String hanhDong = "CAP_NHAT";
+        if (hoatDongCu && !daLuu.isHoatDong()) {
+            hanhDong = "NGUNG";
+        } else if (!hoatDongCu && daLuu.isHoatDong()) {
+            hanhDong = "MO_LAI";
+        }
+        nhatKyHeThongService.ghi("dich_vu", daLuu.getId(), hanhDong, giaTriCu, tomTat(daLuu));
+        return sangDto(daLuu);
     }
 
     @Transactional
     public void voHieuHoa(Long ma) {
         DichVu dv = dichVuRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy dịch vụ: " + ma));
+        String giaTriCu = tomTat(dv);
         dv.setHoatDong(false);
-        dichVuRepository.save(dv);
+        DichVu daLuu = dichVuRepository.save(dv);
+        nhatKyHeThongService.ghi("dich_vu", daLuu.getId(), "NGUNG", giaTriCu, tomTat(daLuu));
+    }
+
+    private String tomTat(DichVu dv) {
+        return "ten=" + dv.getTen()
+                + ";gia=" + dv.getGia()
+                + ";maLoaiDichVu=" + (dv.getLoaiDichVu() != null ? dv.getLoaiDichVu().getId() : null)
+                + ";hoatDong=" + dv.isHoatDong();
     }
 
     private void mapTuDto(DichVuDto dto, DichVu dv) {

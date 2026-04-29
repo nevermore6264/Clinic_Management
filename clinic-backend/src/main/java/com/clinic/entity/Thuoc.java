@@ -8,9 +8,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
-/**
- * Danh mục thuốc trong phòng khám (dùng cho đơn thuốc có cấu trúc).
- */
+
 @Entity
 @Table(name = "thuoc")
 @Getter

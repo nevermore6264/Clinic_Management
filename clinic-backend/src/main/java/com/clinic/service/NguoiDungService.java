@@ -2,6 +2,7 @@ package com.clinic.service;
 
 import com.clinic.dto.TaoNguoiDungYeuCau;
 import com.clinic.dto.ThongTinNguoiDungDto;
+import com.clinic.dto.CapNhatNguoiDungYeuCau;
 import com.clinic.entity.BacSi;
 import com.clinic.entity.VaiTro;
 import com.clinic.entity.NguoiDung;
@@ -53,6 +54,28 @@ public class NguoiDungService {
             bacSiRepository.save(bs);
         }
         return sangDto(nd);
+    }
+
+    @Transactional
+    public ThongTinNguoiDungDto capNhat(Long id, CapNhatNguoiDungYeuCau yeuCau) {
+        NguoiDung nd = nguoiDungRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng: " + id));
+        nd.setHoTen(yeuCau.getHoTen());
+        nd.setThuDienTu(yeuCau.getThuDienTu());
+        nd.setSoDienThoai(yeuCau.getSoDienThoai());
+        nd.setCacVaiTro(yeuCau.getCacVaiTro().stream()
+                .map(String::toUpperCase)
+                .map(VaiTro::valueOf)
+                .collect(Collectors.toSet()));
+        return sangDto(nguoiDungRepository.save(nd));
+    }
+
+    @Transactional
+    public void voHieuHoa(Long id) {
+        NguoiDung nd = nguoiDungRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng: " + id));
+        nd.setHoatDong(false);
+        nguoiDungRepository.save(nd);
     }
 
     private ThongTinNguoiDungDto sangDto(NguoiDung u) {

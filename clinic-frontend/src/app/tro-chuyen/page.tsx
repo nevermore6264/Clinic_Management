@@ -62,7 +62,7 @@ export default function ChatPage() {
             const body = JSON.parse(msg.body) as TinNhanChatDto;
             setMessages((prev) => [...prev, body]);
           } catch {
-            // ignore
+            
           }
         });
       },

@@ -81,6 +81,23 @@ export const nguoiDungApi = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+  capNhat: (
+    id: number,
+    data: {
+      hoTen: string;
+      thuDienTu?: string;
+      soDienThoai?: string;
+      cacVaiTro: string[];
+    },
+  ) =>
+    api<ThongTinNguoiDungDto>(`/nguoi-dung/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  voHieu: (id: number) =>
+    api<void>(`/nguoi-dung/${id}/vo-hieu`, {
+      method: "PATCH",
+    }),
 };
 
 export const benhNhanApi = {
@@ -276,7 +293,7 @@ export const bangDieuKhienApi = {
   thongKe: () => api<ThongKeBangDieuKhien>("/bang-dieu-khien/thong-ke"),
 };
 
-/** Giữ tương thích: gọi cùng endpoint thống kê */
+
 export const dashboardApi = {
   stats: () => bangDieuKhienApi.thongKe(),
 };
@@ -340,7 +357,7 @@ export const lichLamViecBacSiApi = {
     api<void>(`/lich-lam-viec-bac-si/${id}`, { method: "DELETE" }),
 };
 
-/** Tương thích mã cũ (tên tiếng Anh) */
+
 export const patientsApi = {
   ...benhNhanApi,
   list: benhNhanApi.danhSach,
@@ -391,6 +408,22 @@ export const usersApi = {
       hoTen: data.fullName,
       cacVaiTro: data.roles,
     }),
+  update: (
+    id: number,
+    data: {
+      fullName: string;
+      email?: string;
+      phone?: string;
+      roles: string[];
+    },
+  ) =>
+    nguoiDungApi.capNhat(id, {
+      hoTen: data.fullName,
+      thuDienTu: data.email,
+      soDienThoai: data.phone,
+      cacVaiTro: data.roles,
+    }),
+  disable: nguoiDungApi.voHieu,
 };
 export const doctorsApi = {
   ...bacSiApi,
@@ -531,7 +564,7 @@ export const doctorSchedulesApi = {
 
 export type ReminderConfig = CauHinhNhacLich;
 
-// Types
+
 export interface BenhNhan {
   id?: number;
   hoTen: string;

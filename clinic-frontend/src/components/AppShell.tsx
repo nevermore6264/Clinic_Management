@@ -35,7 +35,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     root.classList.add("app-ready");
 
-    // Auto apply scroll-reveal cho hầu hết block UI phổ biến.
+    
     const targets = Array.from(
       document.querySelectorAll(
         [

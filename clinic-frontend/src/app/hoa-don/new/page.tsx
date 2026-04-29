@@ -42,7 +42,7 @@ export default function NewInvoicePage() {
     [],
   );
   const [error, setError] = useState("");
-  /** Gợi ý một dòng dịch vụ trùng lịch hẹn (chỉ một lần khi có đủ dữ liệu). */
+  
   const daGoiYDichVuTuLich = useRef(false);
 
   useEffect(() => {

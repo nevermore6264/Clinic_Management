@@ -9,9 +9,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
-/**
- * Phiếu chi — chi phí vận hành phòng khám (minh bạch tài chính, bổ sung cho doanh thu).
- */
+
 @Entity
 @Table(name = "phieu_chi", indexes = @Index(name = "idx_pc_ngay", columnList = "ngay_chi"))
 @Getter

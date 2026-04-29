@@ -12,7 +12,7 @@ export default function HomePage() {
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      // Giữ lại landing ở trang `/` nếu chưa đăng nhập.
+      
       return;
     }
     router.replace("/bang-dieu-khien");

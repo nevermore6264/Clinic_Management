@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public class ThuocService {
 
     private final ThuocRepository thuocRepository;
+    private final NhatKyHeThongService nhatKyHeThongService;
 
     @Transactional(readOnly = true)
     public List<ThuocDto> danhSachDangHoatDong() {
@@ -57,13 +58,17 @@ public class ThuocService {
                 .tacDungPhu(dto.getTacDungPhu())
                 .hoatDong(dto.isHoatDong())
                 .build();
-        return sangDto(thuocRepository.save(t));
+        Thuoc daLuu = thuocRepository.save(t);
+        nhatKyHeThongService.ghi("thuoc", daLuu.getId(), "TAO", null, tomTat(daLuu));
+        return sangDto(daLuu);
     }
 
     @Transactional
     public ThuocDto capNhat(Long id, ThuocDto dto) {
         kiemTraNghiepVu(dto);
         Thuoc t = thuocRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy thuốc: " + id));
+        String giaTriCu = tomTat(t);
+        boolean hoatDongCu = t.isHoatDong();
         t.setTenThuoc(dto.getTenThuoc());
         t.setDonVi(dto.getDonVi());
         t.setHoatChat(dto.getHoatChat());
@@ -83,14 +88,30 @@ public class ThuocService {
         t.setChongChiDinh(dto.getChongChiDinh());
         t.setTacDungPhu(dto.getTacDungPhu());
         t.setHoatDong(dto.isHoatDong());
-        return sangDto(thuocRepository.save(t));
+        Thuoc daLuu = thuocRepository.save(t);
+        String hanhDong = "CAP_NHAT";
+        if (hoatDongCu && !daLuu.isHoatDong()) {
+            hanhDong = "NGUNG";
+        } else if (!hoatDongCu && daLuu.isHoatDong()) {
+            hanhDong = "MO_LAI";
+        }
+        nhatKyHeThongService.ghi("thuoc", daLuu.getId(), hanhDong, giaTriCu, tomTat(daLuu));
+        return sangDto(daLuu);
     }
 
     @Transactional
-    public void voHieuHoa(Long id) {
+    public void xoa(Long id) {
         Thuoc t = thuocRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy thuốc: " + id));
-        t.setHoatDong(false);
-        thuocRepository.save(t);
+        String giaTriCu = tomTat(t);
+        thuocRepository.deleteById(id);
+        nhatKyHeThongService.ghi("thuoc", id, "XOA", giaTriCu, null);
+    }
+
+    private String tomTat(Thuoc t) {
+        return "tenThuoc=" + t.getTenThuoc()
+                + ";giaBan=" + t.getGiaBan()
+                + ";tonKho=" + t.getTonKho()
+                + ";hoatDong=" + t.isHoatDong();
     }
 
     private ThuocDto sangDto(Thuoc t) {

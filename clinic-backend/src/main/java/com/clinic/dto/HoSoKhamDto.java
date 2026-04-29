@@ -11,6 +11,6 @@ public class HoSoKhamDto {
     private String chanDoan;
     private String donThuoc;
     private String ghiChu;
-    /** Dòng đơn thuốc có cấu trúc (danh mục thuốc). */
+    
     private List<ChiTietDonThuocDto> chiTietDonThuoc;
 }

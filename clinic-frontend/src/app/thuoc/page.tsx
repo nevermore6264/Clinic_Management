@@ -350,8 +350,13 @@ export default function ThuocPage() {
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
+    const now = new Date();
+    const pad2 = (n: number) => String(n).padStart(2, "0");
+    const timestamp = `${now.getFullYear()}${pad2(now.getMonth() + 1)}${pad2(
+      now.getDate(),
+    )}-${pad2(now.getHours())}${pad2(now.getMinutes())}`;
     a.href = url;
-    a.download = `thuoc-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `thuoc-${timestamp}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -891,6 +896,7 @@ export default function ThuocPage() {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setThuocCanXoa(null)}>
+            <i className="bi bi-x-circle me-2" aria-hidden />
             Hủy
           </Button>
           <Button variant="danger" onClick={xoaThuoc}>

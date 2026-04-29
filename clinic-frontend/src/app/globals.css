@@ -1,6 +1,6 @@
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
-/* ========== Design tokens — xanh dương sạch, nền ấm, đồng nhất ========== */
+
 :root {
   --clinic-navy: #0f172a;
   --clinic-navy-mid: #334155;
@@ -35,7 +35,7 @@
   --transition-slow: 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ========== Base ========== */
+
 body {
   min-height: 100vh;
   background-color: var(--clinic-bg);
@@ -56,7 +56,7 @@ body {
   animation: ambientShift 16s ease-in-out infinite;
 }
 
-/* ========== Global scrollbar ========== */
+
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(37, 99, 235, 0.55) rgba(148, 163, 184, 0.16);
@@ -82,7 +82,7 @@ body {
   background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
 }
 
-/* ========== Global motion & interaction ========== */
+
 html.app-ready body {
   animation: appFadeIn 0.38s ease both;
 }
@@ -139,7 +139,7 @@ html.app-ready body {
   transform: translateY(0) scale(0.985);
 }
 
-/* Auto icon cho button chưa có icon sẵn */
+
 .btn {
   display: inline-flex !important;
   align-items: center;
@@ -274,7 +274,7 @@ html.app-ready body {
   flex-shrink: 0;
 }
 
-/* ========== Bootstrap overrides ========== */
+
 .btn-primary {
   background: linear-gradient(
     180deg,
@@ -324,7 +324,7 @@ html.app-ready body {
   box-shadow: 0 6px 16px rgba(234, 88, 12, 0.35);
 }
 
-/* ========== Service type page button accents ========== */
+
 .btn-service-export,
 .service-type-page .btn-service-export {
   background: linear-gradient(180deg, #16a34a 0%, #15803d 100%) !important;
@@ -403,7 +403,7 @@ html.app-ready body {
   color: var(--clinic-teal-dark) !important;
 }
 
-/* ========== Bootstrap-style stepper (thuốc / wizard) ========== */
+
 .clinic-stepper__row {
   --bs-gutter-x: 0.75rem;
 }
@@ -482,7 +482,7 @@ html.app-ready body {
   opacity: 1;
 }
 
-/* Modal wizard — nút Quay lại (outline xám) & Tiếp tục (gradient xanh) */
+
 .btn-thuoc-wizard-back.btn-danger {
   --bs-btn-color: #fff;
   --bs-btn-bg: #dc2626;
@@ -569,7 +569,7 @@ html.app-ready body {
   border-color: #fcd34d;
 }
 
-/* ========== Cards ========== */
+
 .card {
   border: 1px solid var(--clinic-border);
   border-radius: var(--clinic-radius) !important;
@@ -620,7 +620,7 @@ html.app-ready body {
   line-height: 1.45;
 }
 
-/* KPI / stat */
+
 .stat-card {
   border: none !important;
   border-radius: var(--clinic-radius) !important;
@@ -665,7 +665,7 @@ html.app-ready body {
   line-height: 1.2;
 }
 
-/* ========== Tables ========== */
+
 .table-responsive {
   border-radius: var(--clinic-radius-sm);
   overflow: hidden;
@@ -704,7 +704,7 @@ html.app-ready body {
   box-shadow: none;
 }
 
-/* ========== Forms ========== */
+
 .form-control,
 .form-select {
   border-radius: var(--clinic-radius-sm) !important;
@@ -726,7 +726,7 @@ html.app-ready body {
   color: var(--clinic-danger);
 }
 
-/* ========== Navbar ========== */
+
 .navbar-clinic {
   background: rgba(255, 255, 255, 0.92) !important;
   backdrop-filter: blur(12px);
@@ -890,7 +890,7 @@ html.app-ready body {
   opacity: 0.85;
 }
 
-/* ========== Footer ========== */
+
 .app-footer {
   border-top: 1px solid var(--clinic-border);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), #f4f6f9);
@@ -966,7 +966,7 @@ html.app-ready body {
   font-weight: 600;
 }
 
-/* ========== Trang đăng nhập (full màn hình) ========== */
+
 .page-main--auth {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
@@ -1273,7 +1273,7 @@ html.app-ready body {
   }
 }
 
-/* ========== Loading ========== */
+
 .loading-state__spinner {
   width: 48px;
   height: 48px;
@@ -1288,7 +1288,7 @@ html.app-ready body {
   }
 }
 
-/* ========== Animations ========== */
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -1382,7 +1382,7 @@ html.app-ready body {
   }
 }
 
-/* ========== Modal & Alert ========== */
+
 .modal-content {
   border-radius: var(--clinic-radius) !important;
   border: 1px solid var(--clinic-border);
@@ -1393,7 +1393,7 @@ html.app-ready body {
   border: none;
 }
 
-/* ========== Pagination ========== */
+
 .pagination .page-link {
   border-radius: 8px !important;
   margin: 0 2px;
@@ -1407,14 +1407,14 @@ html.app-ready body {
   color: #fff !important;
 }
 
-/* ========== Badges ========== */
+
 .badge {
   font-weight: 600;
   padding: 0.4em 0.65em;
   border-radius: 6px;
 }
 
-/* ========== Users role/status tags ========== */
+
 .user-role-tag {
   display: inline-flex;
   align-items: center;
@@ -1503,7 +1503,7 @@ html.app-ready body {
   box-shadow: 0 6px 16px rgba(37, 99, 235, 0.24);
 }
 
-/* ========== Chat bubbles ========== */
+
 .chat-bubble-me {
   background: linear-gradient(
     135deg,
@@ -1519,7 +1519,7 @@ html.app-ready body {
   border: 1px solid var(--clinic-border) !important;
 }
 
-/* ========== Print ========== */
+
 @media print {
   body * {
     visibility: hidden;
@@ -1539,7 +1539,7 @@ html.app-ready body {
   }
 }
 
-/* ========== Landing page (trang marketing trước đăng nhập) ========== */
+
 .landing-bg {
   min-height: 100vh;
   background:
@@ -2271,7 +2271,7 @@ html.app-ready body {
   font-size: 0.9rem;
 }
 
-/* Landing motion */
+
 .landing-reveal {
   opacity: 0;
   transform: translateY(16px);

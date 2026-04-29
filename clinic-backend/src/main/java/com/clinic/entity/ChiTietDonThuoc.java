@@ -5,9 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 
-/**
- * Một dòng trong đơn thuốc gắn với hồ sơ khám.
- */
+
 @Entity
 @Table(name = "chi_tiet_don_thuoc")
 @Getter

@@ -5,9 +5,7 @@ import lombok.*;
 
 import java.time.Instant;
 
-/**
- * Lịch sử chuyển trạng thái lịch hẹn — truy vết quy trình khám (nghiệp vụ cốt lõi, thay thế ý nghĩa “nhật ký chung” cho luồng lịch).
- */
+
 @Entity
 @Table(name = "lich_su_trang_thai_lich_hen", indexes = {
         @Index(name = "idx_ls_ma_lich", columnList = "ma_lich_hen"),

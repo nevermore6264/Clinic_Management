@@ -2,6 +2,7 @@ package com.clinic.controller;
 
 import com.clinic.dto.TaoNguoiDungYeuCau;
 import com.clinic.dto.ThongTinNguoiDungDto;
+import com.clinic.dto.CapNhatNguoiDungYeuCau;
 import com.clinic.service.NguoiDungService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,5 +29,20 @@ public class NguoiDungController {
     @PreAuthorize("hasRole('QUAN_TRI')")
     public ResponseEntity<ThongTinNguoiDungDto> tao(@Valid @RequestBody TaoNguoiDungYeuCau yeuCau) {
         return ResponseEntity.ok(nguoiDungService.tao(yeuCau));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('QUAN_TRI')")
+    public ResponseEntity<ThongTinNguoiDungDto> capNhat(
+            @PathVariable Long id,
+            @Valid @RequestBody CapNhatNguoiDungYeuCau yeuCau) {
+        return ResponseEntity.ok(nguoiDungService.capNhat(id, yeuCau));
+    }
+
+    @PatchMapping("/{id}/vo-hieu")
+    @PreAuthorize("hasRole('QUAN_TRI')")
+    public ResponseEntity<Void> voHieu(@PathVariable Long id) {
+        nguoiDungService.voHieuHoa(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -264,6 +264,16 @@ export default function ThuocPage() {
     }
   };
 
+  const moLaiSuDung = async (t: Thuoc) => {
+    if (!t.id) return;
+    try {
+      await thuocApi.capNhat(t.id, { ...t, hoatDong: true });
+      await load();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Lỗi");
+    }
+  };
+
   const xoaThuoc = async () => {
     if (!thuocCanXoa?.id) return;
     try {
@@ -454,27 +464,37 @@ export default function ThuocPage() {
                   <Button
                     size="sm"
                     variant="primary"
-                    className="me-1 btn-action-edit thuoc-action-btn"
+                    className="me-1 btn-action-edit"
                     onClick={() => openEdit(t)}
                   >
                     <i className="bi bi-pencil-square me-1" aria-hidden />
                     Sửa
                   </Button>
-                  {t.hoatDong && (
+                  {t.hoatDong ? (
                     <Button
                       size="sm"
                       variant="warning"
-                      className="me-1 btn-thuoc-action-stop thuoc-action-btn"
+                      className="me-1 btn-thuoc-action-stop"
                       onClick={() => ngungSuDung(t)}
                     >
                       <i className="bi bi-pause-circle me-1" aria-hidden />
                       Ngừng
                     </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="success"
+                      className="me-1 btn-thuoc-action-reopen"
+                      onClick={() => moLaiSuDung(t)}
+                    >
+                      <i className="bi bi-arrow-clockwise me-1" aria-hidden />
+                      Mở lại
+                    </Button>
                   )}
                   <Button
                     size="sm"
                     variant="danger"
-                    className="btn-action-delete thuoc-action-btn"
+                    className="btn-action-delete"
                     onClick={() => setThuocCanXoa(t)}
                   >
                     <i className="bi bi-trash3 me-1" aria-hidden />

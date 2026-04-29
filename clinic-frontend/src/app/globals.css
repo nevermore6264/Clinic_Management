@@ -383,11 +383,15 @@ html.app-ready body {
 
 .btn-action-edit,
 .btn-action-delete,
-.btn-thuoc-action-stop.btn-warning {
+.btn-thuoc-action-stop.btn-warning,
+.btn-thuoc-action-reopen.btn-success {
   --bs-btn-padding-y: 0.25rem;
   --bs-btn-padding-x: 0.5rem;
   --bs-btn-font-size: 0.875rem;
   --bs-btn-line-height: 1.5;
+  min-height: 31px;
+  min-width: 84px;
+  justify-content: center;
 }
 
 .bg-primary {
@@ -523,14 +527,18 @@ html.app-ready body {
   box-shadow: 0 4px 12px rgba(234, 179, 8, 0.25);
 }
 
-.thuoc-action-btn {
-  min-height: 31px;
-  padding-top: 0.25rem !important;
-  padding-bottom: 0.25rem !important;
-  padding-left: 0.5rem !important;
-  padding-right: 0.5rem !important;
-  font-size: 0.875rem !important;
-  line-height: 1.5 !important;
+.btn-thuoc-action-reopen.btn-success {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #16a34a;
+  --bs-btn-border-color: #16a34a;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #15803d;
+  --bs-btn-hover-border-color: #166534;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #166534;
+  --bs-btn-active-border-color: #14532d;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
 }
 
 .thuoc-status-tag {

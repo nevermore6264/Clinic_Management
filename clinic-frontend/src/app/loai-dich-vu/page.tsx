@@ -318,7 +318,10 @@ export default function ServiceTypesPage() {
         centered
       >
         <Modal.Header closeButton>
-          <Modal.Title>Xác nhận xóa</Modal.Title>
+          <Modal.Title>
+            <i className="bi bi-exclamation-triangle-fill text-danger me-2" aria-hidden />
+            Xác nhận xóa
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           Bạn có chắc muốn xóa loại dịch vụ{" "}
@@ -330,9 +333,11 @@ export default function ServiceTypesPage() {
             onClick={() => setMucCanXoa(null)}
             disabled={dangXoa}
           >
+            <i className="bi bi-x-circle me-2" aria-hidden />
             Hủy
           </Button>
           <Button variant="danger" onClick={handleConfirmDelete} disabled={dangXoa}>
+            <i className="bi bi-trash me-2" aria-hidden />
             {dangXoa ? "Đang xóa..." : "Xóa"}
           </Button>
         </Modal.Footer>

@@ -7,6 +7,17 @@ import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import { serviceTypesApi, servicesApi, type DichVu, type LoaiDichVu } from "@/lib/api";
 
+function formatVndInput(value?: number) {
+  if (value === undefined || value === null || Number.isNaN(value)) return "";
+  return Math.max(0, Math.trunc(value)).toLocaleString("vi-VN");
+}
+
+function parseVndInput(raw: string): number | undefined {
+  const digitsOnly = raw.replace(/\D/g, "");
+  if (!digitsOnly) return undefined;
+  return Number(digitsOnly);
+}
+
 export default function NewServicePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -114,13 +125,14 @@ export default function NewServicePage() {
             <Form.Group className="mb-3">
               <Form.Label className="required">Đơn giá (VNĐ)</Form.Label>
               <Form.Control
-                type="number"
-                min={0}
-                step={1000}
-                value={form.gia ?? ""}
-                onChange={(e) =>
-                  setForm({ ...form, gia: Number(e.target.value) || 0 })
-                }
+                type="text"
+                inputMode="numeric"
+                placeholder="Ví dụ: 150.000"
+                value={formatVndInput(form.gia)}
+                onChange={(e) => {
+                  const gia = parseVndInput(e.target.value);
+                  setForm({ ...form, gia });
+                }}
                 required
               />
             </Form.Group>

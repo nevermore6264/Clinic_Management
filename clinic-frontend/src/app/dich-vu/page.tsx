@@ -7,6 +7,17 @@ import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import { serviceTypesApi, servicesApi, type DichVu, type LoaiDichVu } from "@/lib/api";
 
+function formatVndInput(value?: number) {
+  if (value === undefined || value === null || Number.isNaN(value)) return "";
+  return Math.max(0, Math.trunc(value)).toLocaleString("vi-VN");
+}
+
+function parseVndInput(raw: string): number | undefined {
+  const digitsOnly = raw.replace(/\D/g, "");
+  if (!digitsOnly) return undefined;
+  return Number(digitsOnly);
+}
+
 export default function ServicesPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -19,9 +30,15 @@ export default function ServicesPage() {
   );
   const [modalTitle, setModalTitle] = useState("");
   const [modalError, setModalError] = useState("");
+  const [dangSuaId, setDangSuaId] = useState<number | null>(null);
+  const [formSua, setFormSua] = useState<Partial<DichVu>>({});
+  const [xoaId, setXoaId] = useState<number | null>(null);
+  const [dangXoa, setDangXoa] = useState(false);
   const [tenLoaiDichVu, setTenLoaiDichVu] = useState("");
   const [tenLoaiDichVuError, setTenLoaiDichVuError] = useState("");
   const [tuKhoaLoaiDichVu, setTuKhoaLoaiDichVu] = useState("");
+  const [boLocLoaiDichVu, setBoLocLoaiDichVu] = useState("");
+  const [tuKhoaTenDichVu, setTuKhoaTenDichVu] = useState("");
   const [form, setForm] = useState<Partial<DichVu>>({
     maLoaiDichVu: undefined,
     ten: "",
@@ -96,6 +113,16 @@ export default function ServicesPage() {
     item.tenLoaiDichVu.toLocaleLowerCase().includes(tuKhoaLoaiDichVu.trim().toLocaleLowerCase()),
   );
 
+  const danhSachDichVuLoc = list.filter((item) => {
+    const khopLoai =
+      !boLocLoaiDichVu || String(item.maLoaiDichVu ?? "") === boLocLoaiDichVu;
+    const khopTen = item.ten
+      ?.toLocaleLowerCase()
+      .includes(tuKhoaTenDichVu.trim().toLocaleLowerCase());
+    return khopLoai && Boolean(khopTen);
+  });
+  const dichVuCanXoa = list.find((item) => item.id === xoaId);
+
   const handleThemDichVu = async (e: React.FormEvent) => {
     e.preventDefault();
     setModalError("");
@@ -115,17 +142,110 @@ export default function ServicesPage() {
     }
   };
 
+  const handleExportCsv = () => {
+    if (list.length === 0) {
+      setError("Chưa có dữ liệu để xuất CSV.");
+      return;
+    }
+
+    const csvEscape = (value: string) => `"${value.replace(/"/g, '""')}"`;
+    const header = ["MaDichVu", "LoaiDichVu", "TenDichVu", "MoTa", "DonGia", "TrangThai"];
+    const rows = list.map((item) => [
+      String(item.id),
+      csvEscape(item.tenLoaiDichVu || "Chưa phân loại"),
+      csvEscape(item.ten || ""),
+      csvEscape(item.moTa || ""),
+      String(item.gia ?? 0),
+      item.hoatDong ? "Dang ap dung" : "Ngung",
+    ]);
+    const content = [header.join(","), ...rows.map((row) => row.join(","))].join("\n");
+    const bom = "\uFEFF";
+    const blob = new Blob([bom + content], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    const now = new Date();
+    const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}-${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
+    anchor.href = url;
+    anchor.download = `danh-sach-dich-vu-${stamp}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const batDauSua = (item: DichVu) => {
+    setDangSuaId(item.id);
+    setFormSua({
+      maLoaiDichVu: item.maLoaiDichVu,
+      ten: item.ten || "",
+      moTa: item.moTa || "",
+      gia: item.gia ?? 0,
+      hoatDong: item.hoatDong !== false,
+    });
+  };
+
+  const huySua = () => {
+    setDangSuaId(null);
+    setFormSua({});
+  };
+
+  const luuSua = async (id: number) => {
+    if (!formSua.ten?.trim()) {
+      setError("Tên dịch vụ không được để trống.");
+      return;
+    }
+    if (!formSua.maLoaiDichVu) {
+      setError("Vui lòng chọn loại dịch vụ.");
+      return;
+    }
+    if (!formSua.gia || formSua.gia <= 0) {
+      setError("Đơn giá phải lớn hơn 0.");
+      return;
+    }
+    setError("");
+    try {
+      await servicesApi.update(id, {
+        maLoaiDichVu: formSua.maLoaiDichVu,
+        ten: formSua.ten.trim(),
+        moTa: formSua.moTa || "",
+        gia: formSua.gia,
+        hoatDong: formSua.hoatDong !== false,
+      });
+      huySua();
+      await napDuLieu();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Không cập nhật được dịch vụ");
+    }
+  };
+
+  const xacNhanXoa = async () => {
+    if (!xoaId) return;
+    setDangXoa(true);
+    setError("");
+    try {
+      await servicesApi.delete(xoaId);
+      setXoaId(null);
+      await napDuLieu();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Không xóa được dịch vụ");
+    } finally {
+      setDangXoa(false);
+    }
+  };
+
   if (!user?.cacVaiTro.includes("QUAN_TRI")) return null;
 
   return (
-    <div>
+    <div className="service-type-page">
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Quản lý dịch vụ & bảng giá</h2>
         <div className="d-flex gap-2">
+          <Button className="btn-service-export" onClick={handleExportCsv}>
+            <i className="bi bi-filetype-csv me-2" aria-hidden />
+            Export CSV
+          </Button>
           <Button
             as={Link}
             href="/loai-dich-vu"
-            variant="outline-primary"
+            className="btn-service-nav"
           >
             <i className="bi bi-tags me-2" aria-hidden />
             Đến loại dịch vụ
@@ -141,6 +261,44 @@ export default function ServicesPage() {
           {error}
         </Alert>
       )}
+      <Card className="mb-3">
+        <Card.Body>
+          <div className="d-flex gap-2 flex-wrap align-items-end">
+            <Form.Group style={{ minWidth: 260 }}>
+              <Form.Label className="mb-1">Lọc theo loại dịch vụ</Form.Label>
+              <Form.Select
+                value={boLocLoaiDichVu}
+                onChange={(e) => setBoLocLoaiDichVu(e.target.value)}
+              >
+                <option value="">Tất cả loại dịch vụ</option>
+                {loaiDichVu.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.tenLoaiDichVu}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+            <Form.Group className="flex-grow-1" style={{ minWidth: 280 }}>
+              <Form.Label className="mb-1">Tìm theo tên dịch vụ</Form.Label>
+              <Form.Control
+                placeholder="Nhập tên dịch vụ cần tìm..."
+                value={tuKhoaTenDichVu}
+                onChange={(e) => setTuKhoaTenDichVu(e.target.value)}
+              />
+            </Form.Group>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setBoLocLoaiDichVu("");
+                setTuKhoaTenDichVu("");
+              }}
+            >
+              <i className="bi bi-arrow-counterclockwise me-2" aria-hidden />
+              Xóa lọc
+            </Button>
+          </div>
+        </Card.Body>
+      </Card>
       <Card>
         <Table responsive hover className="mb-0">
           <thead>
@@ -154,25 +312,124 @@ export default function ServicesPage() {
             </tr>
           </thead>
           <tbody>
-            {list.map((s) => (
+            {danhSachDichVuLoc.map((s) => (
               <tr key={s.id}>
-                <td>{s.tenLoaiDichVu || "Chưa phân loại"}</td>
-                <td>{s.ten}</td>
-                <td>{s.moTa || "—"}</td>
-                <td>{s.gia?.toLocaleString("vi-VN")}đ</td>
-                <td>{s.hoatDong ? "Đang áp dụng" : "Ngừng"}</td>
                 <td>
-                  <Button
-                    size="sm"
-                    variant="outline-primary"
-                    as={Link}
-                    href={`/dich-vu/${s.id}`}
-                  >
-                    Sửa
-                  </Button>
+                  {dangSuaId === s.id ? (
+                    <Form.Select
+                      size="sm"
+                      value={formSua.maLoaiDichVu ?? ""}
+                      onChange={(e) =>
+                        setFormSua({
+                          ...formSua,
+                          maLoaiDichVu: Number(e.target.value) || undefined,
+                        })
+                      }
+                    >
+                      {loaiDichVu.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.tenLoaiDichVu}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  ) : (
+                    s.tenLoaiDichVu || "Chưa phân loại"
+                  )}
+                </td>
+                <td>
+                  {dangSuaId === s.id ? (
+                    <Form.Control
+                      size="sm"
+                      value={formSua.ten || ""}
+                      onChange={(e) => setFormSua({ ...formSua, ten: e.target.value })}
+                    />
+                  ) : (
+                    s.ten
+                  )}
+                </td>
+                <td>
+                  {dangSuaId === s.id ? (
+                    <Form.Control
+                      size="sm"
+                      value={formSua.moTa || ""}
+                      onChange={(e) => setFormSua({ ...formSua, moTa: e.target.value })}
+                    />
+                  ) : (
+                    s.moTa || "—"
+                  )}
+                </td>
+                <td>
+                  {dangSuaId === s.id ? (
+                    <Form.Control
+                      size="sm"
+                      type="text"
+                      inputMode="numeric"
+                      value={formatVndInput(formSua.gia)}
+                      onChange={(e) =>
+                        setFormSua({ ...formSua, gia: parseVndInput(e.target.value) })
+                      }
+                    />
+                  ) : (
+                    `${s.gia?.toLocaleString("vi-VN")}đ`
+                  )}
+                </td>
+                <td>
+                  {dangSuaId === s.id ? (
+                    <Form.Check
+                      type="switch"
+                      checked={formSua.hoatDong !== false}
+                      onChange={(e) =>
+                        setFormSua({ ...formSua, hoatDong: e.target.checked })
+                      }
+                    />
+                  ) : s.hoatDong ? (
+                    "Đang áp dụng"
+                  ) : (
+                    "Ngừng"
+                  )}
+                </td>
+                <td>
+                  {dangSuaId === s.id ? (
+                    <>
+                      <Button size="sm" className="me-2" onClick={() => luuSua(s.id)}>
+                        <i className="bi bi-check2 me-1" aria-hidden />
+                        Lưu
+                      </Button>
+                      <Button size="sm" variant="secondary" onClick={huySua}>
+                        <i className="bi bi-x me-1" aria-hidden />
+                        Hủy
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        size="sm"
+                        className="btn-service-edit me-2"
+                        onClick={() => batDauSua(s)}
+                      >
+                        <i className="bi bi-pencil-square me-1" aria-hidden />
+                        Sửa
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="btn-service-delete"
+                        onClick={() => setXoaId(s.id)}
+                      >
+                        <i className="bi bi-trash me-1" aria-hidden />
+                        Xóa
+                      </Button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
+            {danhSachDichVuLoc.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="text-center text-muted py-4">
+                  Không có dịch vụ phù hợp với bộ lọc hiện tại.
+                </td>
+              </tr>
+            ) : null}
           </tbody>
         </Table>
       </Card>
@@ -270,11 +527,14 @@ export default function ServicesPage() {
               <Form.Group className="mb-3">
                 <Form.Label className="required">Đơn giá (VNĐ)</Form.Label>
                 <Form.Control
-                  type="number"
-                  min={0}
-                  step={1000}
-                  value={form.gia ?? ""}
-                  onChange={(e) => setForm({ ...form, gia: Number(e.target.value) || 0 })}
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Ví dụ: 150.000"
+                  value={formatVndInput(form.gia)}
+                  onChange={(e) => {
+                    const gia = parseVndInput(e.target.value);
+                    setForm({ ...form, gia });
+                  }}
                   required
                 />
               </Form.Group>
@@ -288,15 +548,39 @@ export default function ServicesPage() {
               </Form.Group>
               <div className="d-flex justify-content-end gap-2">
                 <Button variant="secondary" onClick={() => setHienModal(false)}>
+                  <i className="bi bi-x-circle me-2" aria-hidden />
                   Hủy
                 </Button>
                 <Button type="submit" disabled={loaiDichVu.length === 0}>
+                  <i className="bi bi-check2-circle me-2" aria-hidden />
                   Lưu
                 </Button>
               </div>
             </Form>
           )}
         </Modal.Body>
+      </Modal>
+
+      <Modal show={xoaId !== null} onHide={() => setXoaId(null)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <i className="bi bi-exclamation-triangle-fill text-danger me-2" aria-hidden />
+            Xác nhận xóa
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Bạn có chắc muốn xóa dịch vụ <strong>{dichVuCanXoa?.ten}</strong> không?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setXoaId(null)} disabled={dangXoa}>
+            <i className="bi bi-x-circle me-2" aria-hidden />
+            Hủy
+          </Button>
+          <Button variant="danger" onClick={xacNhanXoa} disabled={dangXoa}>
+            <i className="bi bi-trash me-2" aria-hidden />
+            {dangXoa ? "Đang xóa..." : "Xóa"}
+          </Button>
+        </Modal.Footer>
       </Modal>
     </div>
   );

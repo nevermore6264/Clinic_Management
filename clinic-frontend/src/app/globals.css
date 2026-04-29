@@ -325,6 +325,7 @@ html.app-ready body {
 }
 
 /* ========== Service type page button accents ========== */
+.btn-service-export,
 .service-type-page .btn-service-export {
   background: linear-gradient(180deg, #16a34a 0%, #15803d 100%) !important;
   border: none !important;
@@ -332,6 +333,7 @@ html.app-ready body {
   font-weight: 600;
   box-shadow: 0 6px 14px rgba(22, 163, 74, 0.24);
 }
+.btn-service-export:hover,
 .service-type-page .btn-service-export:hover {
   filter: brightness(1.05);
   box-shadow: 0 8px 18px rgba(22, 163, 74, 0.32);
@@ -383,8 +385,8 @@ html.app-ready body {
 
 .btn-action-edit,
 .btn-action-delete,
-.btn-thuoc-action-stop.btn-warning,
-.btn-thuoc-action-reopen.btn-success {
+.btn-thuoc-action-stop,
+.btn-thuoc-action-reopen {
   --bs-btn-padding-y: 0.25rem;
   --bs-btn-padding-x: 0.5rem;
   --bs-btn-font-size: 0.875rem;
@@ -513,32 +515,30 @@ html.app-ready body {
   box-shadow: 0 6px 18px rgba(37, 99, 235, 0.38);
 }
 
-.btn-thuoc-action-stop.btn-warning {
-  --bs-btn-color: #78350f;
-  --bs-btn-bg: #facc15;
-  --bs-btn-border-color: #facc15;
-  --bs-btn-hover-color: #78350f;
-  --bs-btn-hover-bg: #eab308;
-  --bs-btn-hover-border-color: #ca8a04;
-  --bs-btn-active-color: #78350f;
-  --bs-btn-active-bg: #ca8a04;
-  --bs-btn-active-border-color: #a16207;
+.btn-thuoc-action-stop {
+  background: linear-gradient(180deg, #facc15 0%, #eab308 100%) !important;
+  border: none !important;
+  color: #78350f !important;
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(234, 179, 8, 0.25);
 }
+.btn-thuoc-action-stop:hover:not(:disabled) {
+  background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%) !important;
+  color: #78350f !important;
+  box-shadow: 0 6px 14px rgba(217, 119, 6, 0.3);
+}
 
-.btn-thuoc-action-reopen.btn-success {
-  --bs-btn-color: #fff;
-  --bs-btn-bg: #16a34a;
-  --bs-btn-border-color: #16a34a;
-  --bs-btn-hover-color: #fff;
-  --bs-btn-hover-bg: #15803d;
-  --bs-btn-hover-border-color: #166534;
-  --bs-btn-active-color: #fff;
-  --bs-btn-active-bg: #166534;
-  --bs-btn-active-border-color: #14532d;
+.btn-thuoc-action-reopen {
+  background: linear-gradient(180deg, #34d399 0%, #10b981 100%) !important;
+  border: none !important;
+  color: #fff !important;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+.btn-thuoc-action-reopen:hover:not(:disabled) {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 14px rgba(5, 150, 105, 0.34);
 }
 
 .thuoc-status-tag {

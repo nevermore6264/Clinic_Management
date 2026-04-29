@@ -345,7 +345,9 @@ export default function ThuocPage() {
       )
       .join("\n");
 
-    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([`\uFEFF${csv}`], {
+      type: "text/csv;charset=utf-8;",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -463,7 +465,6 @@ export default function ThuocPage() {
                 <td>
                   <Button
                     size="sm"
-                    variant="primary"
                     className="me-1 btn-action-edit"
                     onClick={() => openEdit(t)}
                   >
@@ -473,7 +474,6 @@ export default function ThuocPage() {
                   {t.hoatDong ? (
                     <Button
                       size="sm"
-                      variant="warning"
                       className="me-1 btn-thuoc-action-stop"
                       onClick={() => ngungSuDung(t)}
                     >
@@ -483,7 +483,6 @@ export default function ThuocPage() {
                   ) : (
                     <Button
                       size="sm"
-                      variant="success"
                       className="me-1 btn-thuoc-action-reopen"
                       onClick={() => moLaiSuDung(t)}
                     >
@@ -493,7 +492,6 @@ export default function ThuocPage() {
                   )}
                   <Button
                     size="sm"
-                    variant="danger"
                     className="btn-action-delete"
                     onClick={() => setThuocCanXoa(t)}
                   >
@@ -654,9 +652,7 @@ export default function ThuocPage() {
                 <Form.Label>Đơn vị</Form.Label>
                 <Form.Select
                   value={form.donVi ?? ""}
-                  onChange={(e) =>
-                    setForm({ ...form, donVi: e.target.value })
-                  }
+                  onChange={(e) => setForm({ ...form, donVi: e.target.value })}
                 >
                   <option value="">-- Chọn đơn vị --</option>
                   {DON_VI_OPTIONS.map((o) => (

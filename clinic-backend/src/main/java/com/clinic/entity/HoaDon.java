@@ -25,6 +25,10 @@ public class HoaDon {
     @JoinColumn(name = "ma_lich_hen")
     private LichHen lichHen;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ma_benh_nhan", nullable = false)
+    private BenhNhan benhNhan;
+
     @Column(name = "tong_tien", nullable = false, precision = 15, scale = 2)
     @Builder.Default
     private BigDecimal tongTien = BigDecimal.ZERO;

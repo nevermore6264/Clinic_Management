@@ -6,6 +6,10 @@ import { Card, Table, Button, Form, Alert, Modal } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import { invoicesApi, type HoaDon } from "@/lib/api";
+import { HoaDonStatusTag } from "@/components/HoaDonStatusTag";
+import { PhuongThucThanhToanTag } from "@/components/PhuongThucThanhToanTag";
+import { formatVndInput, parseVndInput } from "@/lib/moneyVnd";
+import { formatInstantVi } from "@/lib/formatInstantVi";
 
 export default function InvoiceDetailPage() {
   const params = useParams();
@@ -32,8 +36,8 @@ export default function InvoiceDetailPage() {
   }, [user, id]);
 
   const submitPayment = async () => {
-    const amount = parseFloat(payAmount);
-    if (!amount || amount <= 0) {
+    const amount = parseVndInput(payAmount);
+    if (amount === undefined || amount <= 0) {
       setError("Nhập số tiền hợp lệ.");
       return;
     }
@@ -59,10 +63,11 @@ export default function InvoiceDetailPage() {
   const remaining = inv.tongTien - inv.soTienDaTra;
 
   return (
-    <div>
+    <div className="hoa-don-detail-page">
+      <div className="hoa-don-printable">
       <h2 className="mb-4">Hóa đơn {inv.soHoaDon}</h2>
       {error && (
-        <Alert variant="danger" dismissible onClose={() => setError("")}>
+        <Alert variant="danger" dismissible onClose={() => setError("")} className="no-print">
           {error}
         </Alert>
       )}
@@ -82,11 +87,20 @@ export default function InvoiceDetailPage() {
           <p>
             <strong>Còn lại:</strong> {remaining?.toLocaleString("vi-VN")}đ
           </p>
-          <p>
-            <strong>Trạng thái:</strong> {inv.trangThai}
+          <p className="d-flex align-items-center flex-wrap gap-2 mb-2">
+            <strong>Trạng thái:</strong>{" "}
+            <HoaDonStatusTag trangThai={inv.trangThai} />
           </p>
           {remaining > 0 && (
-            <Button variant="primary" onClick={() => setShowPayment(true)}>
+            <Button
+              variant="primary"
+              className="no-print d-inline-flex align-items-center gap-2"
+              onClick={() => {
+                setPayAmount(formatVndInput(remaining));
+                setShowPayment(true);
+              }}
+            >
+              <i className="bi bi-cash-stack" aria-hidden />
               Ghi nhận thanh toán
             </Button>
           )}
@@ -131,12 +145,12 @@ export default function InvoiceDetailPage() {
               {inv.giaoDichThanhToan.map((p) => (
                 <tr key={p.id}>
                   <td>{p.soTien?.toLocaleString("vi-VN")}đ</td>
-                  <td>{p.phuongThuc}</td>
-                  <td>{p.maThamChieu || "—"}</td>
                   <td>
-                    {p.lucThanhToan
-                      ? new Date(p.lucThanhToan).toLocaleString("vi-VN")
-                      : "—"}
+                    <PhuongThucThanhToanTag phuongThuc={p.phuongThuc} />
+                  </td>
+                  <td>{p.maThamChieu || "—"}</td>
+                  <td className="text-nowrap">
+                    {formatInstantVi(p.lucThanhToan)}
                   </td>
                 </tr>
               ))}
@@ -144,18 +158,23 @@ export default function InvoiceDetailPage() {
           </Table>
         </Card>
       )}
+      </div>
       <Modal show={showPayment} onHide={() => setShowPayment(false)}>
         <Modal.Header closeButton>Ghi nhận thanh toán</Modal.Header>
         <Modal.Body>
           <Form.Group className="mb-2">
-            <Form.Label>Số tiền</Form.Label>
+            <Form.Label>Số tiền (VNĐ)</Form.Label>
             <Form.Control
-              type="number"
-              min={0}
-              step={1000}
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              spellCheck={false}
               value={payAmount}
-              onChange={(e) => setPayAmount(e.target.value)}
-              placeholder={remaining.toString()}
+              onChange={(e) => {
+                const n = parseVndInput(e.target.value);
+                setPayAmount(n === undefined ? "" : formatVndInput(n));
+              }}
+              placeholder={formatVndInput(remaining)}
             />
           </Form.Group>
           <Form.Group className="mb-2">
@@ -187,14 +206,19 @@ export default function InvoiceDetailPage() {
           </Button>
         </Modal.Footer>
       </Modal>
-      <div className="mt-3">
+      <div className="no-print mt-3 d-flex flex-wrap gap-2">
         <Link
           href={`/hoa-don/${id}/print`}
-          className="btn btn-outline-secondary me-2"
+          className="btn btn-primary d-inline-flex align-items-center gap-2"
         >
+          <i className="bi bi-printer" aria-hidden />
           In hóa đơn
         </Link>
-        <Link href="/hoa-don" className="btn btn-secondary">
+        <Link
+          href="/hoa-don"
+          className="btn btn-secondary d-inline-flex align-items-center gap-2"
+        >
+          <i className="bi bi-arrow-left" aria-hidden />
           Quay lại
         </Link>
       </div>

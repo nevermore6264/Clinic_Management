@@ -21,6 +21,7 @@ public class HoaDonService {
     private final HoaDonRepository hoaDonRepository;
     private final LichHenRepository lichHenRepository;
     private final DichVuRepository dichVuRepository;
+    private final LichHenService lichHenService;
 
     @Transactional(readOnly = true)
     public Page<HoaDonDto> timTrongKhoang(Instant tuLuc, Instant denLuc, Pageable phanTrang) {
@@ -42,8 +43,13 @@ public class HoaDonService {
     public HoaDonDto tao(Long maLichHen, List<ChiTietHoaDonDto> chiTiet) {
         LichHen lh = lichHenRepository.findById(maLichHen)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch hẹn: " + maLichHen));
+        if (lh.getTrangThai() == LichHen.TrangThaiLichHen.HUY
+                || lh.getTrangThai() == LichHen.TrangThaiLichHen.VANG) {
+            throw new RuntimeException("Không thể lập hóa đơn cho lịch đã hủy hoặc không đến.");
+        }
         HoaDon hd = new HoaDon();
         hd.setLichHen(lh);
+        hd.setBenhNhan(lh.getBenhNhan());
         hd.setTongTien(BigDecimal.ZERO);
         hd.setSoTienDaTra(BigDecimal.ZERO);
         hd.setTrangThai(HoaDon.TrangThaiHoaDon.CHO_THANH_TOAN);
@@ -64,7 +70,9 @@ public class HoaDonService {
             hd.getChiTiet().add(dong);
         }
         hd.setTongTien(tong);
-        return sangDto(hoaDonRepository.save(hd));
+        HoaDon daLuu = hoaDonRepository.save(hd);
+        lichHenService.capNhatTrangThai(maLichHen, LichHen.TrangThaiLichHen.DA_THANH_TOAN);
+        return sangDto(daLuu);
     }
 
     @Transactional
@@ -82,6 +90,10 @@ public class HoaDonService {
                 ? HoaDon.TrangThaiHoaDon.DA_THANH_TOAN
                 : HoaDon.TrangThaiHoaDon.MOT_PHAN);
         hoaDonRepository.save(hd);
+        if (hd.getTrangThai() == HoaDon.TrangThaiHoaDon.DA_THANH_TOAN && hd.getLichHen() != null) {
+            lichHenService.capNhatTrangThai(
+                    hd.getLichHen().getId(), LichHen.TrangThaiLichHen.DA_THANH_TOAN);
+        }
         return sangGiaoDichDto(gd);
     }
 
@@ -89,10 +101,12 @@ public class HoaDonService {
         HoaDonDto dto = new HoaDonDto();
         dto.setId(hd.getId());
         dto.setMaLichHen(hd.getLichHen() != null ? hd.getLichHen().getId() : null);
-        dto.setMaBenhNhan(hd.getLichHen() != null && hd.getLichHen().getBenhNhan() != null
-                ? hd.getLichHen().getBenhNhan().getId() : null);
-        dto.setTenBenhNhan(hd.getLichHen() != null && hd.getLichHen().getBenhNhan() != null
-                ? hd.getLichHen().getBenhNhan().getHoTen() : null);
+        dto.setMaBenhNhan(hd.getBenhNhan() != null ? hd.getBenhNhan().getId()
+                : (hd.getLichHen() != null && hd.getLichHen().getBenhNhan() != null
+                        ? hd.getLichHen().getBenhNhan().getId() : null));
+        dto.setTenBenhNhan(hd.getBenhNhan() != null ? hd.getBenhNhan().getHoTen()
+                : (hd.getLichHen() != null && hd.getLichHen().getBenhNhan() != null
+                        ? hd.getLichHen().getBenhNhan().getHoTen() : null));
         dto.setTongTien(hd.getTongTien());
         dto.setSoTienDaTra(hd.getSoTienDaTra());
         dto.setTrangThai(hd.getTrangThai());

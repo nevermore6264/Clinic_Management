@@ -12,6 +12,7 @@ import {
   type LichHen,
 } from "@/lib/api";
 import { LoadingState } from "@/components/LoadingState";
+import { metaTrangThaiLichHen } from "@/lib/lichHenStatus";
 
 function dinhDangNgayHen(ngayHen?: string) {
   if (!ngayHen) return "—";
@@ -43,7 +44,7 @@ function NewInvoicePageInner() {
     [],
   );
   const [error, setError] = useState("");
-  
+
   const daGoiYDichVuTuLich = useRef(false);
 
   useEffect(() => {
@@ -130,7 +131,9 @@ function NewInvoicePageInner() {
     setError("");
     const maLichHen = Number(maLichHenParam);
     if (!maLichHenParam || Number.isNaN(maLichHen) || maLichHen <= 0) {
-      setError("Thiếu mã lịch hẹn. Vui lòng tạo hóa đơn từ trang chi tiết lịch hẹn.");
+      setError(
+        "Thiếu mã lịch hẹn. Vui lòng tạo hóa đơn từ trang chi tiết lịch hẹn.",
+      );
       return;
     }
     if (items.length === 0) {
@@ -147,16 +150,32 @@ function NewInvoicePageInner() {
 
   if (!loading && !user) return null;
 
+  const tagMetaLichHen = metaTrangThaiLichHen(lichHen?.trangThai);
+
   return (
-    <div>
-      <h2 className="mb-4">Lập hóa đơn</h2>
+    <div className="hoa-don-new-page lich-hen-detail-page">
+      <div className="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+        <h2 className="mb-0">Lập hóa đơn</h2>
+        {maLichHenParam ? (
+          <Form.Group className="mb-0 hoa-don-new-ma-lich">
+            <Form.Label className="small text-muted mb-1">
+              Mã lịch hẹn
+            </Form.Label>
+            <Form.Control
+              readOnly
+              value={maLichHenParam}
+              className="fw-semibold bg-white"
+              style={{ maxWidth: "14rem" }}
+            />
+          </Form.Group>
+        ) : null}
+      </div>
       {error && <Alert variant="danger">{error}</Alert>}
       {!maLichHenParam && (
         <Alert variant="warning" className="mb-3">
           Chưa có mã lịch hẹn trong đường dẫn. Hãy mở trang&nbsp;
           <a href="/lich-hen">danh sách lịch hẹn</a>, chọn một lượt khám rồi bấm
-          &quot;Hóa đơn&quot;, hoặc thêm{" "}
-          <code>?maLichHen=...</code> vào URL.
+          &quot;Hóa đơn&quot;, hoặc thêm <code>?maLichHen=...</code> vào URL.
         </Alert>
       )}
       {lichHenLoading && (
@@ -189,13 +208,14 @@ function NewInvoicePageInner() {
                 {dinhDangGioHen(lichHen.gioHen)}
               </dd>
               <dt className="col-sm-3 text-muted">Dịch vụ đặt</dt>
-              <dd className="col-sm-9 mb-2">
-                {lichHen.tenDichVu ?? "—"}
-              </dd>
+              <dd className="col-sm-9 mb-2">{lichHen.tenDichVu ?? "—"}</dd>
               <dt className="col-sm-3 text-muted">Trạng thái</dt>
               <dd className="col-sm-9 mb-0">
-                <span className="badge bg-secondary-subtle text-secondary-emphasis rounded-pill">
-                  {lichHen.trangThai ?? "—"}
+                <span
+                  className={`lich-hen-status-tag lich-hen-status-tag--${tagMetaLichHen.slug}`}
+                >
+                  <i className={`bi ${tagMetaLichHen.icon}`} aria-hidden />
+                  {tagMetaLichHen.label}
                 </span>
               </dd>
             </dl>
@@ -205,20 +225,15 @@ function NewInvoicePageInner() {
       <Card>
         <Card.Body>
           <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label className="required">Mã lịch hẹn</Form.Label>
-              <Form.Control value={maLichHenParam ?? ""} readOnly />
-              <Form.Text className="text-muted">
-                Hóa đơn được gắn trực tiếp với lịch hẹn theo yêu cầu mới.
-              </Form.Text>
-            </Form.Group>
             <div className="mb-3">
               <Button
                 type="button"
                 variant="outline-primary"
                 size="sm"
+                className="d-inline-flex align-items-center gap-2"
                 onClick={addItem}
               >
+                <i className="bi bi-plus-lg" aria-hidden />
                 Thêm dịch vụ
               </Button>
             </div>
@@ -263,31 +278,41 @@ function NewInvoicePageInner() {
                           style={{ width: 80 }}
                         />
                       </td>
-                      <td>
-                        <Button
+                      <td className="align-middle text-center">
+                        <button
                           type="button"
-                          variant="outline-danger"
-                          size="sm"
+                          className="btn btn-sm lich-hen-remove-row-thuoc"
                           onClick={() => removeItem(i)}
+                          title="Xóa dòng"
+                          aria-label="Xóa dòng dịch vụ"
                         >
-                          Xóa
-                        </Button>
+                          <i className="bi bi-x-lg" aria-hidden />
+                        </button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </Table>
             )}
-            <Button type="submit" variant="primary">
-              Tạo hóa đơn
-            </Button>{" "}
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => router.back()}
-            >
-              Hủy
-            </Button>
+            <div className="d-flex flex-wrap gap-2 pt-2 border-top mt-3">
+              <Button
+                type="submit"
+                variant="primary"
+                className="btn-bac-si-modal-primary d-inline-flex align-items-center px-4"
+              >
+                <i className="bi bi-receipt-cutoff me-2" aria-hidden />
+                Tạo hóa đơn
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                className="btn-bac-si-modal-cancel d-inline-flex align-items-center"
+                onClick={() => router.back()}
+              >
+                <i className="bi bi-x-circle me-2" aria-hidden />
+                Hủy
+              </Button>
+            </div>
           </Form>
         </Card.Body>
       </Card>

@@ -14,74 +14,11 @@ import {
   type ChiTietDonThuoc,
   type Thuoc,
 } from "@/lib/api";
-
-/** Quy trình trạng thái — slug dùng cho CSS tag / nút */
-const STATUS_FLOW = [
-  {
-    value: "DA_DAT",
-    label: "Đã đặt",
-    icon: "bi-calendar-check",
-    slug: "da-dat",
-  },
-  {
-    value: "DA_TIEP_NHAN",
-    label: "Tiếp nhận",
-    icon: "bi-person-badge",
-    slug: "tiep-nhan",
-  },
-  {
-    value: "DANG_KHAM",
-    label: "Đang khám",
-    icon: "bi-heart-pulse",
-    slug: "dang-kham",
-  },
-  {
-    value: "XET_NGHIEM",
-    label: "Xét nghiệm",
-    icon: "bi-droplet",
-    slug: "xet-nghiem",
-  },
-  {
-    value: "DA_KE_DON",
-    label: "Đã kê đơn",
-    icon: "bi-prescription2",
-    slug: "da-ke-don",
-  },
-  {
-    value: "DA_THANH_TOAN",
-    label: "Đã thanh toán",
-    icon: "bi-cash-stack",
-    slug: "da-thanh-toan",
-  },
-  {
-    value: "HUY",
-    label: "Đã hủy",
-    icon: "bi-x-octagon",
-    slug: "huy",
-  },
-  {
-    value: "VANG",
-    label: "Không đến",
-    icon: "bi-person-x",
-    slug: "vang",
-  },
-] as const;
-
-const STATUS_LABEL: Record<string, string> = Object.fromEntries(
-  STATUS_FLOW.map((s) => [s.value, s.label]),
-);
-
-function metaTrangThai(code: string | undefined) {
-  const m = STATUS_FLOW.find((s) => s.value === code);
-  return (
-    m ?? {
-      value: code ?? "",
-      label: code ?? "—",
-      icon: "bi-question-circle",
-      slug: "unknown",
-    }
-  );
-}
+import {
+  LICH_HEN_STATUS_FLOW as STATUS_FLOW,
+  LICH_HEN_STATUS_LABEL as STATUS_LABEL,
+  metaTrangThaiLichHen as metaTrangThai,
+} from "@/lib/lichHenStatus";
 
 function newRow(maThuoc: number): ChiTietDonThuoc {
   return { maThuoc, soLuong: 1, lieuDung: "" };

@@ -11,17 +11,7 @@ import {
   type DichVu,
   type LoaiDichVu,
 } from "@/lib/api";
-
-function formatVndInput(value?: number) {
-  if (value === undefined || value === null || Number.isNaN(value)) return "";
-  return Math.max(0, Math.trunc(value)).toLocaleString("vi-VN");
-}
-
-function parseVndInput(raw: string): number | undefined {
-  const digitsOnly = raw.replace(/\D/g, "");
-  if (!digitsOnly) return undefined;
-  return Number(digitsOnly);
-}
+import { formatVndInput, parseVndInput } from "@/lib/moneyVnd";
 
 export default function ServicesPage() {
   const { user, loading } = useAuth();

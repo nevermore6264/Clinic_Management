@@ -8,6 +8,8 @@ import { useAuth } from "@/lib/useAuth";
 import { invoicesApi, type HoaDon } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
 import { LoadingState } from "@/components/LoadingState";
+import { HoaDonStatusTag } from "@/components/HoaDonStatusTag";
+import { daysAgoLocalYmd, todayLocalYmd } from "@/lib/dateLocal";
 
 function InvoicesPageInner() {
   const searchParams = useSearchParams();
@@ -15,8 +17,8 @@ function InvoicesPageInner() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [list, setList] = useState<HoaDon[]>([]);
-  const [from, setFrom] = useState(() => new Date().toISOString().slice(0, 10));
-  const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10));
+  const [from, setFrom] = useState(() => daysAgoLocalYmd(30));
+  const [to, setTo] = useState(todayLocalYmd);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -38,7 +40,7 @@ function InvoicesPageInner() {
     <div>
       <PageHeader
         title="Hóa đơn & thanh toán"
-        subtitle="Danh sách hóa đơn theo khoảng thời gian. Mở chi tiết để ghi nhận thanh toán."
+        subtitle="Lọc theo ngày tạo hóa đơn."
       >
         <Link
           href="/lich-hen"
@@ -89,19 +91,32 @@ function InvoicesPageInner() {
             </tr>
           </thead>
           <tbody>
-            {list
-              .filter(
+            {(() => {
+              const rows = list.filter(
                 (inv) =>
                   !maBenhNhanParam ||
                   inv.maBenhNhan === Number(maBenhNhanParam),
-              )
-              .map((inv) => (
+              );
+              if (rows.length === 0) {
+                return (
+                  <tr>
+                    <td colSpan={6} className="text-muted text-center py-4">
+                      {list.length === 0
+                        ? "Không có hóa đơn trong khoảng ngày đã chọn. Thử mở rộng Từ ngày / Đến ngày."
+                        : "Không có hóa đơn khớp bộ lọc (maBenhNhan)."}
+                    </td>
+                  </tr>
+                );
+              }
+              return rows.map((inv) => (
                 <tr key={inv.id}>
                   <td>{inv.soHoaDon}</td>
                   <td>{inv.tenBenhNhan}</td>
                   <td>{inv.tongTien?.toLocaleString("vi-VN")}đ</td>
                   <td>{inv.soTienDaTra?.toLocaleString("vi-VN")}đ</td>
-                  <td>{inv.trangThai}</td>
+                  <td>
+                    <HoaDonStatusTag trangThai={inv.trangThai} />
+                  </td>
                   <td className="text-end">
                     <Link
                       href={`/hoa-don/${inv.id}`}
@@ -112,7 +127,8 @@ function InvoicesPageInner() {
                     </Link>
                   </td>
                 </tr>
-              ))}
+              ));
+            })()}
           </tbody>
         </Table>
         </div>

@@ -27,19 +27,8 @@ import {
 import { PageHeader } from "@/components/PageHeader";
 import { LoadingState } from "@/components/LoadingState";
 import { notify } from "@/lib/notify";
+import { LICH_HEN_STATUS_LABEL as STATUS_LABEL } from "@/lib/lichHenStatus";
 
-const STATUS_LABEL: Record<string, string> = {
-  DA_DAT: "Đã đặt",
-  DA_TIEP_NHAN: "Tiếp nhận",
-  DANG_KHAM: "Đang khám",
-  XET_NGHIEM: "Xét nghiệm",
-  DA_KE_DON: "Đã kê đơn",
-  DA_THANH_TOAN: "Đã thanh toán",
-  HUY: "Đã hủy",
-  VANG: "Không đến",
-};
-
-/** Có lịch ở trạng thái này thì không cho đặt thêm lịch mới cho cùng bệnh nhân (tránh nhiều lượt « đang xử lý »). */
 const TRANG_THAI_CO_LICH_DANG_XU_LY = new Set([
   "DA_DAT",
   "DA_TIEP_NHAN",

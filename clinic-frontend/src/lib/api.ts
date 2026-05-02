@@ -173,6 +173,17 @@ export interface ChuyenKhoa {
 
 export const chuyenKhoaApi = {
   danhSach: () => api<ChuyenKhoa[]>("/chuyen-khoa"),
+  tao: (data: { tenChuyenKhoa: string }) =>
+    api<ChuyenKhoa>("/chuyen-khoa", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  capNhat: (id: number, data: { tenChuyenKhoa: string }) =>
+    api<ChuyenKhoa>(`/chuyen-khoa/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  xoa: (id: number) => api<void>(`/chuyen-khoa/${id}`, { method: "DELETE" }),
 };
 
 export const dichVuApi = {

@@ -147,7 +147,7 @@ html.app-ready body {
   gap: 0.42rem;
 }
 
-.btn:not(:has(i))::before {
+.btn:not(:has(i)):not(.dropdown-toggle)::before {
   content: "";
   width: 0.92em;
   height: 0.92em;
@@ -159,10 +159,10 @@ html.app-ready body {
   opacity: 0.95;
 }
 
-.btn-outline-primary:not(:has(i))::before,
-.btn-outline-secondary:not(:has(i))::before,
-.btn-light:not(:has(i))::before,
-.btn-secondary:not(:has(i))::before {
+.btn-outline-primary:not(:has(i)):not(.dropdown-toggle)::before,
+.btn-outline-secondary:not(:has(i)):not(.dropdown-toggle)::before,
+.btn-light:not(:has(i)):not(.dropdown-toggle)::before,
+.btn-secondary:not(:has(i)):not(.dropdown-toggle)::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M5 3.5h6v6' stroke='%231d4ed8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M4 12 11 5' stroke='%231d4ed8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
@@ -339,16 +339,162 @@ html.app-ready body {
   box-shadow: 0 8px 18px rgba(22, 163, 74, 0.32);
 }
 
-.service-type-page .btn-service-nav {
+.service-type-page .btn-service-nav,
+.chuyen-khoa-page .btn-service-nav {
   background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%) !important;
   border: none !important;
   color: #fff !important;
   font-weight: 600;
   box-shadow: 0 6px 14px rgba(2, 132, 199, 0.22);
 }
-.service-type-page .btn-service-nav:hover {
+.chuyen-khoa-page a.btn-service-nav {
+  text-decoration: none !important;
+  border-radius: var(--clinic-radius-sm, 8px);
+}
+.service-type-page .btn-service-nav:hover,
+.chuyen-khoa-page .btn-service-nav:hover {
   filter: brightness(1.05);
   box-shadow: 0 8px 18px rgba(2, 132, 199, 0.28);
+  color: #fff !important;
+}
+
+/* Quản lý bác sĩ — một hàng nút (wrap khi hẹp), gradient điều hướng */
+.bac-si-page .bac-si-toolbar {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
+}
+.bac-si-page .bac-si-toolbar .bac-si-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+  /* Cùng tầm với nút Export / Điều hướng ở Loại DV — btn-lg + padding rõ ràng */
+  --bs-btn-font-size: 1.0625rem;
+  --bs-btn-padding-y: 0.58rem;
+  --bs-btn-padding-x: 1.25rem;
+  --bs-btn-line-height: 1.45;
+  min-height: 2.75rem;
+}
+.bac-si-page .bac-si-toolbar .bac-si-toolbar-btn i.bi {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+/* Combobox chuyên khoa — không bọc .bac-si-page: Modal portal ra body nên con không nằm trong .bac-si-page */
+.bac-si-ck-dropdown .dropdown-toggle {
+  min-height: calc(1.5em + 0.75rem + 2px);
+  border-color: var(--clinic-border);
+  color: var(--clinic-navy);
+  font-weight: 500;
+}
+.bac-si-ck-dropdown .dropdown-toggle:focus {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12);
+}
+/* Không dùng Popper strategy "fixed" + w-100: % width tính theo viewport → menu full màn hình */
+.bac-si-ck-dropdown .dropdown-menu.bac-si-ck-dropdown__menu {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.bac-si-ck-dropdown__list .dropdown-item {
+  white-space: normal;
+}
+
+/* Modal « Tạo bác sĩ mới » — rộng hơn (portal ra body, không bọc .bac-si-page) */
+.modal-dialog.bac-si-modal-tao-moi {
+  max-width: min(1140px, calc(100vw - 2rem));
+}
+.modal-dialog.bac-si-modal-tao-moi .modal-body {
+  padding: 1.35rem 1.75rem;
+}
+.modal-dialog.bac-si-modal-tao-moi .modal-header {
+  padding: 1.1rem 1.75rem;
+}
+
+.bac-si-page .btn-bacsi-chuyen-khoa {
+  background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 6px 14px rgba(2, 132, 199, 0.22);
+  text-decoration: none !important;
+  border-radius: var(--clinic-radius-sm, 8px);
+}
+.bac-si-page .btn-bacsi-chuyen-khoa:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 8px 18px rgba(2, 132, 199, 0.28);
+  color: #fff !important;
+}
+.bac-si-page .btn-bacsi-tai-khoan {
+  background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 6px 14px rgba(79, 70, 229, 0.22);
+  text-decoration: none !important;
+  border-radius: var(--clinic-radius-sm, 8px);
+}
+.bac-si-page .btn-bacsi-tai-khoan:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 8px 18px rgba(79, 70, 229, 0.3);
+  color: #fff !important;
+}
+.bac-si-page .btn-bacsi-lich {
+  background: linear-gradient(180deg, #14b8a6 0%, #0d9488 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 6px 14px rgba(13, 148, 136, 0.24);
+  text-decoration: none !important;
+  border-radius: var(--clinic-radius-sm, 8px);
+}
+.bac-si-page .btn-bacsi-lich:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 8px 18px rgba(13, 148, 136, 0.32);
+  color: #fff !important;
+}
+
+/* Modal bác sĩ — Hủy (xám) / Tạo hoặc Lưu (xanh #2d68e2) */
+.bac-si-page .bac-si-modal-footer {
+  gap: 0.65rem !important;
+}
+.bac-si-page .btn-bac-si-modal-cancel.btn-secondary {
+  background-color: #5a6268 !important;
+  border-color: #5a6268 !important;
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none !important;
+  box-shadow: none;
+}
+.bac-si-page .btn-bac-si-modal-cancel.btn-secondary:hover,
+.bac-si-page .btn-bac-si-modal-cancel.btn-secondary:focus-visible {
+  background-color: #4e555b !important;
+  border-color: #4e555b !important;
+  color: #fff !important;
+}
+.bac-si-page .btn-bac-si-modal-cancel.btn-secondary:active {
+  background-color: #484f54 !important;
+}
+.bac-si-page .btn-bac-si-modal-primary.btn-primary {
+  background-color: #2d68e2 !important;
+  border-color: #2d68e2 !important;
+  color: #fff !important;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(45, 104, 226, 0.38);
+}
+.bac-si-page .btn-bac-si-modal-primary.btn-primary:hover,
+.bac-si-page .btn-bac-si-modal-primary.btn-primary:focus-visible {
+  background-color: #2558c9 !important;
+  border-color: #2558c9 !important;
+  color: #fff !important;
+  box-shadow: 0 4px 12px rgba(45, 104, 226, 0.42);
 }
 
 .btn-action-edit,
@@ -1486,6 +1632,25 @@ html.app-ready body {
   border-top: 1px solid var(--clinic-border);
   background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
   padding: 1rem 1.5rem;
+}
+
+/* Footer popup — đồng bộ với modal bệnh nhân / thuốc (nền, nút đủ cao) */
+.clinic-modal-footer {
+  border-top: 1px solid var(--clinic-border);
+  background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
+  padding: 1rem 1.5rem !important;
+  gap: 0.65rem !important;
+  display: flex !important;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+}
+.clinic-modal-footer .btn {
+  --bs-btn-padding-y: 0.5rem;
+  --bs-btn-padding-x: 1.2rem;
+  font-weight: 600;
+  min-height: 2.5rem;
+  border-radius: var(--clinic-radius-sm, 10px);
 }
 
 /* Xác nhận (khóa / mở khóa tài khoản) — không dùng React-Bootstrap Modal */

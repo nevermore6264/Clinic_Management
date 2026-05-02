@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   title: "Phòng khám — Quản lý & lịch hẹn",
   description:
     "Hệ thống quản lý phòng khám, bệnh nhân, lịch khám và thanh toán",
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: [
       { url: "/favicon-heart-pulse.svg", type: "image/svg+xml" },

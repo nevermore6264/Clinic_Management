@@ -458,11 +458,11 @@ html.app-ready body {
   color: #fff !important;
 }
 
-/* Modal bác sĩ — Hủy (xám) / Tạo hoặc Lưu (xanh #2d68e2) */
-.bac-si-page .bac-si-modal-footer {
+/* Modal — Hủy (xám) / Xác nhận xanh (#2d68e2); không bọc .bac-si-page vì modal portal ra body */
+.bac-si-modal-footer {
   gap: 0.65rem !important;
 }
-.bac-si-page .btn-bac-si-modal-cancel.btn-secondary {
+.btn-bac-si-modal-cancel.btn-secondary {
   background-color: #5a6268 !important;
   border-color: #5a6268 !important;
   color: #fff !important;
@@ -471,16 +471,16 @@ html.app-ready body {
   border: none !important;
   box-shadow: none;
 }
-.bac-si-page .btn-bac-si-modal-cancel.btn-secondary:hover,
-.bac-si-page .btn-bac-si-modal-cancel.btn-secondary:focus-visible {
+.btn-bac-si-modal-cancel.btn-secondary:hover,
+.btn-bac-si-modal-cancel.btn-secondary:focus-visible {
   background-color: #4e555b !important;
   border-color: #4e555b !important;
   color: #fff !important;
 }
-.bac-si-page .btn-bac-si-modal-cancel.btn-secondary:active {
+.btn-bac-si-modal-cancel.btn-secondary:active {
   background-color: #484f54 !important;
 }
-.bac-si-page .btn-bac-si-modal-primary.btn-primary {
+.btn-bac-si-modal-primary.btn-primary {
   background-color: #2d68e2 !important;
   border-color: #2d68e2 !important;
   color: #fff !important;
@@ -489,8 +489,8 @@ html.app-ready body {
   border: none !important;
   box-shadow: 0 2px 8px rgba(45, 104, 226, 0.38);
 }
-.bac-si-page .btn-bac-si-modal-primary.btn-primary:hover,
-.bac-si-page .btn-bac-si-modal-primary.btn-primary:focus-visible {
+.btn-bac-si-modal-primary.btn-primary:hover,
+.btn-bac-si-modal-primary.btn-primary:focus-visible {
   background-color: #2558c9 !important;
   border-color: #2558c9 !important;
   color: #fff !important;
@@ -2745,4 +2745,304 @@ html.app-ready body {
   .landing-final-cta {
     border-radius: 24px;
   }
+}
+
+/* ——— Chi tiết lịch khám (/lich-hen/[id]): tag trạng thái + nút quy trình ——— */
+.lich-hen-detail-page .lich-hen-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+.lich-hen-detail-page .lich-hen-status-tag .bi {
+  font-size: 1.05rem;
+  opacity: 0.95;
+}
+
+.lich-hen-detail-page .lich-hen-status-tag--da-dat {
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.38);
+}
+.lich-hen-detail-page .lich-hen-status-tag--tiep-nhan {
+  background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(79, 70, 229, 0.35);
+}
+.lich-hen-detail-page .lich-hen-status-tag--dang-kham {
+  background: linear-gradient(180deg, #f43f5e 0%, #e11d48 100%);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(225, 29, 72, 0.35);
+}
+.lich-hen-detail-page .lich-hen-status-tag--xet-nghiem {
+  background: linear-gradient(180deg, #06b6d4 0%, #0891b2 100%);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(8, 145, 178, 0.35);
+}
+.lich-hen-detail-page .lich-hen-status-tag--da-ke-don {
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(217, 119, 6, 0.35);
+}
+.lich-hen-detail-page .lich-hen-status-tag--da-thanh-toan {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(5, 150, 105, 0.35);
+}
+.lich-hen-detail-page .lich-hen-status-tag--huy {
+  background: linear-gradient(180deg, #f87171 0%, #dc2626 100%);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.35);
+}
+.lich-hen-detail-page .lich-hen-status-tag--vang {
+  background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(234, 88, 12, 0.35);
+}
+.lich-hen-detail-page .lich-hen-status-tag--unknown {
+  background: #475569;
+  color: #fff;
+}
+
+.lich-hen-detail-page .lich-hen-flow-toolbar {
+  padding: 0.35rem 0;
+}
+
+.lich-hen-detail-page .lich-hen-flow-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.48rem 1rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.12s ease,
+    border-color 0.15s ease;
+  background: #fff;
+}
+.lich-hen-detail-page .lich-hen-flow-btn:hover:not(.is-active) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+}
+.lich-hen-detail-page .lich-hen-flow-btn.is-active {
+  transform: translateY(0);
+}
+.lich-hen-detail-page .lich-hen-flow-btn__icon {
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+.lich-hen-detail-page .lich-hen-flow-btn--da-dat:not(.is-active) {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+.lich-hen-detail-page .lich-hen-flow-btn--da-dat.is-active {
+  color: #fff;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  border-color: #2563eb;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.42);
+}
+
+.lich-hen-detail-page .lich-hen-flow-btn--tiep-nhan:not(.is-active) {
+  color: #4338ca;
+  background: #eef2ff;
+  border-color: #a5b4fc;
+}
+.lich-hen-detail-page .lich-hen-flow-btn--tiep-nhan.is-active {
+  color: #fff;
+  background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
+  border-color: #4f46e5;
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4);
+}
+
+.lich-hen-detail-page .lich-hen-flow-btn--dang-kham:not(.is-active) {
+  color: #be123c;
+  background: #fff1f2;
+  border-color: #fda4af;
+}
+.lich-hen-detail-page .lich-hen-flow-btn--dang-kham.is-active {
+  color: #fff;
+  background: linear-gradient(180deg, #f43f5e 0%, #e11d48 100%);
+  border-color: #e11d48;
+  box-shadow: 0 4px 16px rgba(225, 29, 72, 0.4);
+}
+
+.lich-hen-detail-page .lich-hen-flow-btn--xet-nghiem:not(.is-active) {
+  color: #0e7490;
+  background: #ecfeff;
+  border-color: #67e8f9;
+}
+.lich-hen-detail-page .lich-hen-flow-btn--xet-nghiem.is-active {
+  color: #fff;
+  background: linear-gradient(180deg, #06b6d4 0%, #0891b2 100%);
+  border-color: #0891b2;
+  box-shadow: 0 4px 16px rgba(8, 145, 178, 0.4);
+}
+
+.lich-hen-detail-page .lich-hen-flow-btn--da-ke-don:not(.is-active) {
+  color: #b45309;
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+.lich-hen-detail-page .lich-hen-flow-btn--da-ke-don.is-active {
+  color: #fff;
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+  border-color: #d97706;
+  box-shadow: 0 4px 16px rgba(217, 119, 6, 0.4);
+}
+
+.lich-hen-detail-page .lich-hen-flow-btn--da-thanh-toan:not(.is-active) {
+  color: #047857;
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+}
+.lich-hen-detail-page .lich-hen-flow-btn--da-thanh-toan.is-active {
+  color: #fff;
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  border-color: #059669;
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.4);
+}
+
+.lich-hen-detail-page .lich-hen-flow-btn--huy:not(.is-active) {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+.lich-hen-detail-page .lich-hen-flow-btn--huy.is-active {
+  color: #fff;
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%);
+  border-color: #dc2626;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+}
+
+.lich-hen-detail-page .lich-hen-flow-btn--vang:not(.is-active) {
+  color: #c2410c;
+  background: #fff7ed;
+  border-color: #fdba74;
+}
+.lich-hen-detail-page .lich-hen-flow-btn--vang.is-active {
+  color: #fff;
+  background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
+  border-color: #ea580c;
+  box-shadow: 0 4px 16px rgba(234, 88, 12, 0.4);
+}
+
+.lich-hen-detail-page .lich-hen-flow-btn--unknown:not(.is-active) {
+  color: #334155;
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+.lich-hen-detail-page .lich-hen-flow-btn--unknown.is-active {
+  color: #fff;
+  background: #475569;
+  border-color: #475569;
+}
+
+.lich-hen-detail-page .lich-hen-add-row-thuoc {
+  margin-top: 0.85rem;
+  border: none !important;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: var(--clinic-radius-sm, 10px);
+  padding: 0.48rem 1.15rem !important;
+  color: #fff !important;
+  background: linear-gradient(180deg, #2dd4bf 0%, #14b8a6 45%, #0d9488 100%);
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.2) inset,
+    0 6px 18px rgba(13, 148, 136, 0.35);
+}
+.lich-hen-detail-page .lich-hen-add-row-thuoc:hover:not(:disabled) {
+  filter: brightness(1.06);
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.22) inset,
+    0 8px 22px rgba(13, 148, 136, 0.42);
+  transform: translateY(-1px);
+}
+.lich-hen-detail-page .lich-hen-add-row-thuoc:active:not(:disabled) {
+  transform: translateY(0);
+  filter: brightness(0.98);
+}
+.lich-hen-detail-page .lich-hen-add-row-thuoc:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+.lich-hen-detail-page .lich-hen-add-row-thuoc .bi {
+  font-size: 1.05rem;
+  vertical-align: -0.1em;
+}
+
+/* Nút xóa dòng trong bảng đơn thuốc */
+.lich-hen-detail-page .lich-hen-remove-row-thuoc {
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--clinic-radius-sm, 8px);
+  border: 1.5px solid #fecaca !important;
+  background: linear-gradient(180deg, #fff 0%, #fff5f5 100%) !important;
+  color: #dc2626 !important;
+  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.08);
+  line-height: 1;
+}
+.lich-hen-detail-page .lich-hen-remove-row-thuoc .bi {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.lich-hen-detail-page .lich-hen-remove-row-thuoc:hover {
+  background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%) !important;
+  border-color: #f87171 !important;
+  color: #b91c1c !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.18);
+  transform: translateY(-1px);
+}
+.lich-hen-detail-page .lich-hen-remove-row-thuoc:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Bảng lịch sử trạng thái — cuộn dọc khi quá dài */
+.lich-hen-detail-page .lich-hen-status-log-scroll {
+  max-height: min(42vh, 340px);
+  overflow-y: auto;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(37, 99, 235, 0.45) #e2e8f0;
+}
+.lich-hen-detail-page .lich-hen-status-log-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.lich-hen-detail-page .lich-hen-status-log-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 6px;
+}
+.lich-hen-detail-page .lich-hen-status-log-scroll::-webkit-scrollbar-thumb {
+  background: rgba(37, 99, 235, 0.4);
+  border-radius: 6px;
+}
+.lich-hen-detail-page .lich-hen-status-log-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(37, 99, 235, 0.55);
+}
+.lich-hen-detail-page .lich-hen-status-log-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  box-shadow: 0 1px 0 rgba(148, 163, 184, 0.4);
+  white-space: nowrap;
 }

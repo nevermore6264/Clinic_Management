@@ -19,8 +19,12 @@ public class BacSi {
     private Long id;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ma_nguoi_dung", nullable = false, unique = true)
+    @JoinColumn(name = "ma_nguoi_dung", unique = true)
     private NguoiDung nguoiDung;
+
+    /** Họ tên khi chưa gắn tài khoản đăng nhập (khi {@link #nguoiDung} null). */
+    @Column(name = "ho_ten")
+    private String hoTen;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ma_chuyen_khoa")

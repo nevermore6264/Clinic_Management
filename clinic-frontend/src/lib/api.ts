@@ -144,7 +144,8 @@ export const bacSiApi = {
   danhSachTatCa: () => api<BacSi[]>("/bac-si?tatCa=true"),
   layTheoMa: (id: number) => api<BacSi>(`/bac-si/${id}`),
   tao: (data: {
-    maNguoiDung: number;
+    maNguoiDung?: number;
+    hoTen?: string;
     maChuyenKhoa?: number;
     bangCap?: string;
   }) =>
@@ -158,6 +159,7 @@ export const bacSiApi = {
       maChuyenKhoa?: number | null;
       bangCap?: string;
       hoatDong: boolean;
+      hoTen?: string;
     },
   ) =>
     api<BacSi>(`/bac-si/${id}`, {
@@ -672,7 +674,7 @@ export interface BacSi {
   id: number;
   maNguoiDung?: number;
   tenDangNhap?: string;
-  hoTen: string;
+  hoTen?: string;
   maChuyenKhoa?: number;
   tenChuyenKhoa?: string;
   chuyenMon?: string;

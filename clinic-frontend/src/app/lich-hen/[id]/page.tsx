@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { Card, Form, Button, Alert, Badge, Table } from "react-bootstrap";
+import { Card, Form, Button, Alert, Table } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import {
@@ -15,20 +15,73 @@ import {
   type Thuoc,
 } from "@/lib/api";
 
-const STATUS_OPTIONS = [
-  { value: "DA_DAT", label: "Đã đặt" },
-  { value: "DA_TIEP_NHAN", label: "Tiếp nhận" },
-  { value: "DANG_KHAM", label: "Đang khám" },
-  { value: "XET_NGHIEM", label: "Xét nghiệm" },
-  { value: "DA_KE_DON", label: "Đã kê đơn" },
-  { value: "DA_THANH_TOAN", label: "Đã thanh toán" },
-  { value: "HUY", label: "Đã hủy" },
-  { value: "VANG", label: "Không đến" },
-];
+/** Quy trình trạng thái — slug dùng cho CSS tag / nút */
+const STATUS_FLOW = [
+  {
+    value: "DA_DAT",
+    label: "Đã đặt",
+    icon: "bi-calendar-check",
+    slug: "da-dat",
+  },
+  {
+    value: "DA_TIEP_NHAN",
+    label: "Tiếp nhận",
+    icon: "bi-person-badge",
+    slug: "tiep-nhan",
+  },
+  {
+    value: "DANG_KHAM",
+    label: "Đang khám",
+    icon: "bi-heart-pulse",
+    slug: "dang-kham",
+  },
+  {
+    value: "XET_NGHIEM",
+    label: "Xét nghiệm",
+    icon: "bi-droplet",
+    slug: "xet-nghiem",
+  },
+  {
+    value: "DA_KE_DON",
+    label: "Đã kê đơn",
+    icon: "bi-prescription2",
+    slug: "da-ke-don",
+  },
+  {
+    value: "DA_THANH_TOAN",
+    label: "Đã thanh toán",
+    icon: "bi-cash-stack",
+    slug: "da-thanh-toan",
+  },
+  {
+    value: "HUY",
+    label: "Đã hủy",
+    icon: "bi-x-octagon",
+    slug: "huy",
+  },
+  {
+    value: "VANG",
+    label: "Không đến",
+    icon: "bi-person-x",
+    slug: "vang",
+  },
+] as const;
 
 const STATUS_LABEL: Record<string, string> = Object.fromEntries(
-  STATUS_OPTIONS.map((s) => [s.value, s.label]),
+  STATUS_FLOW.map((s) => [s.value, s.label]),
 );
+
+function metaTrangThai(code: string | undefined) {
+  const m = STATUS_FLOW.find((s) => s.value === code);
+  return (
+    m ?? {
+      value: code ?? "",
+      label: code ?? "—",
+      icon: "bi-question-circle",
+      slug: "unknown",
+    }
+  );
+}
 
 function newRow(maThuoc: number): ChiTietDonThuoc {
   return { maThuoc, soLuong: 1, lieuDung: "" };
@@ -161,8 +214,10 @@ export default function AppointmentDetailPage() {
   if (!loading && !user) return null;
   if (!app) return <div className="py-4">Đang tải...</div>;
 
+  const tagMeta = metaTrangThai(app.trangThai);
+
   return (
-    <div>
+    <div className="lich-hen-detail-page">
       <h2 className="mb-4">Chi tiết lịch khám</h2>
       {error && (
         <Alert variant="danger" dismissible onClose={() => setError("")}>
@@ -170,11 +225,16 @@ export default function AppointmentDetailPage() {
         </Alert>
       )}
       <Card className="mb-3">
-        <Card.Header className="d-flex justify-content-between align-items-center">
+        <Card.Header className="d-flex justify-content-between align-items-center flex-wrap gap-2">
           <span>
             #{app.id} - {app.ngayHen} {app.gioHen}
           </span>
-          <Badge bg="secondary">{app.trangThai}</Badge>
+          <span
+            className={`lich-hen-status-tag lich-hen-status-tag--${tagMeta.slug}`}
+          >
+            <i className={`bi ${tagMeta.icon}`} aria-hidden />
+            {tagMeta.label}
+          </span>
         </Card.Header>
         <Card.Body>
           <p>
@@ -191,19 +251,22 @@ export default function AppointmentDetailPage() {
               <strong>Ghi chú:</strong> {app.ghiChu}
             </p>
           )}
-          <div className="mb-2">Cập nhật trạng thái:</div>
-          <div className="d-flex flex-wrap gap-1">
-            {STATUS_OPTIONS.map((s) => (
-              <Button
+          <div className="lich-hen-flow-label mb-2 fw-semibold text-secondary">
+            Cập nhật trạng thái
+          </div>
+          <div className="lich-hen-flow-toolbar d-flex flex-wrap gap-2">
+            {STATUS_FLOW.map((s) => (
+              <button
                 key={s.value}
-                size="sm"
-                variant={
-                  app.trangThai === s.value ? "primary" : "outline-secondary"
-                }
+                type="button"
+                className={`lich-hen-flow-btn lich-hen-flow-btn--${s.slug}${
+                  app.trangThai === s.value ? " is-active" : ""
+                }`}
                 onClick={() => updateStatus(s.value)}
               >
-                {s.label}
-              </Button>
+                <i className={`bi ${s.icon} lich-hen-flow-btn__icon`} aria-hidden />
+                <span>{s.label}</span>
+              </button>
             ))}
           </div>
         </Card.Body>
@@ -213,36 +276,38 @@ export default function AppointmentDetailPage() {
         <Card className="mb-3">
           <Card.Header>Lịch sử trạng thái (truy vết quy trình)</Card.Header>
           <Card.Body className="p-0">
-            <Table responsive hover className="mb-0 small">
-              <thead>
-                <tr>
-                  <th>Thời điểm</th>
-                  <th>Từ</th>
-                  <th>Đến</th>
-                  <th>Tài khoản</th>
-                </tr>
-              </thead>
-              <tbody>
-                {statusLog.map((l) => (
-                  <tr key={l.id}>
-                    <td>
-                      {l.taoLuc
-                        ? new Date(l.taoLuc).toLocaleString("vi-VN")
-                        : "—"}
-                    </td>
-                    <td>
-                      {l.trangThaiCu
-                        ? STATUS_LABEL[l.trangThaiCu] ?? l.trangThaiCu
-                        : "—"}
-                    </td>
-                    <td>
-                      {STATUS_LABEL[l.trangThaiMoi] ?? l.trangThaiMoi}
-                    </td>
-                    <td>{l.tenDangNhap || "—"}</td>
+            <div className="lich-hen-status-log-scroll">
+              <Table responsive hover className="mb-0 small">
+                <thead>
+                  <tr>
+                    <th>Thời điểm</th>
+                    <th>Từ</th>
+                    <th>Đến</th>
+                    <th>Tài khoản</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
+                </thead>
+                <tbody>
+                  {statusLog.map((l) => (
+                    <tr key={l.id}>
+                      <td>
+                        {l.taoLuc
+                          ? new Date(l.taoLuc).toLocaleString("vi-VN")
+                          : "—"}
+                      </td>
+                      <td>
+                        {l.trangThaiCu
+                          ? STATUS_LABEL[l.trangThaiCu] ?? l.trangThaiCu
+                          : "—"}
+                      </td>
+                      <td>
+                        {STATUS_LABEL[l.trangThaiMoi] ?? l.trangThaiMoi}
+                      </td>
+                      <td>{l.tenDangNhap || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
           </Card.Body>
         </Card>
       )}
@@ -319,29 +384,31 @@ export default function AppointmentDetailPage() {
                           }
                         />
                       </td>
-                      <td>
-                        <Button
-                          size="sm"
-                          variant="outline-danger"
+                      <td className="align-middle text-center">
+                        <button
+                          type="button"
+                          className="btn btn-sm lich-hen-remove-row-thuoc"
                           onClick={() => removeRow(idx)}
+                          title="Xóa dòng"
+                          aria-label="Xóa dòng thuốc"
                         >
-                          ×
-                        </Button>
+                          <i className="bi bi-x-lg" aria-hidden />
+                        </button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </Table>
             )}
-            <Button
-              size="sm"
-              variant="outline-secondary"
-              className="mb-3"
+            <button
+              type="button"
+              className="btn btn-sm lich-hen-add-row-thuoc mb-3"
               onClick={addRow}
               disabled={thuocList.length === 0}
             >
-              + Thêm dòng thuốc
-            </Button>
+              <i className="bi bi-plus-circle-fill me-2" aria-hidden />
+              Thêm dòng thuốc
+            </button>
 
             <Form.Group className="mb-3">
               <Form.Label>Ghi chú đơn thuốc (tự do)</Form.Label>
@@ -362,19 +429,26 @@ export default function AppointmentDetailPage() {
               />
             </Form.Group>
             <Button variant="primary" onClick={saveRecord}>
+              <i className="bi bi-check2-circle me-2" aria-hidden />
               Lưu hồ sơ khám
             </Button>
           </Card.Body>
         </Card>
       ) : null}
-      <div className="mt-3">
+      <div className="mt-3 d-flex flex-wrap gap-2 align-items-center lich-hen-detail-actions">
         <Link
           href={`/hoa-don/new?maLichHen=${id}`}
-          className="btn btn-outline-primary"
+          className="btn btn-outline-primary d-inline-flex align-items-center gap-2"
         >
+          <i className="bi bi-receipt" aria-hidden />
           Hóa đơn
-        </Link>{" "}
-        <Button variant="secondary" onClick={() => router.back()}>
+        </Link>
+        <Button
+          variant="secondary"
+          className="d-inline-flex align-items-center gap-2"
+          onClick={() => router.back()}
+        >
+          <i className="bi bi-arrow-left-circle" aria-hidden />
           Quay lại
         </Button>
       </div>

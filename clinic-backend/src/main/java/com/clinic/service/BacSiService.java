@@ -45,6 +45,24 @@ public class BacSiService {
 
     @Transactional
     public BacSiDto tao(TaoBacSiYeuCau yeuCau) {
+        if (yeuCau.getMaNguoiDung() == null) {
+            String ht = yeuCau.getHoTen() != null ? yeuCau.getHoTen().trim() : "";
+            if (ht.isEmpty()) {
+                throw new RuntimeException("Vui lòng nhập họ tên hoặc chọn/tạo tài khoản");
+            }
+            BacSi bs = new BacSi();
+            bs.setNguoiDung(null);
+            bs.setHoTen(ht);
+            if (yeuCau.getMaChuyenKhoa() != null) {
+                ChuyenKhoa ck = chuyenKhoaRepository.findById(yeuCau.getMaChuyenKhoa())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy chuyên khoa"));
+                bs.setChuyenKhoa(ck);
+            }
+            bs.setBangCap(yeuCau.getBangCap());
+            bs.setHoatDong(true);
+            return sangDto(bacSiRepository.save(bs));
+        }
+
         NguoiDung nd = nguoiDungRepository.findById(yeuCau.getMaNguoiDung())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
         if (!nd.getCacVaiTro().contains(VaiTro.BAC_SI)) {
@@ -78,6 +96,12 @@ public class BacSiService {
         }
         bs.setBangCap(yeuCau.getBangCap());
         bs.setHoatDong(yeuCau.isHoatDong());
+        if (bs.getNguoiDung() == null && yeuCau.getHoTen() != null) {
+            String ht = yeuCau.getHoTen().trim();
+            if (!ht.isEmpty()) {
+                bs.setHoTen(ht);
+            }
+        }
         return sangDto(bacSiRepository.save(bs));
     }
 
@@ -88,6 +112,8 @@ public class BacSiService {
             dto.setMaNguoiDung(bs.getNguoiDung().getId());
             dto.setTenDangNhap(bs.getNguoiDung().getTenDangNhap());
             dto.setHoTen(bs.getNguoiDung().getHoTen());
+        } else if (bs.getHoTen() != null && !bs.getHoTen().isEmpty()) {
+            dto.setHoTen(bs.getHoTen());
         }
         dto.setMaChuyenKhoa(bs.getChuyenKhoa() != null ? bs.getChuyenKhoa().getId() : null);
         dto.setTenChuyenKhoa(bs.getChuyenKhoa() != null ? bs.getChuyenKhoa().getTenChuyenKhoa() : null);

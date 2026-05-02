@@ -1,12 +1,13 @@
 package com.clinic.dto;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class TaoBacSiYeuCau {
-    @NotNull(message = "maNguoiDung là bắt buộc")
+    /** Nếu null: tạo hồ sơ chỉ với {@link #hoTen} (không tài khoản đăng nhập). */
     private Long maNguoiDung;
+    /** Bắt buộc khi {@link #maNguoiDung} null. */
+    private String hoTen;
     private Long maChuyenKhoa;
     private String bangCap;
 }

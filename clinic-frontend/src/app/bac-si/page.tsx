@@ -22,6 +22,7 @@ import {
   type ThongTinNguoiDungDto,
 } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
+import { notify } from "@/lib/notify";
 
 function formatCk(
   b: Pick<BacSi, "tenChuyenKhoa" | "chuyenMon">,
@@ -50,6 +51,7 @@ export default function QuanLyBacSiPage() {
   const [dangSua, setDangSua] = useState<BacSi | null>(null);
   const [maCkSua, setMaCkSua] = useState("");
   const [bangCapSua, setBangCapSua] = useState("");
+  const [hoTenSua, setHoTenSua] = useState("");
   const [hoatDongSua, setHoatDongSua] = useState(true);
 
   const napDuLieu = useCallback(async () => {
@@ -187,10 +189,25 @@ export default function QuanLyBacSiPage() {
     }
 
     const idNd = Number(taoMaNguoiDung);
-    if (!taoMaNguoiDung || Number.isNaN(idNd)) {
-      setError("Vui lòng chọn tài khoản hoặc bấm « Tạo tài khoản ».");
+    const coTaiKhoan = Boolean(taoMaNguoiDung) && !Number.isNaN(idNd);
+
+    if (!coTaiKhoan) {
+      try {
+        await bacSiApi.tao({
+          hoTen: ht,
+          maChuyenKhoa: taoMaCk ? Number(taoMaCk) : undefined,
+          bangCap: taoBangCap.trim() || undefined,
+        });
+        dongTaoMoi();
+        await napDuLieu();
+      } catch (err: unknown) {
+        setError(
+          err instanceof Error ? err.message : "Không tạo được hồ sơ bác sĩ",
+        );
+      }
       return;
     }
+
     const chon = nguoiDung.find((x) => x.id === idNd);
     if (!chon) {
       setError("Không tìm thấy tài khoản đã chọn.");
@@ -234,6 +251,7 @@ export default function QuanLyBacSiPage() {
     setDangSua(b);
     setMaCkSua(b.maChuyenKhoa != null ? String(b.maChuyenKhoa) : "");
     setBangCapSua(b.bangCap ?? "");
+    setHoTenSua(b.hoTen ?? "");
     setHoatDongSua(Boolean(b.hoatDong));
   };
 
@@ -243,17 +261,59 @@ export default function QuanLyBacSiPage() {
     e.preventDefault();
     if (!dangSua) return;
     setError("");
+    if (dangSua.maNguoiDung == null && !hoTenSua.trim()) {
+      setError("Vui lòng nhập họ tên cho hồ sơ không gắn tài khoản.");
+      return;
+    }
     try {
       await bacSiApi.capNhat(dangSua.id, {
         maChuyenKhoa: maCkSua ? Number(maCkSua) : null,
         bangCap: bangCapSua,
         hoatDong: hoatDongSua,
+        ...(dangSua.maNguoiDung == null ? { hoTen: hoTenSua.trim() } : {}),
       });
       dongSua();
       await napDuLieu();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Không cập nhật được");
     }
+  };
+
+  const handleExportCsv = () => {
+    if (list.length === 0) {
+      notify.warning("Chưa có dữ liệu để xuất CSV");
+      return;
+    }
+    const csvEscape = (value: string) => `"${value.replace(/"/g, '""')}"`;
+    const header = [
+      "MaBacSi",
+      "HoTen",
+      "TenDangNhap",
+      "ChuyenKhoa",
+      "BangCap",
+      "HoatDong",
+    ];
+    const rows = list.map((b) => [
+      String(b.id),
+      csvEscape(b.hoTen ?? ""),
+      csvEscape(b.tenDangNhap ?? ""),
+      csvEscape(formatCk(b) ?? ""),
+      csvEscape(b.bangCap ?? ""),
+      csvEscape(b.hoatDong ? "Có" : "Không"),
+    ]);
+    const content = [header.join(","), ...rows.map((row) => row.join(","))].join(
+      "\n",
+    );
+    const bom = "\uFEFF";
+    const blob = new Blob([bom + content], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    const now = new Date();
+    const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}-${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
+    anchor.href = url;
+    anchor.download = `bac-si-${stamp}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
   };
 
   if (!user?.cacVaiTro.includes("QUAN_TRI")) return null;
@@ -263,6 +323,14 @@ export default function QuanLyBacSiPage() {
       <div className="d-flex flex-column flex-md-row flex-wrap align-items-md-center justify-content-md-between gap-3 mb-4">
         <h2 className="mb-0">Quản lý bác sĩ</h2>
         <div className="bac-si-toolbar d-flex flex-wrap gap-2 align-items-center">
+          <Button
+            size="lg"
+            className="bac-si-toolbar-btn btn-service-export"
+            onClick={handleExportCsv}
+          >
+            <i className="bi bi-filetype-csv me-2" aria-hidden />
+            Export CSV
+          </Button>
           <Button
             size="lg"
             variant="success"
@@ -377,16 +445,17 @@ export default function QuanLyBacSiPage() {
               />
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label className="required">Tài khoản</Form.Label>
+              <Form.Label>Tài khoản</Form.Label>
               <div className="d-flex flex-wrap gap-2 align-items-stretch">
                 <Form.Select
                   className="flex-grow-1"
                   style={{ minWidth: "12rem" }}
                   value={taoMaNguoiDung}
                   onChange={(e) => setTaoMaNguoiDung(e.target.value)}
-                  required
                 >
-                  <option value="">— Chọn tài khoản —</option>
+                  <option value="">
+                    — Không chọn (chỉ hồ sơ, không đăng nhập) —
+                  </option>
                   {tuyChonTaiKhoan.map((u) => (
                     <option key={u.id} value={u.id}>
                       {u.tenDangNhap}
@@ -563,6 +632,17 @@ export default function QuanLyBacSiPage() {
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
+            {dangSua != null && dangSua.maNguoiDung == null ? (
+              <Form.Group className="mb-3">
+                <Form.Label className="required">Họ và tên</Form.Label>
+                <Form.Control
+                  value={hoTenSua}
+                  onChange={(e) => setHoTenSua(e.target.value)}
+                  placeholder="Tên hiển thị (hồ sơ chưa gắn tài khoản)"
+                  required
+                />
+              </Form.Group>
+            ) : null}
             <Form.Group className="mb-3">
               <Form.Label>Chuyên khoa</Form.Label>
               <Form.Select

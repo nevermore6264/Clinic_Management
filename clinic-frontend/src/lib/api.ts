@@ -141,7 +141,38 @@ export const benhNhanApi = {
 
 export const bacSiApi = {
   danhSach: () => api<BacSi[]>("/bac-si"),
+  danhSachTatCa: () => api<BacSi[]>("/bac-si?tatCa=true"),
   layTheoMa: (id: number) => api<BacSi>(`/bac-si/${id}`),
+  tao: (data: {
+    maNguoiDung: number;
+    maChuyenKhoa?: number;
+    bangCap?: string;
+  }) =>
+    api<BacSi>("/bac-si", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  capNhat: (
+    id: number,
+    data: {
+      maChuyenKhoa?: number | null;
+      bangCap?: string;
+      hoatDong: boolean;
+    },
+  ) =>
+    api<BacSi>(`/bac-si/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+};
+
+export interface ChuyenKhoa {
+  id: number;
+  tenChuyenKhoa: string;
+}
+
+export const chuyenKhoaApi = {
+  danhSach: () => api<ChuyenKhoa[]>("/chuyen-khoa"),
 };
 
 export const dichVuApi = {
@@ -468,7 +499,10 @@ export const usersApi = {
 export const doctorsApi = {
   ...bacSiApi,
   list: bacSiApi.danhSach,
+  listAll: bacSiApi.danhSachTatCa,
   get: bacSiApi.layTheoMa,
+  create: bacSiApi.tao,
+  update: bacSiApi.capNhat,
 };
 export const servicesApi = {
   ...dichVuApi,
@@ -625,7 +659,11 @@ export interface BenhNhan {
 
 export interface BacSi {
   id: number;
+  maNguoiDung?: number;
+  tenDangNhap?: string;
   hoTen: string;
+  maChuyenKhoa?: number;
+  tenChuyenKhoa?: string;
   chuyenMon?: string;
   bangCap?: string;
   hoatDong?: boolean;

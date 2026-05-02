@@ -191,6 +191,13 @@ export function NavBar() {
                   Thuốc
                 </NavLinkItem>
                 <NavLinkItem
+                  href="/bac-si"
+                  active={pathname.startsWith("/bac-si")}
+                  icon="bi-person-badge"
+                >
+                  Bác sĩ
+                </NavLinkItem>
+                <NavLinkItem
                   href="/nhat-ky-he-thong"
                   active={pathname === "/nhat-ky-he-thong"}
                   icon="bi-journal-text"

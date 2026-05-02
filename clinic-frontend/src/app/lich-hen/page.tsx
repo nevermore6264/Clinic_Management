@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Table, Button, Card, Form, Alert, Badge } from "react-bootstrap";
+import { Table, Card, Form, Alert, Badge } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import { appointmentsApi, type LichHen } from "@/lib/api";
@@ -20,7 +20,7 @@ const STATUS_LABEL: Record<string, string> = {
   VANG: "Không đến",
 };
 
-export default function AppointmentsPage() {
+function AppointmentsPageInner() {
   const searchParams = useSearchParams();
   const maBenhNhanParam = searchParams.get("maBenhNhan");
   const { user, loading } = useAuth();
@@ -55,15 +55,13 @@ export default function AppointmentsPage() {
         title="Lịch khám"
         subtitle="Lọc theo khoảng ngày, xem trạng thái và mở chi tiết từng lượt khám."
       >
-        <Button
-          as={Link}
+        <Link
           href="/lich-hen/new"
-          variant="primary"
-          className="d-inline-flex align-items-center gap-2"
+          className="btn btn-primary d-inline-flex align-items-center gap-2"
         >
           <i className="bi bi-plus-lg" aria-hidden />
           Đặt lịch mới
-        </Button>
+        </Link>
       </PageHeader>
       {error && (
         <Alert variant="danger" dismissible onClose={() => setError("")}>
@@ -126,15 +124,13 @@ export default function AppointmentsPage() {
                     </Badge>
                   </td>
                   <td className="text-end">
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      as={Link}
+                    <Link
                       href={`/lich-hen/${a.id}`}
+                      className="btn btn-sm btn-outline-primary"
                     >
                       <i className="bi bi-arrow-right-circle me-1" />
                       Chi tiết
-                    </Button>
+                    </Link>
                   </td>
                 </tr>
               ))}
@@ -143,5 +139,13 @@ export default function AppointmentsPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function AppointmentsPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <AppointmentsPageInner />
+    </Suspense>
   );
 }

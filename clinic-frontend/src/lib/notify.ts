@@ -22,7 +22,9 @@ function randomId() {
 
 export function subscribeNotify(listener: Listener) {
   listeners.add(listener);
-  return () => listeners.delete(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
 export function notify(payload: NotifyPayload) {

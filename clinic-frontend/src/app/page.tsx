@@ -381,7 +381,7 @@ export default function HomePage() {
               <ul>
                 <li>Hotline: 1900 565656</li>
                 <li>Email: info@medlatec.com</li>
-                <li>Hà Nội, Việt Nam</li>
+                <li>Đà Nẵng, Việt Nam</li>
               </ul>
             </div>
             <div>

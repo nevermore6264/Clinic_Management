@@ -188,17 +188,15 @@ export default function InvoiceDetailPage() {
         </Modal.Footer>
       </Modal>
       <div className="mt-3">
-        <Button
-          as={Link}
+        <Link
           href={`/hoa-don/${id}/print`}
-          variant="outline-secondary"
-          className="me-2"
+          className="btn btn-outline-secondary me-2"
         >
           In hóa đơn
-        </Button>
-        <Button as={Link} href="/hoa-don" variant="secondary">
+        </Link>
+        <Link href="/hoa-don" className="btn btn-secondary">
           Quay lại
-        </Button>
+        </Link>
       </div>
     </div>
   );

@@ -9,9 +9,11 @@ import com.clinic.entity.NguoiDung;
 import com.clinic.repository.BacSiRepository;
 import com.clinic.repository.NguoiDungRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Set;
@@ -33,12 +35,9 @@ public class NguoiDungService {
     @Transactional
     public ThongTinNguoiDungDto tao(TaoNguoiDungYeuCau yeuCau) {
         if (nguoiDungRepository.existsByTenDangNhap(yeuCau.getTenDangNhap())) {
-            throw new RuntimeException("Tên đăng nhập đã tồn tại");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên đăng nhập đã tồn tại");
         }
-        Set<VaiTro> vaiTros = yeuCau.getCacVaiTro().stream()
-                .map(String::toUpperCase)
-                .map(VaiTro::valueOf)
-                .collect(Collectors.toSet());
+        Set<VaiTro> vaiTros = chuyenDoiVaiTro(yeuCau.getCacVaiTro());
         NguoiDung nd = new NguoiDung();
         nd.setTenDangNhap(yeuCau.getTenDangNhap());
         nd.setMatKhauBam(maHoaMatKhau.encode(yeuCau.getMatKhau()));
@@ -59,21 +58,24 @@ public class NguoiDungService {
     @Transactional
     public ThongTinNguoiDungDto capNhat(Long id, CapNhatNguoiDungYeuCau yeuCau) {
         NguoiDung nd = nguoiDungRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng: " + id));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy người dùng: " + id
+                ));
         nd.setHoTen(yeuCau.getHoTen());
         nd.setThuDienTu(yeuCau.getThuDienTu());
         nd.setSoDienThoai(yeuCau.getSoDienThoai());
-        nd.setCacVaiTro(yeuCau.getCacVaiTro().stream()
-                .map(String::toUpperCase)
-                .map(VaiTro::valueOf)
-                .collect(Collectors.toSet()));
+        nd.setCacVaiTro(chuyenDoiVaiTro(yeuCau.getCacVaiTro()));
         return sangDto(nguoiDungRepository.save(nd));
     }
 
     @Transactional
     public void khoaTaiKhoan(Long id) {
         NguoiDung nd = nguoiDungRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng: " + id));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy người dùng: " + id
+                ));
         nd.setHoatDong(false);
         nguoiDungRepository.save(nd);
     }
@@ -81,9 +83,32 @@ public class NguoiDungService {
     @Transactional
     public void moKhoaTaiKhoan(Long id) {
         NguoiDung nd = nguoiDungRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng: " + id));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy người dùng: " + id
+                ));
         nd.setHoatDong(true);
         nguoiDungRepository.save(nd);
+    }
+
+    private Set<VaiTro> chuyenDoiVaiTro(Set<String> danhSachVaiTro) {
+        if (danhSachVaiTro == null || danhSachVaiTro.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Danh sách vai trò không hợp lệ");
+        }
+        try {
+            Set<VaiTro> vaiTros = danhSachVaiTro.stream()
+                    .map(String::trim)
+                    .filter(vaiTro -> !vaiTro.isEmpty())
+                    .map(String::toUpperCase)
+                    .map(VaiTro::valueOf)
+                    .collect(Collectors.toSet());
+            if (vaiTros.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Danh sách vai trò không hợp lệ");
+            }
+            return vaiTros;
+        } catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vai trò không hợp lệ", ex);
+        }
     }
 
     private ThongTinNguoiDungDto sangDto(NguoiDung u) {

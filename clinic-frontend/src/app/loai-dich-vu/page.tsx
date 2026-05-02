@@ -178,10 +178,10 @@ export default function ServiceTypesPage() {
             <i className="bi bi-filetype-csv me-2" aria-hidden />
             Export CSV
           </Button>
-          <Button as={Link} href="/dich-vu" className="btn-service-nav">
+          <Link href="/dich-vu" className="btn btn-service-nav">
             <i className="bi bi-hospital me-2" aria-hidden />
             Đến trang dịch vụ
-          </Button>
+          </Link>
         </div>
       </div>
 

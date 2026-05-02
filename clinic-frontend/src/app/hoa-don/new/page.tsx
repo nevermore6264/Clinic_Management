@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, Form, Button, Alert, Table, Spinner } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
@@ -11,6 +11,7 @@ import {
   type DichVu,
   type LichHen,
 } from "@/lib/api";
+import { LoadingState } from "@/components/LoadingState";
 
 function dinhDangNgayHen(ngayHen?: string) {
   if (!ngayHen) return "—";
@@ -29,7 +30,7 @@ function dinhDangGioHen(gioHen?: string) {
   return gioHen.length >= 5 ? gioHen.slice(0, 5) : gioHen;
 }
 
-export default function NewInvoicePage() {
+function NewInvoicePageInner() {
   const searchParams = useSearchParams();
   const maLichHenParam = searchParams.get("maLichHen");
   const { user, loading } = useAuth();
@@ -291,5 +292,13 @@ export default function NewInvoicePage() {
         </Card.Body>
       </Card>
     </div>
+  );
+}
+
+export default function NewInvoicePage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <NewInvoicePageInner />
+    </Suspense>
   );
 }

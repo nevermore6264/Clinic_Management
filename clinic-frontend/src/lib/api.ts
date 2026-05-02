@@ -104,11 +104,28 @@ export const nguoiDungApi = {
     }),
 };
 
+export type BenhNhanDanhSachLoc = {
+  ten?: string;
+  trangThaiHoSo?: "tat-ca" | "hoat-dong" | "an";
+  gioiTinh?: string;
+  nhomMau?: string;
+};
+
 export const benhNhanApi = {
-  danhSach: (page = 0, size = 10) =>
-    api<{ content: BenhNhan[]; totalElements: number }>(
-      `/benh-nhan?page=${page}&size=${size}`,
-    ),
+  danhSach: (page = 0, size = 10, loc?: BenhNhanDanhSachLoc) => {
+    const q = new URLSearchParams();
+    q.set("page", String(page));
+    q.set("size", String(size));
+    if (loc?.ten) q.set("ten", loc.ten);
+    if (loc?.trangThaiHoSo === "tat-ca" || loc?.trangThaiHoSo === "an") {
+      q.set("trangThaiHoSo", loc.trangThaiHoSo);
+    }
+    if (loc?.gioiTinh) q.set("gioiTinh", loc.gioiTinh);
+    if (loc?.nhomMau) q.set("nhomMau", loc.nhomMau);
+    return api<{ content: BenhNhan[]; totalElements: number }>(
+      `/benh-nhan?${q.toString()}`,
+    );
+  },
   timKiem: (ten: string) =>
     api<BenhNhan[]>(`/benh-nhan/tim-kiem?ten=${encodeURIComponent(ten)}`),
   layTheoMa: (id: number) => api<BenhNhan>(`/benh-nhan/${id}`),
@@ -374,6 +391,15 @@ export const patientsApi = {
       soDienThoai: data.soDienThoai ?? (data.phone as string),
       diaChi: data.diaChi ?? (data.address as string),
       thuDienTu: data.thuDienTu ?? (data.email as string),
+      gioiTinh: data.gioiTinh ?? (data.gender as string),
+      soCccd: data.soCccd ?? (data.identityNo as string),
+      ngheNghiep: data.ngheNghiep ?? (data.job as string),
+      nhomMau: data.nhomMau ?? (data.bloodType as string),
+      tienSuBenh: data.tienSuBenh ?? (data.medicalHistory as string),
+      diUng: data.diUng ?? (data.allergies as string),
+      nguoiLienHe: data.nguoiLienHe ?? (data.emergencyContactName as string),
+      soDienThoaiLienHe:
+        data.soDienThoaiLienHe ?? (data.emergencyContactPhone as string),
       hoatDong:
         data.hoatDong !== undefined
           ? data.hoatDong
@@ -388,6 +414,15 @@ export const patientsApi = {
       soDienThoai: data.soDienThoai ?? (data.phone as string),
       diaChi: data.diaChi ?? (data.address as string),
       thuDienTu: data.thuDienTu ?? (data.email as string),
+      gioiTinh: data.gioiTinh ?? (data.gender as string),
+      soCccd: data.soCccd ?? (data.identityNo as string),
+      ngheNghiep: data.ngheNghiep ?? (data.job as string),
+      nhomMau: data.nhomMau ?? (data.bloodType as string),
+      tienSuBenh: data.tienSuBenh ?? (data.medicalHistory as string),
+      diUng: data.diUng ?? (data.allergies as string),
+      nguoiLienHe: data.nguoiLienHe ?? (data.emergencyContactName as string),
+      soDienThoaiLienHe:
+        data.soDienThoaiLienHe ?? (data.emergencyContactPhone as string),
       hoatDong:
         data.hoatDong !== undefined
           ? data.hoatDong
@@ -577,6 +612,14 @@ export interface BenhNhan {
   soDienThoai?: string;
   diaChi?: string;
   thuDienTu?: string;
+  gioiTinh?: string;
+  soCccd?: string;
+  ngheNghiep?: string;
+  nhomMau?: string;
+  tienSuBenh?: string;
+  diUng?: string;
+  nguoiLienHe?: string;
+  soDienThoaiLienHe?: string;
   hoatDong?: boolean;
 }
 

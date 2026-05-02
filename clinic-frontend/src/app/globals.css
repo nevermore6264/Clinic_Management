@@ -383,8 +383,23 @@ html.app-ready body {
   box-shadow: 0 6px 14px rgba(220, 38, 38, 0.32);
 }
 
+/* Lịch hẹn / xem lịch — cùng cỡ nút Sửa, tông cyan */
+.btn-action-calendar {
+  background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 5px 12px rgba(2, 132, 199, 0.26);
+}
+.btn-action-calendar:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 6px 15px rgba(2, 132, 199, 0.34);
+  color: #fff !important;
+}
+
 .btn-action-edit,
 .btn-action-delete,
+.btn-action-calendar,
 .btn-thuoc-action-stop,
 .btn-thuoc-action-reopen {
   --bs-btn-padding-y: 0.25rem;
@@ -1387,6 +1402,90 @@ html.app-ready body {
   border-radius: var(--clinic-radius) !important;
   border: 1px solid var(--clinic-border);
   box-shadow: var(--clinic-shadow-lg);
+}
+
+/* Modal thêm bệnh nhân — rộng hơn mặc định, vùng cuộn cao hơn */
+.patient-create-modal-dialog.modal-xl {
+  max-width: min(1240px, 96vw);
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (min-width: 1400px) {
+  .patient-create-modal-dialog.modal-xl {
+    max-width: min(1320px, 94vw);
+  }
+}
+.patient-create-modal .modal-header {
+  border-bottom: 1px solid var(--clinic-border);
+  background: linear-gradient(
+    180deg,
+    rgba(240, 246, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.6) 100%
+  );
+  padding: 1.25rem 1.5rem 1.05rem;
+}
+.patient-create-modal__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #3b82f6 0%, #1d4ed8 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.55rem;
+  flex-shrink: 0;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28);
+}
+.patient-create-modal__title {
+  font-weight: 800;
+  font-size: 1.22rem;
+  color: var(--clinic-navy);
+  letter-spacing: -0.02em;
+}
+.patient-create-modal__subtitle {
+  font-size: 0.875rem;
+  color: var(--clinic-muted);
+  line-height: 1.5;
+}
+.patient-create-modal__body {
+  max-height: min(82vh, 720px);
+  overflow-y: auto;
+  padding: 1rem 1.5rem 1.15rem;
+  scrollbar-width: thin;
+}
+.patient-create-modal__section {
+  margin-bottom: 1.2rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+}
+.patient-create-modal__section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.patient-create-modal__section-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--clinic-steel);
+  margin-bottom: 0.7rem;
+}
+.patient-create-modal .form-control,
+.patient-create-modal .form-select {
+  border-radius: var(--clinic-radius-sm);
+  border-color: rgba(148, 163, 184, 0.45);
+}
+.patient-create-modal .form-control:focus,
+.patient-create-modal .form-select:focus {
+  border-color: rgba(37, 99, 235, 0.55);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+.patient-create-modal__footer {
+  border-top: 1px solid var(--clinic-border);
+  background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
+  padding: 1rem 1.5rem;
 }
 
 /* Xác nhận (khóa / mở khóa tài khoản) — không dùng React-Bootstrap Modal */

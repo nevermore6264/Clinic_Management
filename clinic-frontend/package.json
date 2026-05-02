@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "clean": "node -e \"const fs=require('fs');const rm=p=>{try{fs.rmSync(p,{recursive:true,force:true});console.log('Removed',p)}catch(e){if(e.code!=='ENOENT')throw e}};rm('.next');rm('node_modules/.cache');\"",
     "dev": "next dev -p 4009",
+    "dev:clean": "npm run clean && npm run dev",
     "build": "next build",
     "start": "next start -p 4009",
     "lint": "next lint"

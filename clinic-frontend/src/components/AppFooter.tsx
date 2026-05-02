@@ -9,7 +9,9 @@ export function AppFooter() {
                 <i className="bi bi-heart-pulse-fill" aria-hidden />
               </span>
               <div>
-                <div className="landing-brand__name text-white">MEDLATEC Clinic</div>
+                <div className="landing-brand__name text-white">
+                  MEDLATEC Clinic
+                </div>
                 <div className="landing-brand__sub text-white-50">
                   Hệ thống quản lý phòng khám thông minh
                 </div>
@@ -33,7 +35,7 @@ export function AppFooter() {
             <ul>
               <li>Hotline: 1900 565656</li>
               <li>Email: info@medlatec.com</li>
-              <li>Hà Nội, Việt Nam</li>
+              <li>Đà Nẵng, Việt Nam</li>
             </ul>
           </div>
           <div>

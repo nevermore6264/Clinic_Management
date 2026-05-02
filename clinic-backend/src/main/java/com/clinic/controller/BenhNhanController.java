@@ -19,8 +19,18 @@ public class BenhNhanController {
     private final BenhNhanService benhNhanService;
 
     @GetMapping
-    public ResponseEntity<Page<BenhNhanDto>> danhSach(Pageable phanTrang) {
-        return ResponseEntity.ok(benhNhanService.timTatCa(phanTrang));
+    public ResponseEntity<Page<BenhNhanDto>> danhSach(
+            Pageable phanTrang,
+            @RequestParam(required = false) String ten,
+            @RequestParam(required = false, defaultValue = "hoat-dong") String trangThaiHoSo,
+            @RequestParam(required = false) String gioiTinh,
+            @RequestParam(required = false) String nhomMau) {
+        Boolean hoatDongLoc = switch (trangThaiHoSo == null ? "hoat-dong" : trangThaiHoSo) {
+            case "tat-ca" -> null;
+            case "an" -> false;
+            default -> true;
+        };
+        return ResponseEntity.ok(benhNhanService.timLoc(ten, hoatDongLoc, gioiTinh, nhomMau, phanTrang));
     }
 
     @GetMapping("/tim-kiem")

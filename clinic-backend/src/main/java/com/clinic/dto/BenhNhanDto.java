@@ -12,5 +12,13 @@ public class BenhNhanDto {
     private String soDienThoai;
     private String diaChi;
     private String thuDienTu;
+    private String gioiTinh;
+    private String soCccd;
+    private String ngheNghiep;
+    private String nhomMau;
+    private String tienSuBenh;
+    private String diUng;
+    private String nguoiLienHe;
+    private String soDienThoaiLienHe;
     private boolean hoatDong;
 }

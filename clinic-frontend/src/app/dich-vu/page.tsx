@@ -267,10 +267,10 @@ export default function ServicesPage() {
             <i className="bi bi-filetype-csv me-2" aria-hidden />
             Export CSV
           </Button>
-          <Button as={Link} href="/loai-dich-vu" className="btn-service-nav">
+          <Link href="/loai-dich-vu" className="btn btn-service-nav">
             <i className="bi bi-tags me-2" aria-hidden />
             Đến loại dịch vụ
-          </Button>
+          </Link>
           <Button onClick={() => moModal("them-dich-vu", "Thêm dịch vụ")}>
             <i className="bi bi-plus-circle me-2" aria-hidden />
             Thêm dịch vụ

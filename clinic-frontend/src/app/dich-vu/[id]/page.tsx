@@ -138,9 +138,9 @@ export default function EditServicePage() {
             <Button type="submit" variant="primary">
               Lưu
             </Button>{" "}
-            <Button as={Link} href="/dich-vu" variant="secondary">
+            <Link href="/dich-vu" className="btn btn-secondary">
               Hủy
-            </Button>
+            </Link>
           </Form>
         </Card.Body>
       </Card>

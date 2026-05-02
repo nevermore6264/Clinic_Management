@@ -36,6 +36,30 @@ public class BenhNhan {
     @Column(name = "thu_dien_tu")
     private String thuDienTu;
 
+    @Column(name = "gioi_tinh")
+    private String gioiTinh;
+
+    @Column(name = "so_cccd")
+    private String soCccd;
+
+    @Column(name = "nghe_nghiep")
+    private String ngheNghiep;
+
+    @Column(name = "nhom_mau")
+    private String nhomMau;
+
+    @Column(name = "tien_su_benh", columnDefinition = "TEXT")
+    private String tienSuBenh;
+
+    @Column(name = "di_ung", columnDefinition = "TEXT")
+    private String diUng;
+
+    @Column(name = "nguoi_lien_he")
+    private String nguoiLienHe;
+
+    @Column(name = "so_dien_thoai_lien_he")
+    private String soDienThoaiLienHe;
+
     @Column(name = "hoat_dong", nullable = false)
     @Builder.Default
     private boolean hoatDong = true;

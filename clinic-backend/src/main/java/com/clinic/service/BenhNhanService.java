@@ -21,7 +21,15 @@ public class BenhNhanService {
 
     @Transactional(readOnly = true)
     public Page<BenhNhanDto> timTatCa(Pageable phanTrang) {
-        return benhNhanRepository.findByHoatDongTrue(phanTrang).map(this::sangDto);
+        return timLoc(null, true, null, null, phanTrang);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BenhNhanDto> timLoc(String ten, Boolean hoatDong, String gioiTinh, String nhomMau, Pageable phanTrang) {
+        String t = (ten != null && !ten.isBlank()) ? ten.trim() : null;
+        String gt = (gioiTinh != null && !gioiTinh.isBlank()) ? gioiTinh.trim() : null;
+        String nm = (nhomMau != null && !nhomMau.isBlank()) ? nhomMau.trim() : null;
+        return benhNhanRepository.timLoc(t, hoatDong, gt, nm, phanTrang).map(this::sangDto);
     }
 
     @Transactional(readOnly = true)
@@ -69,6 +77,14 @@ public class BenhNhanService {
         bn.setSoDienThoai(dto.getSoDienThoai());
         bn.setDiaChi(dto.getDiaChi());
         bn.setThuDienTu(dto.getThuDienTu());
+        bn.setGioiTinh(dto.getGioiTinh());
+        bn.setSoCccd(dto.getSoCccd());
+        bn.setNgheNghiep(dto.getNgheNghiep());
+        bn.setNhomMau(dto.getNhomMau());
+        bn.setTienSuBenh(dto.getTienSuBenh());
+        bn.setDiUng(dto.getDiUng());
+        bn.setNguoiLienHe(dto.getNguoiLienHe());
+        bn.setSoDienThoaiLienHe(dto.getSoDienThoaiLienHe());
         bn.setHoatDong(dto.isHoatDong());
     }
 
@@ -80,6 +96,14 @@ public class BenhNhanService {
         dto.setSoDienThoai(bn.getSoDienThoai());
         dto.setDiaChi(bn.getDiaChi());
         dto.setThuDienTu(bn.getThuDienTu());
+        dto.setGioiTinh(bn.getGioiTinh());
+        dto.setSoCccd(bn.getSoCccd());
+        dto.setNgheNghiep(bn.getNgheNghiep());
+        dto.setNhomMau(bn.getNhomMau());
+        dto.setTienSuBenh(bn.getTienSuBenh());
+        dto.setDiUng(bn.getDiUng());
+        dto.setNguoiLienHe(bn.getNguoiLienHe());
+        dto.setSoDienThoaiLienHe(bn.getSoDienThoaiLienHe());
         dto.setHoatDong(bn.isHoatDong());
         return dto;
     }

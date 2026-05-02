@@ -368,13 +368,12 @@ export default function AppointmentDetailPage() {
         </Card>
       ) : null}
       <div className="mt-3">
-        <Button
-          as={Link}
+        <Link
           href={`/hoa-don/new?maLichHen=${id}`}
-          variant="outline-primary"
+          className="btn btn-outline-primary"
         >
           Hóa đơn
-        </Button>{" "}
+        </Link>{" "}
         <Button variant="secondary" onClick={() => router.back()}>
           Quay lại
         </Button>

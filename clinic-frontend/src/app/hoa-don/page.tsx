@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Table, Button, Card, Form, Alert } from "react-bootstrap";
+import { Table, Card, Form, Alert } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import { invoicesApi, type HoaDon } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
 import { LoadingState } from "@/components/LoadingState";
 
-export default function InvoicesPage() {
+function InvoicesPageInner() {
   const searchParams = useSearchParams();
   const maBenhNhanParam = searchParams.get("maBenhNhan");
   const { user, loading } = useAuth();
@@ -40,15 +40,13 @@ export default function InvoicesPage() {
         title="Hóa đơn & thanh toán"
         subtitle="Danh sách hóa đơn theo khoảng thời gian. Mở chi tiết để ghi nhận thanh toán."
       >
-        <Button
-          as={Link}
+        <Link
           href="/lich-hen"
-          variant="outline-primary"
-          className="d-inline-flex align-items-center gap-2"
+          className="btn btn-outline-primary d-inline-flex align-items-center gap-2"
         >
           <i className="bi bi-calendar-check" aria-hidden />
           Chọn lịch hẹn để lập hóa đơn
-        </Button>
+        </Link>
       </PageHeader>
       {error && (
         <Alert variant="danger" dismissible onClose={() => setError("")}>
@@ -105,15 +103,13 @@ export default function InvoicesPage() {
                   <td>{inv.soTienDaTra?.toLocaleString("vi-VN")}đ</td>
                   <td>{inv.trangThai}</td>
                   <td className="text-end">
-                    <Button
-                      size="sm"
-                      variant="outline-primary"
-                      as={Link}
+                    <Link
                       href={`/hoa-don/${inv.id}`}
+                      className="btn btn-sm btn-outline-primary"
                     >
                       <i className="bi bi-eye me-1" />
                       Chi tiết
-                    </Button>
+                    </Link>
                   </td>
                 </tr>
               ))}
@@ -122,5 +118,13 @@ export default function InvoicesPage() {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function InvoicesPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <InvoicesPageInner />
+    </Suspense>
   );
 }

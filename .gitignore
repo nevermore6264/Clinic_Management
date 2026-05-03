@@ -42,6 +42,7 @@ __pycache__/
 tmp/
 temp/
 *.tmp
+clinic-backend/uploads/
 
 scripts/
 diagrams/

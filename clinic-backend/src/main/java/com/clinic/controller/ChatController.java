@@ -23,25 +23,48 @@ public class ChatController {
         if (chuThe == null) return;
         String noiDung = (String) payload.get("noiDung");
         if (noiDung == null) noiDung = (String) payload.get("content");
-        if (noiDung == null || noiDung.isBlank()) return;
+        String dkUrl = chuoi(payload, "dinhKemDuongDan", "attachUrl");
+        String dkTen = chuoi(payload, "dinhKemTen", "attachName");
+        String dkLoai = chuoi(payload, "dinhKemLoai", "attachMime");
+        boolean coTep = dkUrl != null && !dkUrl.isBlank();
+        boolean coChu = noiDung != null && !noiDung.isBlank();
+        if (!coTep && !coChu) return;
         Long maNguoiNhan = tachMaNguoiNhan(payload);
         if (maNguoiNhan != null && maNguoiNhan > 0) {
-            TinNhanChatDto daLuu = tinNhanChatService.luuTinRieng(
+            TinNhanChatDto daLuu = coTep
+                    ? tinNhanChatService.luuTinRieng(
+                    chuThe.maNguoiDung(),
+                    coChu ? noiDung.trim() : null,
+                    maNguoiNhan,
+                    dkUrl,
+                    dkTen,
+                    dkLoai)
+                    : tinNhanChatService.luuTinRieng(
                     chuThe.maNguoiDung(),
                     noiDung.trim(),
-                    maNguoiNhan
-            );
+                    maNguoiNhan);
             String kenh = TinNhanChatService.maKenhDm(chuThe.maNguoiDung(), maNguoiNhan);
             khuonMauGui.convertAndSend("/topic/dm/" + kenh, daLuu);
             return;
         }
+        if (coTep) return;
         Long maPhong = tachMaPhong(payload);
         TinNhanChatDto daLuu = tinNhanChatService.luuVaChuyenDoi(
                 chuThe.maNguoiDung(),
-                noiDung.trim(),
+                noiDung != null ? noiDung.trim() : "",
                 maPhong
         );
         khuonMauGui.convertAndSend("/topic/room/" + daLuu.getMaPhong(), daLuu);
+    }
+
+    private static String chuoi(Map<String, Object> payload, String... keys) {
+        for (String key : keys) {
+            Object raw = payload.get(key);
+            if (raw == null) continue;
+            String s = String.valueOf(raw).trim();
+            if (!s.isEmpty()) return s;
+        }
+        return null;
     }
 
     private Long tachMaNguoiNhan(Map<String, Object> payload) {

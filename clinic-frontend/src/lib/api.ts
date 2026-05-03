@@ -1,6 +1,7 @@
 import { notify, notifyMessageByMethod } from "@/lib/notify";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081/api";
+export const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081/api";
 
 function getToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -327,8 +328,6 @@ export const hoaDonApi = {
     }),
 };
 
-const API_ROOT = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
-
 export const baoCaoApi = {
   doanhThu: (
     tuNgay: string,
@@ -336,10 +335,10 @@ export const baoCaoApi = {
     maBacSi?: number,
     maDichVu?: number,
   ) => {
-    let url = `${API_BASE}/bao-cao/doanh-thu?tuNgay=${tuNgay}&denNgay=${denNgay}`;
-    if (maBacSi != null) url += `&maBacSi=${maBacSi}`;
-    if (maDichVu != null) url += `&maDichVu=${maDichVu}`;
-    return api<BaoCaoDoanhThu[]>(url);
+    let path = `/bao-cao/doanh-thu?tuNgay=${encodeURIComponent(tuNgay)}&denNgay=${encodeURIComponent(denNgay)}`;
+    if (maBacSi != null) path += `&maBacSi=${maBacSi}`;
+    if (maDichVu != null) path += `&maDichVu=${maDichVu}`;
+    return api<BaoCaoDoanhThu[]>(path);
   },
   xuatExcel: async (
     tuNgay: string,
@@ -408,8 +407,43 @@ export interface TinNhanChatDto {
   maNguoiNhan?: number;
   tenNguoiNhan?: string;
   noiDung: string;
+  /** Đường dẫn API, ví dụ /tro-chuyen/tep/uuid.pdf */
+  dinhKemDuongDan?: string;
+  dinhKemTen?: string;
+  dinhKemLoai?: string;
   maPhong: number;
   taoLuc: string;
+}
+
+export interface TroChuyenTaiLenResponse {
+  duongDan: string;
+  tenHienThi: string;
+  loaiMime: string;
+  kichThuoc: number;
+}
+
+export async function apiUploadChatFile(
+  file: File,
+): Promise<TroChuyenTaiLenResponse> {
+  const token = getToken();
+  const fd = new FormData();
+  fd.append("file", file);
+  const res = await fetch(`${API_BASE}/tro-chuyen/tai-len`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: fd,
+  });
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try {
+      const j = (await res.json()) as { message?: string };
+      if (j.message) msg = j.message;
+    } catch {
+      
+    }
+    throw new Error(msg);
+  }
+  return res.json() as Promise<TroChuyenTaiLenResponse>;
 }
 
 export interface NguoiDungChatEntry {
@@ -669,6 +703,7 @@ export const chatApi = {
   history: troChuyenApi.layLichSu,
   dmHistory: troChuyenApi.layDoiThoai,
   contacts: troChuyenApi.danhBa,
+  uploadFile: apiUploadChatFile,
 };
 export const doctorSchedulesApi = {
   ...lichLamViecBacSiApi,

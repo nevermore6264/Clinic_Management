@@ -47,21 +47,43 @@ public class TinNhanChatService {
 
     @Transactional
     public TinNhanChatDto luuTinRieng(Long maNguoiGui, String noiDung, Long maNguoiNhan) {
+        return luuTinRieng(maNguoiGui, noiDung, maNguoiNhan, null, null, null);
+    }
+
+    @Transactional
+    public TinNhanChatDto luuTinRieng(Long maNguoiGui, String noiDung, Long maNguoiNhan,
+                                      String dinhKemDuongDan, String dinhKemTen, String dinhKemLoai) {
         if (maNguoiNhan == null || maNguoiNhan.equals(maNguoiGui)) {
             throw new RuntimeException("Người nhận không hợp lệ.");
         }
+        boolean coTep = dinhKemDuongDan != null && !dinhKemDuongDan.isBlank();
+        boolean coChu = noiDung != null && !noiDung.trim().isEmpty();
+        if (!coTep && !coChu) {
+            throw new RuntimeException("Nội dung hoặc tệp đính kèm không được để trống.");
+        }
+        String nd = coChu ? noiDung.trim()
+                : ("\uD83D\uDCCE " + (dinhKemTen != null && !dinhKemTen.isBlank() ? dinhKemTen : "Tệp"));
         NguoiDung nguoiGui = nguoiDungRepository.findById(maNguoiGui)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người gửi: " + maNguoiGui));
         NguoiDung nguoiNhan = nguoiDungRepository.findById(maNguoiNhan)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người nhận: " + maNguoiNhan));
-        TinNhanChat tin = TinNhanChat.builder()
+        TinNhanChat.TinNhanChatBuilder b = TinNhanChat.builder()
                 .nguoiGui(nguoiGui)
                 .nguoiNhan(nguoiNhan)
-                .noiDung(noiDung != null ? noiDung : "")
-                .maPhong(0L)
-                .build();
-        tin = khoTinNhan.save(tin);
+                .noiDung(nd)
+                .maPhong(0L);
+        if (coTep) {
+            b.dinhKemDuongDan(dinhKemDuongDan.trim())
+                    .dinhKemTen(truncate(dinhKemTen, 255))
+                    .dinhKemLoai(truncate(dinhKemLoai, 128));
+        }
+        TinNhanChat tin = khoTinNhan.save(b.build());
         return sangDto(tin);
+    }
+
+    private static String truncate(String s, int max) {
+        if (s == null) return null;
+        return s.length() <= max ? s : s.substring(0, max);
     }
 
     @Transactional(readOnly = true)
@@ -101,6 +123,9 @@ public class TinNhanChatService {
         dto.setMaNguoiNhan(m.getNguoiNhan() != null ? m.getNguoiNhan().getId() : null);
         dto.setTenNguoiNhan(m.getNguoiNhan() != null ? m.getNguoiNhan().getHoTen() : null);
         dto.setNoiDung(m.getNoiDung());
+        dto.setDinhKemDuongDan(m.getDinhKemDuongDan());
+        dto.setDinhKemTen(m.getDinhKemTen());
+        dto.setDinhKemLoai(m.getDinhKemLoai());
         dto.setMaPhong(m.getMaPhong());
         dto.setTaoLuc(m.getTaoLuc());
         return dto;

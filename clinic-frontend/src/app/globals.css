@@ -251,6 +251,14 @@ html.app-ready body {
   padding-right: 0;
 }
 
+/* Trang chat: dùng gần hết chiều ngang / cao viewport */
+.page-shell:has(.chat-dm-app) {
+  width: 100%;
+  max-width: 100%;
+  padding-left: clamp(0.75rem, 2.5vw, 1.5rem);
+  padding-right: clamp(0.75rem, 2.5vw, 1.5rem);
+}
+
 .page-main {
   padding-top: 1.5rem;
   padding-bottom: 2.5rem;
@@ -1806,7 +1814,8 @@ html.app-ready body {
 
 /* —— Chat riêng (DM) hiện đại —— */
 .chat-dm-app {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 100%;
   margin-left: auto;
   margin-right: auto;
 }
@@ -1817,7 +1826,8 @@ html.app-ready body {
   border: 1px solid var(--clinic-border, #e5e7eb);
   background: var(--bs-body-bg, #fff);
   box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
-  min-height: min(560px, calc(100vh - 11rem));
+  /* Gần full chiều cao giữa nav và footer (bỏ giới hạn 560px cũ) */
+  min-height: max(20rem, calc(100dvh - 12rem));
 }
 
 .chat-dm-app__sidebar {
@@ -1828,7 +1838,95 @@ html.app-ready body {
   );
   display: flex;
   flex-direction: column;
-  max-height: min(560px, calc(100vh - 11rem));
+  max-height: max(20rem, calc(100dvh - 12rem));
+}
+
+.chat-dm-app__sidebar-head {
+  background: linear-gradient(
+    180deg,
+    rgba(248, 250, 252, 0.9) 0%,
+    rgba(255, 255, 255, 0.98) 100%
+  ) !important;
+}
+
+.chat-dm-app__search {
+  position: relative;
+}
+
+.chat-dm-app__search-icon {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-size: 0.95rem;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.85;
+}
+
+.chat-dm-app__search-input {
+  padding-left: 2.55rem !important;
+  border-radius: 999px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #f1f5f9 !important;
+  font-size: 0.875rem !important;
+  height: 2.375rem;
+}
+
+.chat-dm-app__search-input:focus {
+  background: #fff !important;
+  border-color: rgba(13, 148, 136, 0.55) !important;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.14) !important;
+}
+
+.chat-dm-app__conn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.chat-dm-app__conn-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.chat-dm-app__conn--on {
+  background: rgba(16, 185, 129, 0.14);
+  color: #047857;
+}
+
+.chat-dm-app__conn--on .chat-dm-app__conn-dot {
+  background: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35);
+}
+
+.chat-dm-app__conn--off {
+  background: rgba(100, 116, 139, 0.1);
+  color: #64748b;
+}
+
+.chat-dm-app__conn--off .chat-dm-app__conn-dot {
+  background: #94a3b8;
+  animation: chat-dm-pulse-dot 1.2s ease-in-out infinite;
+}
+
+@keyframes chat-dm-pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 
 .chat-dm-app__contact-list {
@@ -1874,10 +1972,35 @@ html.app-ready body {
   font-size: 0.85rem;
 }
 
+/* Avatar minh họa (DiceBear SVG) */
+.chat-dm-app__avatar--gen {
+  padding: 0;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.chat-dm-app__avatar--gen img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
 .chat-dm-app__contact-text {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  flex: 1;
+}
+
+.chat-dm-app__contact-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
+  min-width: 0;
+  width: 100%;
 }
 
 .chat-dm-app__contact-name {
@@ -1886,6 +2009,26 @@ html.app-ready body {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+  min-width: 0;
+}
+
+.chat-dm-app__contact-name--active {
+  font-weight: 700;
+  color: var(--clinic-navy, #0f172a);
+}
+
+.chat-dm-app__unread {
+  flex-shrink: 0;
+  min-width: 1.35rem;
+  padding: 0.12rem 0.42rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  box-shadow: 0 1px 6px rgba(225, 29, 72, 0.35);
 }
 
 .chat-dm-app__contact-sub {
@@ -1896,23 +2039,9 @@ html.app-ready body {
   white-space: nowrap;
 }
 
-.chat-dm-app__pill {
-  font-size: 0.72rem;
-}
-
-.chat-dm-app__pill--on {
-  background: rgba(16, 185, 129, 0.15);
-  color: #047857;
-}
-
-.chat-dm-app__pill--off {
-  background: rgba(100, 116, 139, 0.12);
-  color: #64748b;
-}
-
 .chat-dm-app__main {
-  min-height: min(560px, calc(100vh - 11rem));
-  max-height: min(560px, calc(100vh - 11rem));
+  min-height: max(20rem, calc(100dvh - 12rem));
+  max-height: max(20rem, calc(100dvh - 12rem));
   background: linear-gradient(
     160deg,
     rgba(248, 250, 252, 1) 0%,
@@ -1926,7 +2055,7 @@ html.app-ready body {
 }
 
 .chat-dm-app__msg-inner {
-  max-width: 52rem;
+  max-width: min(100%, 56rem);
   margin: 0 auto;
 }
 
@@ -1957,7 +2086,7 @@ html.app-ready body {
 }
 
 .chat-dm-app__bubble-wrap {
-  max-width: min(82%, 26rem);
+  max-width: min(85%, 34rem);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -1992,6 +2121,186 @@ html.app-ready body {
   border-bottom-right-radius: 0.35rem;
   border-bottom-left-radius: 1rem;
   box-shadow: 0 4px 14px rgba(13, 148, 136, 0.28);
+}
+
+.chat-dm-app__bubble-text {
+  margin-top: 0.35rem;
+}
+
+.chat-dm-app__bubble-text:first-child {
+  margin-top: 0;
+}
+
+.chat-dm-app__attach-img {
+  display: block;
+  max-width: min(100%, 280px);
+  max-height: 240px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 0.65rem;
+}
+
+.chat-dm-app__attach-img-link {
+  line-height: 0;
+}
+
+.chat-dm-app__attach-file {
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.65rem;
+  background: rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  color: inherit;
+  text-decoration: none !important;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.chat-dm-app__attach-file:hover {
+  background: rgba(13, 148, 136, 0.08);
+}
+
+.chat-dm-app__bubble--mine .chat-dm-app__attach-file {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+
+.chat-dm-app__bubble--mine .chat-dm-app__attach-img {
+  border: 2px solid rgba(255, 255, 255, 0.45);
+}
+
+.chat-dm-app__composer-toolbar {
+  min-height: 2rem;
+}
+
+/* Thanh Emoji + Đính kèm: segmented control, không dùng outline kiểu form mặc định */
+.chat-dm-app__tool-strip {
+  flex-shrink: 0;
+  padding: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(241, 245, 249, 0.88) 100%
+  );
+  border: 1px solid rgba(148, 163, 184, 0.38);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.chat-dm-app__tool-strip .dropdown-toggle.chat-dm-app__tool-btn::after {
+  display: none !important;
+}
+
+.chat-dm-app__tool-btn {
+  min-height: 2.45rem;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  border: none !important;
+  background: transparent !important;
+  color: #475569 !important;
+  box-shadow: none !important;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.chat-dm-app__tool-btn:hover:not(:disabled),
+.chat-dm-app__tool-btn:focus-visible:not(:disabled),
+.chat-dm-app__tool-strip .dropdown-toggle.chat-dm-app__tool-btn.show {
+  background: rgba(13, 148, 136, 0.14) !important;
+  color: #0f766e !important;
+}
+
+.chat-dm-app__tool-btn:focus-visible {
+  outline: 2px solid rgba(13, 148, 136, 0.45);
+  outline-offset: 2px;
+}
+
+.chat-dm-app__tool-btn:disabled {
+  opacity: 0.45;
+}
+
+.chat-dm-app__tool-btn--first {
+  min-width: 2.85rem;
+  padding-left: 0.65rem !important;
+  padding-right: 0.65rem !important;
+  border-radius: 999px 0 0 999px !important;
+}
+
+.chat-dm-app__tool-btn--last {
+  padding-left: 0.85rem !important;
+  padding-right: 1rem !important;
+  border-radius: 0 999px 999px 0 !important;
+  border-left: 1px solid rgba(148, 163, 184, 0.38) !important;
+}
+
+.chat-dm-app__tool-emoji {
+  font-size: 1.35rem;
+  line-height: 1;
+  display: inline-block;
+  transform: translateY(1px);
+}
+
+.chat-dm-app__tool-label {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.chat-dm-app__tool-spinner {
+  width: 1rem !important;
+  height: 1rem !important;
+  border-width: 2px !important;
+  color: #0d9488 !important;
+}
+
+@media (max-width: 575.98px) {
+  .chat-dm-app__tool-label {
+    display: none;
+  }
+
+  .chat-dm-app__tool-btn--last {
+    min-width: 2.75rem;
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
+  }
+}
+
+.chat-dm-app__emoji-menu {
+  min-width: 17rem;
+  max-height: 14rem;
+  overflow-y: auto;
+}
+
+.chat-dm-app__emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0.15rem;
+}
+
+.chat-dm-app__emoji-cell {
+  border: none;
+  background: transparent;
+  border-radius: 0.35rem;
+  font-size: 1.35rem;
+  line-height: 1;
+  padding: 0.28rem;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.chat-dm-app__emoji-cell:hover {
+  background: rgba(13, 148, 136, 0.12);
+}
+
+.chat-dm-app__pending-file {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(13, 148, 136, 0.1);
+  border: 1px dashed rgba(13, 148, 136, 0.35);
+  max-width: 100%;
 }
 
 .chat-dm-app__bubble-time {
@@ -3908,4 +4217,91 @@ html.app-ready body {
     transform: none !important;
     animation: none !important;
   }
+}
+
+/* —— Phiếu chi: layout nổi bật —— */
+.phieu-chi-page .phieu-chi-hero {
+  background: linear-gradient(
+    135deg,
+    rgba(15, 23, 42, 0.04) 0%,
+    rgba(13, 148, 136, 0.07) 45%,
+    rgba(37, 99, 235, 0.06) 100%
+  );
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.05);
+}
+
+.phieu-chi-page .phieu-chi-stat .stat-value {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.phieu-chi-page .phieu-chi-filter-card {
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+}
+
+.phieu-chi-page .phieu-chi-chip {
+  border-color: #cbd5e1 !important;
+  font-weight: 500;
+}
+
+.phieu-chi-page .phieu-chi-chip:hover {
+  background: rgba(13, 148, 136, 0.08) !important;
+  border-color: rgba(13, 148, 136, 0.35) !important;
+  color: #0f766e;
+}
+
+.phieu-chi-page .phieu-chi-date {
+  min-width: 10.5rem;
+  border-radius: 0.65rem;
+  border-color: #e2e8f0;
+}
+
+.phieu-chi-page .phieu-chi-table-card {
+  background: #fff;
+}
+
+.phieu-chi-page .phieu-chi-thead th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  font-weight: 700;
+  border-bottom-width: 2px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+}
+
+.phieu-chi-page .phieu-chi-table tbody tr {
+  transition: background var(--transition-fast);
+}
+
+.phieu-chi-page .phieu-chi-table tbody tr:hover {
+  background: rgba(13, 148, 136, 0.04);
+}
+
+.phieu-chi-page .phieu-chi-desc {
+  max-width: 28rem;
+  color: var(--clinic-navy-mid);
+}
+
+.phieu-chi-page .tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.phieu-chi-page .phieu-chi-empty-icon {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: #94a3b8;
+  background: linear-gradient(
+    145deg,
+    rgba(148, 163, 184, 0.15),
+    rgba(148, 163, 184, 0.06)
+  );
 }

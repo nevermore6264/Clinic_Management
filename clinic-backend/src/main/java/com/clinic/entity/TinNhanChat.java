@@ -30,6 +30,16 @@ public class TinNhanChat {
     @Column(name = "noi_dung", nullable = false, length = 2000)
     private String noiDung;
 
+    /** Đường dẫn API tải tệp, ví dụ /api/tro-chuyen/tep/uuid.pdf */
+    @Column(name = "dinh_kem_duong_dan", length = 512)
+    private String dinhKemDuongDan;
+
+    @Column(name = "dinh_kem_ten", length = 255)
+    private String dinhKemTen;
+
+    @Column(name = "dinh_kem_loai", length = 128)
+    private String dinhKemLoai;
+
     @Column(name = "ma_phong")
     @Builder.Default
     private Long maPhong = 1L;

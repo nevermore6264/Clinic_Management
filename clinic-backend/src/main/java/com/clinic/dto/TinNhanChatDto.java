@@ -13,6 +13,9 @@ public class TinNhanChatDto {
     private Long maNguoiNhan;
     private String tenNguoiNhan;
     private String noiDung;
+    private String dinhKemDuongDan;
+    private String dinhKemTen;
+    private String dinhKemLoai;
     private Long maPhong;
     private Instant taoLuc;
 }

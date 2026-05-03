@@ -3,6 +3,7 @@ package com.clinic.service;
 import com.clinic.dto.*;
 import com.clinic.entity.*;
 import com.clinic.repository.*;
+import com.clinic.security.QuyenTruyCapHoSoBenhNhan;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ public class HoaDonService {
     private final LichHenRepository lichHenRepository;
     private final DichVuRepository dichVuRepository;
     private final LichHenService lichHenService;
+    private final QuyenTruyCapHoSoBenhNhan quyenTruyCapHoSoBenhNhan;
 
     @Transactional(readOnly = true)
     public Page<HoaDonDto> timTrongKhoang(Instant tuLuc, Instant denLuc, Pageable phanTrang) {
@@ -30,22 +32,34 @@ public class HoaDonService {
 
     @Transactional(readOnly = true)
     public List<HoaDonDto> timTheoBenhNhan(Long maBenhNhan) {
+        quyenTruyCapHoSoBenhNhan.yeuCauDuocTruyCapHoSo(maBenhNhan);
         return hoaDonRepository.findByLichHenBenhNhanIdOrderByTaoLucDesc(maBenhNhan)
                 .stream().map(this::sangDto).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public HoaDonDto layTheoMa(Long ma) {
-        return sangDto(hoaDonRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn: " + ma)));
+        HoaDon hd = hoaDonRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn: " + ma));
+        quyenTruyCapHoSoBenhNhan.yeuCauDuocTruyCapHoSo(hd.getBenhNhan().getId());
+        return sangDto(hd);
     }
 
     @Transactional
     public HoaDonDto tao(Long maLichHen, List<ChiTietHoaDonDto> chiTiet) {
         LichHen lh = lichHenRepository.findById(maLichHen)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch hẹn: " + maLichHen));
+        if (hoaDonRepository.findByLichHen_Id(maLichHen).isPresent()) {
+            throw new RuntimeException("Lịch này đã có hóa đơn. Vui lòng xem trong danh sách hoặc in từ chi tiết hóa đơn.");
+        }
         if (lh.getTrangThai() == LichHen.TrangThaiLichHen.HUY
                 || lh.getTrangThai() == LichHen.TrangThaiLichHen.VANG) {
-            throw new RuntimeException("Không thể lập hóa đơn cho lịch đã hủy hoặc không đến.");
+            throw new RuntimeException("Không thể lập hóa đơn cho lịch đã hủy hoặc bệnh nhân không đến.");
+        }
+        if (lh.getTrangThai() == LichHen.TrangThaiLichHen.CHO_THANH_TOAN) {
+            throw new RuntimeException("Lịch này đã có hóa đơn chờ thanh toán. Xem trong danh sách hoặc chi tiết hóa đơn.");
+        }
+        if (lh.getTrangThai() == LichHen.TrangThaiLichHen.DA_THANH_TOAN) {
+            throw new RuntimeException("Lịch đã ở trạng thái đã thanh toán; không lập thêm hóa đơn mới cho cùng lịch.");
         }
         HoaDon hd = new HoaDon();
         hd.setLichHen(lh);
@@ -71,7 +85,7 @@ public class HoaDonService {
         }
         hd.setTongTien(tong);
         HoaDon daLuu = hoaDonRepository.save(hd);
-        lichHenService.capNhatTrangThai(maLichHen, LichHen.TrangThaiLichHen.DA_THANH_TOAN);
+        lichHenService.capNhatTrangThai(maLichHen, LichHen.TrangThaiLichHen.CHO_THANH_TOAN);
         return sangDto(daLuu);
     }
 

@@ -159,7 +159,11 @@ export default function InvoiceDetailPage() {
         </Card>
       )}
       </div>
-      <Modal show={showPayment} onHide={() => setShowPayment(false)}>
+      <Modal
+        show={showPayment}
+        onHide={() => setShowPayment(false)}
+        centered
+      >
         <Modal.Header closeButton>Ghi nhận thanh toán</Modal.Header>
         <Modal.Body>
           <Form.Group className="mb-2">
@@ -198,10 +202,20 @@ export default function InvoiceDetailPage() {
           </Form.Group>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowPayment(false)}>
+          <Button
+            variant="secondary"
+            className="d-inline-flex align-items-center gap-2"
+            onClick={() => setShowPayment(false)}
+          >
+            <i className="bi bi-x-lg" aria-hidden />
             Hủy
           </Button>
-          <Button variant="primary" onClick={submitPayment}>
+          <Button
+            variant="primary"
+            className="d-inline-flex align-items-center gap-2"
+            onClick={submitPayment}
+          >
+            <i className="bi bi-check2-circle" aria-hidden />
             Xác nhận
           </Button>
         </Modal.Footer>

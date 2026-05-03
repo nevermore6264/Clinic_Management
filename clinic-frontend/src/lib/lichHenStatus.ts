@@ -30,6 +30,12 @@ export const LICH_HEN_STATUS_FLOW = [
     slug: "da-ke-don",
   },
   {
+    value: "CHO_THANH_TOAN",
+    label: "Chờ thanh toán",
+    icon: "bi-hourglass-split",
+    slug: "cho-thanh-toan",
+  },
+  {
     value: "DA_THANH_TOAN",
     label: "Đã thanh toán",
     icon: "bi-cash-stack",
@@ -63,4 +69,17 @@ export function metaTrangThaiLichHen(code: string | undefined) {
       slug: "unknown",
     }
   );
+}
+
+/** Không cho lập HĐ mới: đã hủy, không đến, đã có HĐ chờ thanh toán, hoặc đã thanh toán xong. */
+const TRANG_THAI_KHONG_LAP_HOA_DON = new Set([
+  "HUY",
+  "VANG",
+  "CHO_THANH_TOAN",
+  "DA_THANH_TOAN",
+]);
+
+export function lichHenChoPhepLapHoaDon(trangThai?: string): boolean {
+  if (!trangThai) return false;
+  return !TRANG_THAI_KHONG_LAP_HOA_DON.has(trangThai);
 }

@@ -1,27 +1,46 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Form, Button, Alert } from "react-bootstrap";
+import { Form, Button, Alert, InputGroup } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
-import { chatApi, type TinNhanChatDto } from "@/lib/api";
-import { PageHeader } from "@/components/PageHeader";
+import {
+  chatApi,
+  type TinNhanChatDto,
+  type NguoiDungChatEntry,
+} from "@/lib/api";
 import { LoadingState } from "@/components/LoadingState";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
-const MA_PHONG = 1;
-const WS_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
+function wsOrigin(): string {
+  const raw = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
+  return raw.replace(/\/?api\/?$/i, "") || raw;
+}
+
+export function dmTopicKey(a: number, b: number): string {
+  return `${Math.min(a, b)}-${Math.max(a, b)}`;
+}
+
+function chuCaiDau(name?: string, fallback?: string): string {
+  const s = (name?.trim() || fallback?.trim() || "?").slice(0, 2);
+  return s.toUpperCase();
+}
 
 export default function ChatPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [contacts, setContacts] = useState<NguoiDungChatEntry[]>([]);
+  const [contactQuery, setContactQuery] = useState("");
+  const [peerId, setPeerId] = useState<number | null>(null);
   const [messages, setMessages] = useState<TinNhanChatDto[]>([]);
+  const [loadingThread, setLoadingThread] = useState(false);
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
   const [connected, setConnected] = useState(false);
   const clientRef = useRef<Client | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const subRef = useRef<{ unsubscribe: () => void } | null>(null);
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -34,10 +53,34 @@ export default function ChatPage() {
   useEffect(() => {
     if (!user) return;
     chatApi
-      .layLichSu(MA_PHONG)
-      .then(setMessages)
+      .contacts()
+      .then(setContacts)
       .catch((e) => setError(e.message));
   }, [user]);
+
+  useEffect(() => {
+    if (!user || peerId == null) {
+      setMessages([]);
+      return;
+    }
+    let cancelled = false;
+    setLoadingThread(true);
+    setError("");
+    chatApi
+      .layDoiThoai(peerId)
+      .then((rows) => {
+        if (!cancelled) setMessages(Array.isArray(rows) ? rows : []);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingThread(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, peerId]);
 
   useEffect(() => {
     scrollToBottom();
@@ -52,19 +95,14 @@ export default function ChatPage() {
     const client = new Client({
       webSocketFactory: () =>
         new SockJS(
-          `${WS_BASE}/ws?token=${encodeURIComponent(token)}`,
+          `${wsOrigin()}/ws?token=${encodeURIComponent(token)}`,
         ) as unknown as WebSocket,
+      reconnectDelay: 4000,
+      heartbeatIncoming: 15000,
+      heartbeatOutgoing: 15000,
       onConnect: () => {
         setConnected(true);
         setError("");
-        client.subscribe(`/topic/room/${MA_PHONG}`, (msg) => {
-          try {
-            const body = JSON.parse(msg.body) as TinNhanChatDto;
-            setMessages((prev) => [...prev, body]);
-          } catch {
-            
-          }
-        });
       },
       onStompError: (frame) => {
         setError(frame.headers?.message || "Lỗi kết nối chat");
@@ -76,20 +114,63 @@ export default function ChatPage() {
     clientRef.current = client;
 
     return () => {
+      subRef.current?.unsubscribe();
+      subRef.current = null;
       client.deactivate();
       clientRef.current = null;
       setConnected(false);
     };
   }, [user]);
 
+  useEffect(() => {
+    subRef.current?.unsubscribe();
+    subRef.current = null;
+    const client = clientRef.current;
+    if (!client?.connected || !user || peerId == null) return;
+
+    const topic = `/topic/dm/${dmTopicKey(user.maNguoiDung, peerId)}`;
+    const sub = client.subscribe(topic, (msg) => {
+      try {
+        const body = JSON.parse(msg.body) as TinNhanChatDto;
+        setMessages((prev) => {
+          if (prev.some((p) => p.id === body.id)) return prev;
+          return [...prev, body];
+        });
+      } catch {
+        
+      }
+    });
+    subRef.current = sub;
+    return () => {
+      sub.unsubscribe();
+      subRef.current = null;
+    };
+  }, [user, peerId, connected]);
+
+  const filteredContacts = useMemo(() => {
+    const q = contactQuery.trim().toLowerCase();
+    if (!q) return contacts;
+    return contacts.filter(
+      (c) =>
+        (c.hoTen ?? "").toLowerCase().includes(q) ||
+        (c.tenDangNhap ?? "").toLowerCase().includes(q),
+    );
+  }, [contacts, contactQuery]);
+
+  const peerLabel = useMemo(() => {
+    if (peerId == null) return null;
+    const c = contacts.find((x) => x.id === peerId);
+    return c?.hoTen?.trim() || c?.tenDangNhap || `Người dùng #${peerId}`;
+  }, [contacts, peerId]);
+
   const send = () => {
     const text = input.trim();
-    if (!text || !clientRef.current?.connected) return;
+    if (!text || !clientRef.current?.connected || peerId == null) return;
     setError("");
     try {
       clientRef.current.publish({
         destination: "/app/tro-chuyen.send",
-        body: JSON.stringify({ noiDung: text, maPhong: MA_PHONG }),
+        body: JSON.stringify({ noiDung: text, maNguoiNhan: peerId }),
       });
       setInput("");
     } catch (e) {
@@ -101,90 +182,210 @@ export default function ChatPage() {
   if (!user) return null;
 
   return (
-    <div>
-      <PageHeader
-        title="Chat nội bộ"
-        subtitle="Trao đổi nhanh giữa nhân viên. Tin nhắn được đồng bộ theo thời gian thực."
-      />
+    <div className="chat-dm-app">
+      <div className="chat-dm-app__header mb-3">
+        <h2 className="h4 mb-1 fw-semibold">Tin nhắn</h2>
+        <p className="text-muted small mb-0">
+          Chat riêng 1–1 qua WebSocket (STOMP). Chọn người trong danh bạ nội bộ.
+        </p>
+      </div>
+
       {error && (
         <Alert variant="danger" dismissible onClose={() => setError("")}>
           {error}
         </Alert>
       )}
-      <Card className="card--static border-0 shadow-sm overflow-hidden">
-        <Card.Header className="d-flex justify-content-between align-items-center py-3">
-          <span className="d-flex align-items-center gap-2 fw-semibold">
-            <i className="bi bi-hash" aria-hidden />
-            Phòng {MA_PHONG}
-          </span>
-          <span
-            className={`small d-inline-flex align-items-center gap-1 px-2 py-1 rounded-pill ${
-              connected ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary"
-            }`}
-          >
-            <i className={`bi ${connected ? "bi-wifi" : "bi-wifi-off"}`} />
-            {connected ? "Đã kết nối" : "Đang kết nối..."}
-          </span>
-        </Card.Header>
-        <div
-          style={{ height: 420, overflowY: "auto", padding: 16 }}
-          className="bg-light"
-        >
-          {messages.map((m) => (
-            <div
-              key={m.id}
-              className={`mb-2 ${m.maNguoiGui === user?.maNguoiDung ? "text-end" : ""}`}
-            >
-              <span className="small text-muted">{m.tenNguoiGui}</span>
-              <div
-                className={`d-inline-block p-2 rounded-3 shadow-sm ${
-                  m.maNguoiGui === user?.maNguoiDung
-                    ? "chat-bubble-me"
-                    : "chat-bubble-other"
+
+      <div className="chat-dm-app__shell row g-0">
+        <aside className="chat-dm-app__sidebar col-12 col-md-4 col-lg-3 border-end">
+          <div className="p-3 border-bottom bg-body">
+            <InputGroup size="sm">
+              <InputGroup.Text className="bg-transparent border-end-0">
+                <i className="bi bi-search" aria-hidden />
+              </InputGroup.Text>
+              <Form.Control
+                className="border-start-0"
+                placeholder="Tìm theo tên hoặc đăng nhập…"
+                value={contactQuery}
+                onChange={(e) => setContactQuery(e.target.value)}
+                aria-label="Tìm liên hệ"
+              />
+            </InputGroup>
+            <div className="d-flex align-items-center gap-2 mt-2 small text-muted">
+              <span
+                className={`rounded-pill px-2 py-0 chat-dm-app__pill ${
+                  connected ? "chat-dm-app__pill--on" : "chat-dm-app__pill--off"
                 }`}
-                style={{ maxWidth: "80%" }}
               >
-                {m.noiDung}
-              </div>
-              <div className="small text-muted">
-                {m.taoLuc
-                  ? new Date(m.taoLuc).toLocaleTimeString("vi-VN")
-                  : ""}
-              </div>
+                <i
+                  className={`bi ${connected ? "bi-broadcast-pin" : "bi-cloud-slash"} me-1`}
+                  aria-hidden
+                />
+                {connected ? "Realtime" : "Đang kết nối…"}
+              </span>
             </div>
-          ))}
-          <div ref={bottomRef} />
-        </div>
-        <Card.Footer className="bg-white border-top py-3">
-          <Form
-            onSubmit={(e) => {
-              e.preventDefault();
-              send();
-            }}
-            className="d-flex gap-2"
-          >
-            <Form.Control
-              placeholder="Nhập tin nhắn..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  send();
-                }
+          </div>
+          <div className="chat-dm-app__contact-list">
+            {filteredContacts.length === 0 ? (
+              <div className="p-4 text-muted small text-center">
+                {contacts.length === 0
+                  ? "Chưa có danh sách người dùng."
+                  : "Không khớp tìm kiếm."}
+              </div>
+            ) : (
+              filteredContacts.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className={`chat-dm-app__contact w-100 text-start border-0 ${
+                    peerId === c.id ? "chat-dm-app__contact--active" : ""
+                  }`}
+                  onClick={() => setPeerId(c.id)}
+                >
+                  <span className="chat-dm-app__avatar">
+                    {chuCaiDau(c.hoTen, c.tenDangNhap)}
+                  </span>
+                  <span className="chat-dm-app__contact-text">
+                    <span className="chat-dm-app__contact-name">
+                      {c.hoTen?.trim() || c.tenDangNhap}
+                    </span>
+                    <span className="chat-dm-app__contact-sub">
+                      @{c.tenDangNhap}
+                    </span>
+                  </span>
+                </button>
+              ))
+            )}
+          </div>
+        </aside>
+
+        <section className="chat-dm-app__main col-12 col-md-8 col-lg-9 d-flex flex-column">
+          <header className="chat-dm-app__thread-head px-3 py-3 border-bottom d-flex align-items-center gap-3">
+            {peerId != null ? (
+              <>
+                <span className="chat-dm-app__avatar chat-dm-app__avatar--lg">
+                  {chuCaiDau(
+                    contacts.find((x) => x.id === peerId)?.hoTen,
+                    contacts.find((x) => x.id === peerId)?.tenDangNhap,
+                  )}
+                </span>
+                <div className="flex-grow-1 min-w-0">
+                  <div className="fw-semibold text-truncate">{peerLabel}</div>
+                  <div className="small text-muted text-truncate">
+                    Chỉ hai người trong cuộc trò chuyện nhận tin realtime qua máy
+                    chủ.
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-muted small">
+                Chọn một liên hệ bên trái để bắt đầu.
+              </div>
+            )}
+          </header>
+
+          <div className="chat-dm-app__messages flex-grow-1">
+            {peerId == null ? (
+              <div className="chat-dm-app__empty d-flex flex-column align-items-center justify-content-center h-100 p-4 text-center">
+                <div className="chat-dm-app__empty-icon mb-3">
+                  <i className="bi bi-chat-heart" aria-hidden />
+                </div>
+                <p className="text-muted mb-0" style={{ maxWidth: "22rem" }}>
+                  Trò chuyện riêng với từng đồng nghiệp — không còn phòng chat
+                  chung.
+                </p>
+              </div>
+            ) : loadingThread ? (
+              <div className="d-flex justify-content-center align-items-center h-100 py-5">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Đang tải…</span>
+                </div>
+              </div>
+            ) : (
+              <div className="chat-dm-app__msg-inner px-3 py-3">
+                {messages.map((m) => {
+                  const mine = m.maNguoiGui === user.maNguoiDung;
+                  return (
+                    <div
+                      key={m.id}
+                      className={`chat-dm-app__row ${mine ? "chat-dm-app__row--mine" : ""}`}
+                    >
+                      {!mine && (
+                        <span className="chat-dm-app__bubble-avatar">
+                          {chuCaiDau(m.tenNguoiGui)}
+                        </span>
+                      )}
+                      <div className="chat-dm-app__bubble-wrap">
+                        {!mine && (
+                          <span className="chat-dm-app__bubble-meta">
+                            {m.tenNguoiGui || "—"}
+                          </span>
+                        )}
+                        <div
+                          className={`chat-dm-app__bubble ${mine ? "chat-dm-app__bubble--mine" : ""}`}
+                        >
+                          {m.noiDung}
+                        </div>
+                        <span className="chat-dm-app__bubble-time">
+                          {m.taoLuc
+                            ? new Date(m.taoLuc).toLocaleString("vi-VN", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : ""}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div ref={bottomRef} />
+              </div>
+            )}
+          </div>
+
+          <footer className="chat-dm-app__composer border-top p-3 bg-body">
+            <Form
+              className="d-flex gap-2 align-items-end"
+              onSubmit={(e) => {
+                e.preventDefault();
+                send();
               }}
-              disabled={!connected}
-            />
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={!connected || !input.trim()}
             >
-              Gửi
-            </Button>
-          </Form>
-        </Card.Footer>
-      </Card>
+              <Form.Control
+                as="textarea"
+                rows={1}
+                className="chat-dm-app__textarea"
+                placeholder={
+                  peerId == null
+                    ? "Chọn người nhận…"
+                    : connected
+                      ? "Nhập tin nhắn…"
+                      : "Đang kết nối…"
+                }
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    send();
+                  }
+                }}
+                disabled={!connected || peerId == null}
+              />
+              <Button
+                type="submit"
+                className="chat-dm-app__send-btn flex-shrink-0"
+                disabled={!connected || peerId == null || !input.trim()}
+              >
+                <i className="bi bi-send-fill me-md-1" aria-hidden />
+                <span className="d-none d-md-inline">Gửi</span>
+              </Button>
+            </Form>
+          </footer>
+        </section>
+      </div>
     </div>
   );
 }

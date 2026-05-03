@@ -113,7 +113,7 @@ export default function InvoicePrintPage() {
             </button>
             <button
               type="button"
-              className="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
+              className="btn btn-secondary d-inline-flex align-items-center gap-2"
               onClick={() => router.back()}
             >
               <i className="bi bi-arrow-left" aria-hidden />
@@ -161,24 +161,26 @@ export default function InvoicePrintPage() {
         </div>
 
         <section className="invoice-print__doc-facts" aria-label="Thông tin chứng từ">
-          <div className="invoice-print__doc-facts-grid">
-            <div className="invoice-print__fact">
-              <span className="invoice-print__fact-label">Mã hóa đơn (hệ thống)</span>
-              <span className="invoice-print__fact-value">#{inv.id}</span>
+          <div className="invoice-print__facts-sheet">
+            <div className="invoice-print__facts-row">
+              <span className="invoice-print__facts-label">Mã hóa đơn (HT)</span>
+              <span className="invoice-print__facts-value font-monospace">
+                #{inv.id}
+              </span>
             </div>
-            <div className="invoice-print__fact">
-              <span className="invoice-print__fact-label">Mã bệnh nhân</span>
-              <span className="invoice-print__fact-value">{inv.maBenhNhan}</span>
+            <div className="invoice-print__facts-row">
+              <span className="invoice-print__facts-label">Mã bệnh nhân</span>
+              <span className="invoice-print__facts-value">{inv.maBenhNhan}</span>
             </div>
-            <div className="invoice-print__fact">
-              <span className="invoice-print__fact-label">Mã lịch hẹn</span>
-              <span className="invoice-print__fact-value font-monospace">
+            <div className="invoice-print__facts-row">
+              <span className="invoice-print__facts-label">Mã lịch hẹn</span>
+              <span className="invoice-print__facts-value font-monospace">
                 {inv.maLichHen ?? "—"}
               </span>
             </div>
-            <div className="invoice-print__fact">
-              <span className="invoice-print__fact-label">Ngày giờ lập chứng từ</span>
-              <span className="invoice-print__fact-value">
+            <div className="invoice-print__facts-row">
+              <span className="invoice-print__facts-label">Ngày giờ lập CT</span>
+              <span className="invoice-print__facts-value invoice-print__facts-value--datetime">
                 {formatInstantVi(inv.taoLuc)}
               </span>
             </div>

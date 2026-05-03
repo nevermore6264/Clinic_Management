@@ -8,6 +8,7 @@ import com.clinic.entity.LichHen;
 import com.clinic.entity.Thuoc;
 import com.clinic.repository.HoSoKhamRepository;
 import com.clinic.repository.LichHenRepository;
+import com.clinic.security.QuyenTruyCapHoSoBenhNhan;
 import com.clinic.repository.ThuocRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,15 +26,20 @@ public class HoSoKhamService {
     private final HoSoKhamRepository hoSoKhamRepository;
     private final LichHenRepository lichHenRepository;
     private final ThuocRepository thuocRepository;
+    private final QuyenTruyCapHoSoBenhNhan quyenTruyCapHoSoBenhNhan;
 
     @Transactional(readOnly = true)
     public List<HoSoKhamDto> timTheoBenhNhan(Long maBenhNhan) {
+        quyenTruyCapHoSoBenhNhan.yeuCauDuocTruyCapHoSo(maBenhNhan);
         return hoSoKhamRepository.findByBenhNhanWithChiTiet(maBenhNhan).stream()
                 .map(this::sangDto).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public HoSoKhamDto layTheoMaLichHen(Long maLichHen) {
+        LichHen lh = lichHenRepository.findById(maLichHen).orElse(null);
+        if (lh == null) return null;
+        quyenTruyCapHoSoBenhNhan.yeuCauDuocTruyCapHoSo(lh.getBenhNhan().getId());
         return hoSoKhamRepository.findByLichHenIdWithChiTiet(maLichHen)
                 .map(this::sangDto)
                 .orElse(null);

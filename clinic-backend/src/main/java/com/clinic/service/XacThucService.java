@@ -4,6 +4,7 @@ import com.clinic.dto.DoiMatKhauYeuCau;
 import com.clinic.dto.DangNhapYeuCau;
 import com.clinic.dto.DangNhapPhanHoi;
 import com.clinic.entity.NguoiDung;
+import com.clinic.repository.BenhNhanRepository;
 import com.clinic.repository.NguoiDungRepository;
 import com.clinic.security.JwtTienIch;
 import com.clinic.security.NguoiDungChinhThuc;
@@ -22,6 +23,7 @@ public class XacThucService {
     private final AuthenticationManager quanLyXacThuc;
     private final JwtTienIch jwtTienIch;
     private final NguoiDungRepository nguoiDungRepository;
+    private final BenhNhanRepository benhNhanRepository;
     private final PasswordEncoder maHoaMatKhau;
 
     public DangNhapPhanHoi dangNhap(DangNhapYeuCau yeuCau) {
@@ -29,12 +31,16 @@ public class XacThucService {
                 new UsernamePasswordAuthenticationToken(yeuCau.getTenDangNhap(), yeuCau.getMatKhau()));
         NguoiDungChinhThuc chuThe = (NguoiDungChinhThuc) ketQua.getPrincipal();
         NguoiDung nguoiDung = nguoiDungRepository.findByTenDangNhap(chuThe.getUsername()).orElseThrow();
+        Long maBenhNhan = benhNhanRepository.findByNguoiDung_Id(nguoiDung.getId())
+                .map(b -> b.getId())
+                .orElse(null);
         return DangNhapPhanHoi.builder()
                 .token(jwtTienIch.taoToken(ketQua))
                 .tenDangNhap(nguoiDung.getTenDangNhap())
                 .hoTen(nguoiDung.getHoTen())
                 .cacVaiTro(chuThe.layCacTenVaiTro())
                 .maNguoiDung(nguoiDung.getId())
+                .maBenhNhan(maBenhNhan)
                 .build();
     }
 

@@ -28,6 +28,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { LoadingState } from "@/components/LoadingState";
 import { notify } from "@/lib/notify";
 import { LICH_HEN_STATUS_LABEL as STATUS_LABEL } from "@/lib/lichHenStatus";
+import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
 
 const TRANG_THAI_CO_LICH_DANG_XU_LY = new Set([
   "DA_DAT",
@@ -35,6 +36,7 @@ const TRANG_THAI_CO_LICH_DANG_XU_LY = new Set([
   "DANG_KHAM",
   "XET_NGHIEM",
   "DA_KE_DON",
+  "CHO_THANH_TOAN",
 ]);
 
 function AppointmentsPageInner() {
@@ -88,6 +90,11 @@ function AppointmentsPageInner() {
     setLocDichVu("");
   }, [maBenhNhanParam]);
 
+  const chiTaiKhoanBn = useMemo(
+    () => !!user && laChiTaiKhoanBenhNhan(user),
+    [user],
+  );
+
   const openDatLichModal = useCallback(() => {
     resetDatLichForm();
     setShowDatLich(true);
@@ -109,22 +116,59 @@ function AppointmentsPageInner() {
   }, [searchParams, user, router, resetDatLichForm]);
 
   useEffect(() => {
+    if (!user || !chiTaiKhoanBn || !user.maBenhNhan || maBenhNhanParam)
+      return;
+    router.replace(
+      `/lich-hen?maBenhNhan=${encodeURIComponent(String(user.maBenhNhan))}`,
+      { scroll: false },
+    );
+  }, [user, chiTaiKhoanBn, maBenhNhanParam, router]);
+
+  useEffect(() => {
     if (!user) return;
+    if (chiTaiKhoanBn && !user.maBenhNhan) {
+      setError(
+        "Tài khoản chưa liên kết hồ sơ bệnh nhân. Vui lòng liên hệ quầy lễ tân.",
+      );
+      setList([]);
+      return;
+    }
+    if (chiTaiKhoanBn && user.maBenhNhan) {
+      appointmentsApi
+        .byPatient(user.maBenhNhan)
+        .then((rows) => setList(Array.isArray(rows) ? rows : []))
+        .catch((e) => setError(e.message));
+      return;
+    }
     appointmentsApi
       .list(from, to, 0, 100)
       .then((r) => setList(r.content))
       .catch((e) => setError(e.message));
-  }, [user, from, to, listTick]);
+  }, [user, from, to, listTick, chiTaiKhoanBn]);
 
   useEffect(() => {
     if (!showDatLich || !user) return;
     let cancelled = false;
-    patientsApi
-      .list(0, 500)
-      .then((r) => {
-        if (!cancelled) setPatients(r.content ?? []);
-      })
-      .catch(() => {});
+    if (chiTaiKhoanBn && user.maBenhNhan) {
+      patientsApi
+        .get(user.maBenhNhan)
+        .then((p) => {
+          if (!cancelled) {
+            setPatients([p]);
+            setPatientId(String(p.id ?? user.maBenhNhan));
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setPatients([]);
+        });
+    } else {
+      patientsApi
+        .list(0, 500)
+        .then((r) => {
+          if (!cancelled) setPatients(r.content ?? []);
+        })
+        .catch(() => {});
+    }
     doctorsApi
       .list()
       .then((d) => {
@@ -144,12 +188,16 @@ function AppointmentsPageInner() {
     den.setFullYear(den.getFullYear() + 1);
     const tuStr = tu.toISOString().slice(0, 10);
     const denStr = den.toISOString().slice(0, 10);
-    appointmentsApi
-      .list(tuStr, denStr, 0, 5000)
-      .then((r) => {
+    const fetchBlocked = chiTaiKhoanBn && user.maBenhNhan
+      ? appointmentsApi.byPatient(user.maBenhNhan)
+      : appointmentsApi.list(tuStr, denStr, 0, 5000).then((r) => r.content ?? []);
+
+    Promise.resolve(fetchBlocked)
+      .then((rows) => {
         if (cancelled) return;
+        const arr = Array.isArray(rows) ? rows : [];
         const blocked = new Set<number>();
-        for (const a of r.content ?? []) {
+        for (const a of arr) {
           const ma = a.maBenhNhan;
           const tt = a.trangThai ?? "";
           if (ma != null && TRANG_THAI_CO_LICH_DANG_XU_LY.has(tt)) {
@@ -165,7 +213,7 @@ function AppointmentsPageInner() {
     return () => {
       cancelled = true;
     };
-  }, [showDatLich, user]);
+  }, [showDatLich, user, chiTaiKhoanBn]);
 
   const benhNhanDuocChon = useMemo(() => {
     return patients.filter(
@@ -243,6 +291,13 @@ function AppointmentsPageInner() {
         !maBenhNhanParam ||
         a.maBenhNhan === Number(maBenhNhanParam),
     );
+    if (chiTaiKhoanBn && user?.maBenhNhan) {
+      rows = rows.filter((a) => {
+        const d = a.ngayHen;
+        if (!d) return false;
+        return d >= from && d <= to;
+      });
+    }
     const q = timBacSiTrang.trim().toLowerCase();
     if (q) {
       rows = rows.filter((a) =>
@@ -253,7 +308,16 @@ function AppointmentsPageInner() {
       rows = rows.filter((a) => (a.trangThai ?? "") === locTrangThaiBang);
     }
     return rows;
-  }, [list, maBenhNhanParam, timBacSiTrang, locTrangThaiBang]);
+  }, [
+    list,
+    maBenhNhanParam,
+    timBacSiTrang,
+    locTrangThaiBang,
+    chiTaiKhoanBn,
+    user?.maBenhNhan,
+    from,
+    to,
+  ]);
 
   const handleDatLichSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -345,16 +409,22 @@ function AppointmentsPageInner() {
     <div className="lich-hen-page">
       <PageHeader
         title="Lịch khám"
-        subtitle="Lọc ngày, tìm bác sĩ, trạng thái — xem và mở chi tiết từng lượt khám."
+        subtitle={
+          chiTaiKhoanBn
+            ? "Lịch khám của bạn — lọc theo ngày và đặt lịch mới khi cần."
+            : "Lọc ngày, tìm bác sĩ, trạng thái — xem và mở chi tiết từng lượt khám."
+        }
       >
         <div className="d-flex flex-wrap gap-2 align-items-center">
-          <Button
-            className="btn-service-export d-inline-flex align-items-center gap-2"
-            onClick={handleExportCsv}
-          >
-            <i className="bi bi-filetype-csv" aria-hidden />
-            Export CSV
-          </Button>
+          {!chiTaiKhoanBn && (
+            <Button
+              className="btn-service-export d-inline-flex align-items-center gap-2"
+              onClick={handleExportCsv}
+            >
+              <i className="bi bi-filetype-csv" aria-hidden />
+              Export CSV
+            </Button>
+          )}
           <Button
             variant="primary"
             className="d-inline-flex align-items-center gap-2"
@@ -427,7 +497,7 @@ function AppointmentsPageInner() {
               <tr>
                 <th>Ngày</th>
                 <th>Giờ</th>
-                <th>Bệnh nhân</th>
+                {!chiTaiKhoanBn && <th>Bệnh nhân</th>}
                 <th>Bác sĩ</th>
                 <th>Dịch vụ</th>
                 <th>Trạng thái</th>
@@ -439,7 +509,7 @@ function AppointmentsPageInner() {
                 <tr key={a.id}>
                   <td>{a.ngayHen}</td>
                   <td>{a.gioHen}</td>
-                  <td>{a.tenBenhNhan}</td>
+                  {!chiTaiKhoanBn && <td>{a.tenBenhNhan}</td>}
                   <td>{a.tenBacSi}</td>
                   <td>{a.tenDichVu}</td>
                   <td>
@@ -494,63 +564,72 @@ function AppointmentsPageInner() {
                 {modalError}
               </Alert>
             )}
-            <Form.Group className="mb-3">
-              <Form.Label className="required" id="label-dat-bn">
-                Bệnh nhân
-              </Form.Label>
-              <Dropdown className="bac-si-ck-dropdown w-100">
-                <Dropdown.Toggle
-                  variant="outline-secondary"
-                  id="dropdown-dat-benh-nhan"
-                  className="w-100 text-start d-flex justify-content-between align-items-center"
-                  aria-labelledby="label-dat-bn"
-                >
-                  <span className="text-truncate me-2 flex-grow-1">
-                    {chonBenhNhanLabel}
-                  </span>
-                </Dropdown.Toggle>
-                <Dropdown.Menu className="bac-si-ck-dropdown__menu w-100 shadow-sm pt-2 px-2 pb-2">
-                  <Form.Control
-                    size="sm"
-                    type="search"
-                    placeholder="Tìm trong danh sách…"
-                    value={locBenhNhan}
-                    onChange={(e) => setLocBenhNhan(e.target.value)}
-                    onClick={(e) => e.stopPropagation()}
-                    onKeyDown={(e) => e.stopPropagation()}
-                    autoComplete="off"
-                    aria-label="Lọc bệnh nhân"
-                    className="mb-2"
-                  />
-                  <div
-                    className="bac-si-ck-dropdown__list border rounded"
-                    style={{ maxHeight: 220, overflowY: "auto" }}
+            {chiTaiKhoanBn ? (
+              <Form.Group className="mb-3">
+                <Form.Label id="label-dat-bn">Bệnh nhân</Form.Label>
+                <div className="form-control-plaintext py-1" aria-labelledby="label-dat-bn">
+                  {chonBenhNhanLabel}
+                </div>
+              </Form.Group>
+            ) : (
+              <Form.Group className="mb-3">
+                <Form.Label className="required" id="label-dat-bn">
+                  Bệnh nhân
+                </Form.Label>
+                <Dropdown className="bac-si-ck-dropdown w-100">
+                  <Dropdown.Toggle
+                    variant="outline-secondary"
+                    id="dropdown-dat-benh-nhan"
+                    className="w-100 text-start d-flex justify-content-between align-items-center"
+                    aria-labelledby="label-dat-bn"
                   >
-                    {benhNhanSauLoc.length === 0 ? (
-                      <div className="px-2 py-3 text-muted small text-center">
-                        {benhNhanDuocChon.length === 0
-                          ? "Không có bệnh nhân khả dụng (đều đang có lịch chưa kết thúc)."
-                          : "Không tìm thấy tên hoặc SĐT khớp."}
-                      </div>
-                    ) : (
-                      benhNhanSauLoc.map((p) => (
-                        <Dropdown.Item
-                          key={p.id}
-                          active={String(p.id) === patientId}
-                          onClick={() => {
-                            setPatientId(String(p.id));
-                            setLocBenhNhan("");
-                          }}
-                        >
-                          {p.hoTen}
-                          {p.soDienThoai ? ` (${p.soDienThoai})` : ""}
-                        </Dropdown.Item>
-                      ))
-                    )}
-                  </div>
-                </Dropdown.Menu>
-              </Dropdown>
-            </Form.Group>
+                    <span className="text-truncate me-2 flex-grow-1">
+                      {chonBenhNhanLabel}
+                    </span>
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu className="bac-si-ck-dropdown__menu w-100 shadow-sm pt-2 px-2 pb-2">
+                    <Form.Control
+                      size="sm"
+                      type="search"
+                      placeholder="Tìm trong danh sách…"
+                      value={locBenhNhan}
+                      onChange={(e) => setLocBenhNhan(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
+                      autoComplete="off"
+                      aria-label="Lọc bệnh nhân"
+                      className="mb-2"
+                    />
+                    <div
+                      className="bac-si-ck-dropdown__list border rounded"
+                      style={{ maxHeight: 220, overflowY: "auto" }}
+                    >
+                      {benhNhanSauLoc.length === 0 ? (
+                        <div className="px-2 py-3 text-muted small text-center">
+                          {benhNhanDuocChon.length === 0
+                            ? "Không có bệnh nhân khả dụng (đều đang có lịch chưa kết thúc)."
+                            : "Không tìm thấy tên hoặc SĐT khớp."}
+                        </div>
+                      ) : (
+                        benhNhanSauLoc.map((p) => (
+                          <Dropdown.Item
+                            key={p.id}
+                            active={String(p.id) === patientId}
+                            onClick={() => {
+                              setPatientId(String(p.id));
+                              setLocBenhNhan("");
+                            }}
+                          >
+                            {p.hoTen}
+                            {p.soDienThoai ? ` (${p.soDienThoai})` : ""}
+                          </Dropdown.Item>
+                        ))
+                      )}
+                    </div>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </Form.Group>
+            )}
             <Form.Group className="mb-3">
               <Form.Label className="required" id="label-dat-bs">
                 Bác sĩ

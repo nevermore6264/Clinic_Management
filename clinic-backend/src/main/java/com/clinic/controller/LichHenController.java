@@ -8,6 +8,7 @@ import com.clinic.service.LichSuTrangThaiLichHenService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ public class LichHenController {
     private final LichSuTrangThaiLichHenService lichSuTrangThaiLichHenService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','BAC_SI','THU_NGAN')")
     public ResponseEntity<Page<LichHenDto>> danhSach(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tuNgay,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate denNgay,
@@ -38,6 +40,7 @@ public class LichHenController {
     }
 
     @GetMapping("/bac-si/{maBacSi}")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','BAC_SI','THU_NGAN')")
     public ResponseEntity<List<LichHenDto>> theoBacSiVaNgay(
             @PathVariable Long maBacSi,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngay) {
@@ -65,6 +68,7 @@ public class LichHenController {
     }
 
     @PatchMapping("/{id}/trang-thai")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','BAC_SI','THU_NGAN')")
     public ResponseEntity<LichHenDto> capNhatTrangThai(
             @PathVariable Long id, @RequestParam LichHen.TrangThaiLichHen trangThai) {
         return ResponseEntity.ok(lichHenService.capNhatTrangThai(id, trangThai));

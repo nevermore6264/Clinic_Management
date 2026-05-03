@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Navbar, Nav, Container, Button, NavDropdown } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
+import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
 
 function NavLinkItem({
   href,
@@ -76,6 +77,10 @@ export function NavBar() {
   };
 
   const vt = user.cacVaiTro.join(" · ");
+  const chiTaiKhoanBn = laChiTaiKhoanBenhNhan(user);
+  const bnQuery = user.maBenhNhan
+    ? `?maBenhNhan=${encodeURIComponent(String(user.maBenhNhan))}`
+    : "";
 
   return (
     <Navbar variant="light" className="navbar-clinic" expand="lg" sticky="top">
@@ -103,121 +108,156 @@ export function NavBar() {
             >
               Trang chủ
             </NavLinkItem>
-            <NavLinkItem
-              href="/benh-nhan"
-              active={pathname.startsWith("/benh-nhan")}
-              icon="bi-people"
-            >
-              Bệnh nhân
-            </NavLinkItem>
-            <NavLinkItem
-              href="/lich-hen"
-              active={pathname.startsWith("/lich-hen")}
-              icon="bi-calendar-check"
-            >
-              Lịch khám
-            </NavLinkItem>
-            <NavLinkItem
-              href="/lich-lam-viec-bac-si"
-              active={pathname === "/lich-lam-viec-bac-si"}
-              icon="bi-calendar3"
-            >
-              Lịch bác sĩ
-            </NavLinkItem>
-            {(user.cacVaiTro.includes("QUAN_TRI") ||
-              user.cacVaiTro.includes("LE_TAN")) && (
-              <NavLinkItem
-                href="/cau-hinh-nhac-lich"
-                active={pathname === "/cau-hinh-nhac-lich"}
-                icon="bi-bell"
-              >
-                Nhắc lịch
-              </NavLinkItem>
-            )}
-            <NavLinkItem
-              href="/hoa-don"
-              active={pathname.startsWith("/hoa-don")}
-              icon="bi-receipt"
-            >
-              Hóa đơn
-            </NavLinkItem>
-            <NavLinkItem
-              href="/tro-chuyen"
-              active={pathname === "/tro-chuyen"}
-              icon="bi-chat-dots"
-            >
-              Chat
-            </NavLinkItem>
-            {(user.cacVaiTro.includes("QUAN_TRI") ||
-              user.cacVaiTro.includes("THU_NGAN")) && (
+            {chiTaiKhoanBn ? (
               <>
                 <NavLinkItem
-                  href="/phieu-chi"
-                  active={pathname.startsWith("/phieu-chi")}
-                  icon="bi-cash-coin"
+                  href="/benh-nhan"
+                  active={pathname.startsWith("/benh-nhan")}
+                  icon="bi-person-vcard"
                 >
-                  Phiếu chi
+                  Hồ sơ của tôi
                 </NavLinkItem>
                 <NavLinkItem
-                  href="/bao-cao"
-                  active={pathname === "/bao-cao"}
-                  icon="bi-graph-up-arrow"
+                  href={`/lich-hen${bnQuery}`}
+                  active={pathname.startsWith("/lich-hen")}
+                  icon="bi-calendar-check"
                 >
-                  Báo cáo
+                  Lịch của tôi
+                </NavLinkItem>
+                <NavLinkItem
+                  href={`/hoa-don${bnQuery}`}
+                  active={pathname.startsWith("/hoa-don")}
+                  icon="bi-receipt"
+                >
+                  Hóa đơn
+                </NavLinkItem>
+                <NavLinkItem
+                  href="/tro-chuyen"
+                  active={pathname === "/tro-chuyen"}
+                  icon="bi-chat-dots"
+                >
+                  Chat
                 </NavLinkItem>
               </>
-            )}
-            {user.cacVaiTro.includes("QUAN_TRI") && (
+            ) : (
               <>
                 <NavLinkItem
-                  href="/loai-dich-vu"
-                  active={pathname.startsWith("/loai-dich-vu")}
-                  icon="bi-tags"
+                  href="/benh-nhan"
+                  active={pathname.startsWith("/benh-nhan")}
+                  icon="bi-people"
                 >
-                  Loại dịch vụ
+                  Bệnh nhân
                 </NavLinkItem>
                 <NavLinkItem
-                  href="/dich-vu"
-                  active={pathname.startsWith("/dich-vu")}
-                  icon="bi-hospital"
+                  href="/lich-hen"
+                  active={pathname.startsWith("/lich-hen")}
+                  icon="bi-calendar-check"
                 >
-                  Dịch vụ
+                  Lịch khám
                 </NavLinkItem>
                 <NavLinkItem
-                  href="/thuoc"
-                  active={pathname.startsWith("/thuoc")}
-                  icon="bi-capsule"
+                  href="/lich-lam-viec-bac-si"
+                  active={pathname === "/lich-lam-viec-bac-si"}
+                  icon="bi-calendar3"
                 >
-                  Thuốc
+                  Lịch bác sĩ
+                </NavLinkItem>
+                {(user.cacVaiTro.includes("QUAN_TRI") ||
+                  user.cacVaiTro.includes("LE_TAN")) && (
+                  <NavLinkItem
+                    href="/cau-hinh-nhac-lich"
+                    active={pathname === "/cau-hinh-nhac-lich"}
+                    icon="bi-bell"
+                  >
+                    Nhắc lịch
+                  </NavLinkItem>
+                )}
+                <NavLinkItem
+                  href="/hoa-don"
+                  active={pathname.startsWith("/hoa-don")}
+                  icon="bi-receipt"
+                >
+                  Hóa đơn
                 </NavLinkItem>
                 <NavLinkItem
-                  href="/chuyen-khoa"
-                  active={pathname.startsWith("/chuyen-khoa")}
-                  icon="bi-bookmarks"
+                  href="/tro-chuyen"
+                  active={pathname === "/tro-chuyen"}
+                  icon="bi-chat-dots"
                 >
-                  Chuyên khoa
+                  Chat
                 </NavLinkItem>
-                <NavLinkItem
-                  href="/bac-si"
-                  active={pathname.startsWith("/bac-si")}
-                  icon="bi-person-badge"
-                >
-                  Bác sĩ
-                </NavLinkItem>
-                <NavLinkItem
-                  href="/nhat-ky-he-thong"
-                  active={pathname === "/nhat-ky-he-thong"}
-                  icon="bi-journal-text"
-                >
-                  Nhật ký
-                </NavLinkItem>
-                <NavLinkItem
-                  href="/nguoi-dung"
-                  active={pathname === "/nguoi-dung"}
-                  icon="bi-person-gear"
-                >
-                  Tài khoản
-                </NavLinkItem>
+                {(user.cacVaiTro.includes("QUAN_TRI") ||
+                  user.cacVaiTro.includes("THU_NGAN")) && (
+                  <>
+                    <NavLinkItem
+                      href="/phieu-chi"
+                      active={pathname.startsWith("/phieu-chi")}
+                      icon="bi-cash-coin"
+                    >
+                      Phiếu chi
+                    </NavLinkItem>
+                    <NavLinkItem
+                      href="/bao-cao"
+                      active={pathname === "/bao-cao"}
+                      icon="bi-graph-up-arrow"
+                    >
+                      Báo cáo
+                    </NavLinkItem>
+                  </>
+                )}
+                {user.cacVaiTro.includes("QUAN_TRI") && (
+                  <>
+                    <NavLinkItem
+                      href="/loai-dich-vu"
+                      active={pathname.startsWith("/loai-dich-vu")}
+                      icon="bi-tags"
+                    >
+                      Loại dịch vụ
+                    </NavLinkItem>
+                    <NavLinkItem
+                      href="/dich-vu"
+                      active={pathname.startsWith("/dich-vu")}
+                      icon="bi-hospital"
+                    >
+                      Dịch vụ
+                    </NavLinkItem>
+                    <NavLinkItem
+                      href="/thuoc"
+                      active={pathname.startsWith("/thuoc")}
+                      icon="bi-capsule"
+                    >
+                      Thuốc
+                    </NavLinkItem>
+                    <NavLinkItem
+                      href="/chuyen-khoa"
+                      active={pathname.startsWith("/chuyen-khoa")}
+                      icon="bi-bookmarks"
+                    >
+                      Chuyên khoa
+                    </NavLinkItem>
+                    <NavLinkItem
+                      href="/bac-si"
+                      active={pathname.startsWith("/bac-si")}
+                      icon="bi-person-badge"
+                    >
+                      Bác sĩ
+                    </NavLinkItem>
+                    <NavLinkItem
+                      href="/nhat-ky-he-thong"
+                      active={pathname === "/nhat-ky-he-thong"}
+                      icon="bi-journal-text"
+                    >
+                      Nhật ký
+                    </NavLinkItem>
+                    <NavLinkItem
+                      href="/nguoi-dung"
+                      active={pathname === "/nguoi-dung"}
+                      icon="bi-person-gear"
+                    >
+                      Tài khoản
+                    </NavLinkItem>
+                  </>
+                )}
               </>
             )}
           </Nav>

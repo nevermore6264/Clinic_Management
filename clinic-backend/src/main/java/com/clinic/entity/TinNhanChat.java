@@ -22,6 +22,11 @@ public class TinNhanChat {
     @JoinColumn(name = "ma_nguoi_gui", nullable = false)
     private NguoiDung nguoiGui;
 
+    /** Tin nhắn riêng (1–1); null = tin theo phòng chung (legacy). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ma_nguoi_nhan")
+    private NguoiDung nguoiNhan;
+
     @Column(name = "noi_dung", nullable = false, length = 2000)
     private String noiDung;
 

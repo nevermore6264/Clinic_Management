@@ -8,8 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface BenhNhanRepository extends JpaRepository<BenhNhan, Long> {
+
+    Optional<BenhNhan> findByNguoiDung_Id(Long maNguoiDung);
     Page<BenhNhan> findByHoatDongTrue(Pageable pageable);
     List<BenhNhan> findByHoatDongTrue();
     List<BenhNhan> findByHoTenContainingIgnoreCaseAndHoatDongTrue(String ten);

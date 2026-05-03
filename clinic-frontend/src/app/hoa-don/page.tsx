@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { LoadingState } from "@/components/LoadingState";
 import { HoaDonStatusTag } from "@/components/HoaDonStatusTag";
 import { daysAgoLocalYmd, todayLocalYmd } from "@/lib/dateLocal";
+import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
 
 function InvoicesPageInner() {
   const searchParams = useSearchParams();
@@ -25,13 +26,42 @@ function InvoicesPageInner() {
     if (!loading && !user) router.replace("/dang-nhap");
   }, [user, loading, router]);
 
+  const chiTaiKhoanBn = !!user && laChiTaiKhoanBenhNhan(user);
+
   useEffect(() => {
     if (!user) return;
+    if (chiTaiKhoanBn && !user.maBenhNhan) {
+      setError(
+        "Tài khoản chưa liên kết hồ sơ bệnh nhân — không thể tải hóa đơn. Liên hệ lễ tân.",
+      );
+      setList([]);
+      return;
+    }
+    if (chiTaiKhoanBn && user.maBenhNhan) {
+      invoicesApi
+        .byPatient(user.maBenhNhan)
+        .then((rows) =>
+          setList(
+            Array.isArray(rows)
+              ? rows.filter((inv) => {
+                  const t = inv.taoLuc;
+                  if (!t) return true;
+                  const d = new Date(t);
+                  if (Number.isNaN(d.getTime())) return true;
+                  const ymd = d.toISOString().slice(0, 10);
+                  return ymd >= from && ymd <= to;
+                })
+              : [],
+          ),
+        )
+        .catch((e) => setError(e.message));
+      return;
+    }
     invoicesApi
       .list(from, to, 0, 100)
       .then((r) => setList(r.content))
       .catch((e) => setError(e.message));
-  }, [user, from, to]);
+  }, [user, from, to, chiTaiKhoanBn]);
 
   if (loading) return <LoadingState />;
   if (!user) return null;
@@ -39,16 +69,22 @@ function InvoicesPageInner() {
   return (
     <div>
       <PageHeader
-        title="Hóa đơn & thanh toán"
-        subtitle="Lọc theo ngày tạo hóa đơn."
+        title={chiTaiKhoanBn ? "Hóa đơn của tôi" : "Hóa đơn & thanh toán"}
+        subtitle={
+          chiTaiKhoanBn
+            ? "Xem chi tiết và trạng thái thanh toán (lọc theo ngày tạo hóa đơn)."
+            : "Lọc theo ngày tạo hóa đơn."
+        }
       >
-        <Link
-          href="/lich-hen"
-          className="btn btn-outline-primary d-inline-flex align-items-center gap-2"
-        >
-          <i className="bi bi-calendar-check" aria-hidden />
-          Chọn lịch hẹn để lập hóa đơn
-        </Link>
+        {!chiTaiKhoanBn && (
+          <Link
+            href="/lich-hen"
+            className="btn btn-outline-primary d-inline-flex align-items-center gap-2"
+          >
+            <i className="bi bi-calendar-check" aria-hidden />
+            Chọn lịch hẹn để lập hóa đơn
+          </Link>
+        )}
       </PageHeader>
       {error && (
         <Alert variant="danger" dismissible onClose={() => setError("")}>

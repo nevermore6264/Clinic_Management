@@ -24,6 +24,7 @@ import {
 } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
 import { LoadingState } from "@/components/LoadingState";
+import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
 import {
   PatientRecordFormFields,
   emptyPatientForm,
@@ -217,6 +218,11 @@ function BenhNhanPageInner() {
 
   useEffect(() => {
     if (!user) return;
+    if (laChiTaiKhoanBenhNhan(user)) {
+      setList([]);
+      setTotal(0);
+      return;
+    }
     patientsApi
       .list(page, size, locQuery())
       .then((r) => {
@@ -234,6 +240,13 @@ function BenhNhanPageInner() {
     filterGioiTinh,
     filterNhomMau,
   ]);
+
+  useEffect(() => {
+    if (!user || !laChiTaiKhoanBenhNhan(user) || user.maBenhNhan == null)
+      return;
+    if (searchParams.get("sua")) return;
+    router.replace(`/benh-nhan?sua=${user.maBenhNhan}`, { scroll: false });
+  }, [user, router, searchParams]);
 
   const clearFilters = () => {
     setFilterTen("");
@@ -375,26 +388,35 @@ function BenhNhanPageInner() {
   if (loading) return <LoadingState />;
   if (!user) return null;
 
+  const chiTaiKhoanBn = laChiTaiKhoanBenhNhan(user);
+  const chiTaiKhoanBnLienKet = chiTaiKhoanBn && user.maBenhNhan != null;
+
   return (
     <div>
       <PageHeader
-        title="Bệnh nhân"
-        subtitle="Danh sách hồ sơ đang hoạt động. Tìm theo tên hoặc mở chi tiết để chỉnh sửa."
+        title={chiTaiKhoanBn ? "Hồ sơ của tôi" : "Bệnh nhân"}
+        subtitle={
+          chiTaiKhoanBn
+            ? "Xem và cập nhật thông tin liên hệ của bạn."
+            : "Danh sách hồ sơ đang hoạt động. Tìm theo tên hoặc mở chi tiết để chỉnh sửa."
+        }
       >
-        <div className="d-flex gap-2">
-          <Button className="btn-service-export" onClick={exportCsv}>
-            <i className="bi bi-filetype-csv me-2" aria-hidden />
-            Export CSV
-          </Button>
-          <Button
-            variant="primary"
-            className="d-inline-flex align-items-center gap-2"
-            onClick={() => setShowCreate(true)}
-          >
-            <i className="bi bi-person-plus" aria-hidden />
-            Thêm bệnh nhân
-          </Button>
-        </div>
+        {!chiTaiKhoanBn && (
+          <div className="d-flex gap-2">
+            <Button className="btn-service-export" onClick={exportCsv}>
+              <i className="bi bi-filetype-csv me-2" aria-hidden />
+              Export CSV
+            </Button>
+            <Button
+              variant="primary"
+              className="d-inline-flex align-items-center gap-2"
+              onClick={() => setShowCreate(true)}
+            >
+              <i className="bi bi-person-plus" aria-hidden />
+              Thêm bệnh nhân
+            </Button>
+          </div>
+        )}
       </PageHeader>
 
       {error && (
@@ -403,6 +425,30 @@ function BenhNhanPageInner() {
         </Alert>
       )}
 
+      {chiTaiKhoanBn && !chiTaiKhoanBnLienKet && (
+        <Alert variant="warning" className="mb-3">
+          Tài khoản của bạn chưa được liên kết với hồ sơ bệnh nhân trong hệ thống.
+          Vui lòng liên hệ quầy lễ tân để được hỗ trợ.
+        </Alert>
+      )}
+
+      {chiTaiKhoanBnLienKet && (
+        <Alert variant="light" className="border mb-3">
+          Form chỉnh sửa hồ sơ sẽ mở tự động. Nếu đã đóng, nhấn{" "}
+          <Button
+            size="sm"
+            variant="primary"
+            className="mx-1"
+            type="button"
+            onClick={() => user.maBenhNhan != null && openEditModal(user.maBenhNhan)}
+          >
+            Mở hồ sơ
+          </Button>
+          để xem lại.
+        </Alert>
+      )}
+
+      {!chiTaiKhoanBn && (
       <Card className="mb-3 card--static border-0 shadow-sm">
         <Card.Body className="p-3">
           <Row className="g-2">
@@ -471,8 +517,10 @@ function BenhNhanPageInner() {
           </Row>
         </Card.Body>
       </Card>
+      )}
 
-      <Card className="card--static border-0 shadow-sm overflow-hidden">
+      {!chiTaiKhoanBn && (
+        <Card className="card--static border-0 shadow-sm overflow-hidden">
         <div className="table-responsive">
           <Table responsive hover className="mb-0 align-middle">
             <thead>
@@ -590,6 +638,7 @@ function BenhNhanPageInner() {
           </Card.Footer>
         )}
       </Card>
+      )}
 
       <Modal
         show={showCreate}

@@ -15,6 +15,8 @@ export interface NguoiDung {
   hoTen: string;
   cacVaiTro: string[];
   maNguoiDung: number;
+  /** Có khi tài khoản liên kết với hồ sơ bệnh nhân (đăng nhập phản hồi từ API). */
+  maBenhNhan?: number;
 }
 
 interface AuthContextType {
@@ -129,6 +131,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     setToken(token);
     const vt = data.cacVaiTro;
+    const maBnRaw = data.maBenhNhan;
+    const maBenhNhan =
+      typeof maBnRaw === "number"
+        ? maBnRaw
+        : typeof maBnRaw === "string"
+          ? Number(maBnRaw) || undefined
+          : undefined;
+
     const nd: NguoiDung = {
       tenDangNhap:
         typeof data.tenDangNhap === "string" ? data.tenDangNhap : tenDangNhap,
@@ -140,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           : typeof data.maNguoiDung === "string"
             ? Number(data.maNguoiDung) || 0
             : 0,
+      ...(maBenhNhan != null && maBenhNhan > 0 ? { maBenhNhan } : {}),
     };
     setUser(nd);
     localStorage.setItem("user", JSON.stringify(nd));

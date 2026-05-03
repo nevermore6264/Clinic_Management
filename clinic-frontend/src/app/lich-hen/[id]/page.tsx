@@ -17,6 +17,7 @@ import {
 import {
   LICH_HEN_STATUS_FLOW as STATUS_FLOW,
   LICH_HEN_STATUS_LABEL as STATUS_LABEL,
+  lichHenChoPhepLapHoaDon,
   metaTrangThaiLichHen as metaTrangThai,
 } from "@/lib/lichHenStatus";
 
@@ -373,13 +374,25 @@ export default function AppointmentDetailPage() {
         </Card>
       ) : null}
       <div className="mt-3 d-flex flex-wrap gap-2 align-items-center lich-hen-detail-actions">
-        <Link
-          href={`/hoa-don/new?maLichHen=${id}`}
-          className="btn btn-outline-primary d-inline-flex align-items-center gap-2"
-        >
-          <i className="bi bi-receipt" aria-hidden />
-          Hóa đơn
-        </Link>
+        {lichHenChoPhepLapHoaDon(app.trangThai) ? (
+          <Link
+            href={`/hoa-don/new?maLichHen=${id}`}
+            className="btn btn-outline-primary d-inline-flex align-items-center gap-2"
+          >
+            <i className="bi bi-receipt" aria-hidden />
+            Hóa đơn
+          </Link>
+        ) : (
+          <Button
+            variant="outline-secondary"
+            disabled
+            className="d-inline-flex align-items-center gap-2"
+            title="Không lập hóa đơn khi lịch đã hủy, không đến, đã có hóa đơn chờ thanh toán hoặc đã thanh toán xong."
+          >
+            <i className="bi bi-receipt" aria-hidden />
+            Hóa đơn
+          </Button>
+        )}
         <Button
           variant="secondary"
           className="d-inline-flex align-items-center gap-2"

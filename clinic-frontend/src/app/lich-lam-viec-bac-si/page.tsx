@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Table, Button, Form, Alert } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
+import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
 import {
   doctorsApi,
   doctorSchedulesApi,
@@ -30,6 +31,12 @@ export default function LichLamViecBacSisPage() {
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
+  }, [user, loading, router]);
+
+  useEffect(() => {
+    if (!loading && user && laChiTaiKhoanBenhNhan(user)) {
+      router.replace("/bang-dieu-khien");
+    }
   }, [user, loading, router]);
 
   useEffect(() => {

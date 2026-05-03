@@ -11,8 +11,13 @@ import {
   type DichVu,
   type LichHen,
 } from "@/lib/api";
+import Link from "next/link";
 import { LoadingState } from "@/components/LoadingState";
-import { metaTrangThaiLichHen } from "@/lib/lichHenStatus";
+import {
+  lichHenChoPhepLapHoaDon,
+  metaTrangThaiLichHen,
+} from "@/lib/lichHenStatus";
+import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
 
 function dinhDangNgayHen(ngayHen?: string) {
   if (!ngayHen) return "—";
@@ -29,6 +34,21 @@ function dinhDangNgayHen(ngayHen?: string) {
 function dinhDangGioHen(gioHen?: string) {
   if (!gioHen) return "—";
   return gioHen.length >= 5 ? gioHen.slice(0, 5) : gioHen;
+}
+
+function lyDoKhongLapHoaDon(trangThai?: string): string {
+  switch (trangThai) {
+    case "HUY":
+      return "Lịch đã hủy — không lập được hóa đơn.";
+    case "VANG":
+      return "Đánh dấu không đến — không lập được hóa đơn.";
+    case "CHO_THANH_TOAN":
+      return "Lịch đã có hóa đơn chờ thanh toán; một lịch chỉ một hóa đơn. Mở chi tiết hóa đơn để ghi nhận thanh toán.";
+    case "DA_THANH_TOAN":
+      return "Lịch đã hoàn tất thanh toán; một lịch chỉ gắn một hóa đơn. Mở danh sách / chi tiết hóa đơn để xem hoặc in.";
+    default:
+      return "Trạng thái lịch không cho phép lập hóa đơn mới.";
+  }
 }
 
 function NewInvoicePageInner() {
@@ -68,6 +88,12 @@ function NewInvoicePageInner() {
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
+  }, [user, loading, router]);
+
+  useEffect(() => {
+    if (!loading && user && laChiTaiKhoanBenhNhan(user)) {
+      router.replace("/hoa-don");
+    }
   }, [user, loading, router]);
 
   useEffect(() => {
@@ -129,6 +155,10 @@ function NewInvoicePageInner() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (lichHen && !lichHenChoPhepLapHoaDon(lichHen.trangThai)) {
+      setError(lyDoKhongLapHoaDon(lichHen.trangThai));
+      return;
+    }
     const maLichHen = Number(maLichHenParam);
     if (!maLichHenParam || Number.isNaN(maLichHen) || maLichHen <= 0) {
       setError(
@@ -151,6 +181,8 @@ function NewInvoicePageInner() {
   if (!loading && !user) return null;
 
   const tagMetaLichHen = metaTrangThaiLichHen(lichHen?.trangThai);
+  const lapBiChan =
+    Boolean(lichHen) && !lichHenChoPhepLapHoaDon(lichHen?.trangThai);
 
   return (
     <div className="hoa-don-new-page lich-hen-detail-page">
@@ -189,6 +221,16 @@ function NewInvoicePageInner() {
           {lichHenError}
         </Alert>
       )}
+      {lapBiChan && lichHen && (
+        <Alert variant="warning" className="mb-3">
+          <strong>Không thể lập hóa đơn:</strong>{" "}
+          {lyDoKhongLapHoaDon(lichHen.trangThai)}{" "}
+          <Link href="/hoa-don" className="alert-link">
+            Đi tới danh sách hóa đơn
+          </Link>
+          .
+        </Alert>
+      )}
       {lichHen && !lichHenLoading && (
         <Card className="mb-3 border-0 shadow-sm bg-light">
           <Card.Body className="py-3">
@@ -222,7 +264,7 @@ function NewInvoicePageInner() {
           </Card.Body>
         </Card>
       )}
-      <Card>
+      <Card className={lapBiChan ? "opacity-75" : undefined}>
         <Card.Body>
           <Form onSubmit={handleSubmit}>
             <div className="mb-3">
@@ -231,6 +273,7 @@ function NewInvoicePageInner() {
                 variant="outline-primary"
                 size="sm"
                 className="d-inline-flex align-items-center gap-2"
+                disabled={lapBiChan}
                 onClick={addItem}
               >
                 <i className="bi bi-plus-lg" aria-hidden />
@@ -252,6 +295,7 @@ function NewInvoicePageInner() {
                       <td>
                         <Form.Select
                           value={item.serviceId}
+                          disabled={lapBiChan}
                           onChange={(e) =>
                             updateItem(i, "serviceId", Number(e.target.value))
                           }
@@ -268,6 +312,7 @@ function NewInvoicePageInner() {
                           type="number"
                           min={1}
                           value={item.quantity}
+                          disabled={lapBiChan}
                           onChange={(e) =>
                             updateItem(
                               i,
@@ -282,6 +327,7 @@ function NewInvoicePageInner() {
                         <button
                           type="button"
                           className="btn btn-sm lich-hen-remove-row-thuoc"
+                          disabled={lapBiChan}
                           onClick={() => removeItem(i)}
                           title="Xóa dòng"
                           aria-label="Xóa dòng dịch vụ"
@@ -298,6 +344,7 @@ function NewInvoicePageInner() {
               <Button
                 type="submit"
                 variant="primary"
+                disabled={lapBiChan}
                 className="btn-bac-si-modal-primary d-inline-flex align-items-center px-4"
               >
                 <i className="bi bi-receipt-cutoff me-2" aria-hidden />

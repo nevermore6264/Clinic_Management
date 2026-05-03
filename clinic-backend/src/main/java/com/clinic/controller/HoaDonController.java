@@ -6,6 +6,7 @@ import com.clinic.dto.HoaDonDto;
 import com.clinic.service.HoaDonService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ public class HoaDonController {
     private final HoaDonService hoaDonService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','BAC_SI','THU_NGAN')")
     public ResponseEntity<Page<HoaDonDto>> danhSach(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tuNgay,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate denNgay,
@@ -44,6 +46,7 @@ public class HoaDonController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','THU_NGAN')")
     public ResponseEntity<HoaDonDto> tao(
             @RequestParam Long maLichHen,
             @RequestBody List<ChiTietHoaDonDto> chiTiet) {
@@ -51,6 +54,7 @@ public class HoaDonController {
     }
 
     @PostMapping("/{maHoaDon}/thanh-toan")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','THU_NGAN')")
     public ResponseEntity<GiaoDichThanhToanDto> themThanhToan(
             @PathVariable Long maHoaDon, @RequestBody GiaoDichThanhToanDto dto) {
         return ResponseEntity.ok(hoaDonService.themThanhToan(maHoaDon, dto));

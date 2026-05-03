@@ -108,8 +108,15 @@ export default function PhieuChiPage() {
 
   return (
     <div>
-      <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <h2 className="mb-0">Phiếu chi</h2>
+      <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <div>
+          <h2 className="mb-1">Phiếu chi</h2>
+          <p className="text-muted small mb-0" style={{ maxWidth: "42rem" }}>
+            Ghi các khoản tiền phòng khám <strong>chi ra</strong> (vật tư, thiết bị,
+            lương, thuế, khác) để theo dõi chi phí. Khác với thu tiền bệnh nhân trên
+            hóa đơn.
+          </p>
+        </div>
         <Button onClick={openNew}>Ghi phiếu chi</Button>
       </div>
       <Card className="mb-3">

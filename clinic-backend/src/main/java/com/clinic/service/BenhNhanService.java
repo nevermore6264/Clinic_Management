@@ -3,9 +3,11 @@ package com.clinic.service;
 import com.clinic.dto.BenhNhanDto;
 import com.clinic.entity.BenhNhan;
 import com.clinic.repository.BenhNhanRepository;
+import com.clinic.security.QuyenTruyCapHoSoBenhNhan;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ public class BenhNhanService {
 
     private final BenhNhanRepository benhNhanRepository;
     private final NhatKyHeThongService nhatKyHeThongService;
+    private final QuyenTruyCapHoSoBenhNhan quyenTruyCapHoSoBenhNhan;
 
     @Transactional(readOnly = true)
     public Page<BenhNhanDto> timTatCa(Pageable phanTrang) {
@@ -40,6 +43,7 @@ public class BenhNhanService {
 
     @Transactional(readOnly = true)
     public BenhNhanDto layTheoMa(Long ma) {
+        quyenTruyCapHoSoBenhNhan.yeuCauDuocTruyCapHoSo(ma);
         return sangDto(benhNhanRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy bệnh nhân: " + ma)));
     }
 
@@ -55,6 +59,10 @@ public class BenhNhanService {
     @Transactional
     public BenhNhanDto capNhat(Long ma, BenhNhanDto dto) {
         BenhNhan bn = benhNhanRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy bệnh nhân: " + ma));
+        quyenTruyCapHoSoBenhNhan.yeuCauDuocTruyCapHoSo(ma);
+        if (!quyenTruyCapHoSoBenhNhan.laNhanVien()) {
+            dto.setHoatDong(bn.isHoatDong());
+        }
         String cu = "hoTen=" + bn.getHoTen() + ";soDienThoai=" + bn.getSoDienThoai();
         mapTuDto(dto, bn);
         benhNhanRepository.save(bn);
@@ -65,6 +73,9 @@ public class BenhNhanService {
 
     @Transactional
     public void voHieuHoa(Long ma) {
+        if (!quyenTruyCapHoSoBenhNhan.laNhanVien()) {
+            throw new AccessDeniedException("Chỉ nhân viên mới được ẩn hồ sơ.");
+        }
         BenhNhan bn = benhNhanRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy bệnh nhân: " + ma));
         nhatKyHeThongService.ghi("benh_nhan", ma, "VO_HIEU", "hoatDong=true", "hoatDong=false");
         bn.setHoatDong(false);

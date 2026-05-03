@@ -7,6 +7,7 @@ import { Card, Row, Col } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import { dashboardApi, type DashboardStats } from "@/lib/api";
+import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
 import { PageHeader } from "@/components/PageHeader";
 import { LoadingState } from "@/components/LoadingState";
 
@@ -100,7 +101,7 @@ export default function DashboardPage() {
   }, [user, loading, router]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || laChiTaiKhoanBenhNhan(user)) return;
     dashboardApi
       .stats()
       .then(setStats)
@@ -109,6 +110,48 @@ export default function DashboardPage() {
 
   if (loading) return <LoadingState />;
   if (!user) return null;
+
+  const bnQuery = user.maBenhNhan
+    ? `?maBenhNhan=${encodeURIComponent(String(user.maBenhNhan))}`
+    : "";
+
+  if (laChiTaiKhoanBenhNhan(user)) {
+    return (
+      <div>
+        <PageHeader
+          title="Trang chủ"
+          subtitle={`Xin chào, ${user.hoTen || user.tenDangNhap}. Bạn đang dùng tài khoản bệnh nhân — xem hồ sơ, lịch khám và hóa đơn của bạn.`}
+        />
+        <h3 className="h5 fw-bold mb-3 mt-2">Truy cập nhanh</h3>
+        <Row className="g-3 stagger-children">
+          <QuickLinkCard
+            href="/benh-nhan"
+            title="Hồ sơ của tôi"
+            desc="Xem và cập nhật thông tin liên hệ."
+            icon="bi-person-vcard"
+          />
+          <QuickLinkCard
+            href={`/lich-hen${bnQuery}`}
+            title="Lịch khám"
+            desc="Đặt lịch hoặc xem các lượt khám của bạn."
+            icon="bi-calendar-heart"
+          />
+          <QuickLinkCard
+            href={`/hoa-don${bnQuery}`}
+            title="Hóa đơn"
+            desc="Xem chi tiết và trạng thái thanh toán."
+            icon="bi-wallet2"
+          />
+          <QuickLinkCard
+            href="/tro-chuyen"
+            title="Chat"
+            desc="Trao đổi với phòng khám."
+            icon="bi-chat-dots"
+          />
+        </Row>
+      </div>
+    );
+  }
 
   const maxRevenue = stats?.doanhThu7NgayGanNhat?.length
     ? Math.max(

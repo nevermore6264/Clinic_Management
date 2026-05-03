@@ -8,5 +8,4 @@ public class CauHinhNhacLichDto {
     private Integer soNgayTruoc;
     private Integer soGioTruoc;
     private boolean batThuDienTu;
-    private boolean batTinNhan;
 }

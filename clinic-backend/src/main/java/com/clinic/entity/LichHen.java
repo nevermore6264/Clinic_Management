@@ -68,6 +68,8 @@ public class LichHen {
         DANG_KHAM,
         XET_NGHIEM,
         DA_KE_DON,
+        /** Đã có hóa đơn, đang chờ thanh toán đủ (đồng bộ với HĐ CHO_THANH_TOAN / MOT_PHAN). */
+        CHO_THANH_TOAN,
         DA_THANH_TOAN,
         HUY,
         VANG

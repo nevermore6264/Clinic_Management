@@ -45,7 +45,6 @@ public class NhacLichHenService {
         cauHinh.setSoNgayTruoc(dto.getSoNgayTruoc() != null ? dto.getSoNgayTruoc() : 1);
         cauHinh.setSoGioTruoc(dto.getSoGioTruoc() != null ? dto.getSoGioTruoc() : 2);
         cauHinh.setBatThuDienTu(dto.isBatThuDienTu());
-        cauHinh.setBatTinNhan(dto.isBatTinNhan());
         cauHinh = khoCauHinh.save(cauHinh);
         return sangDto(cauHinh);
     }
@@ -101,7 +100,6 @@ public class NhacLichHenService {
         dto.setSoNgayTruoc(c.getSoNgayTruoc());
         dto.setSoGioTruoc(c.getSoGioTruoc());
         dto.setBatThuDienTu(c.isBatThuDienTu());
-        dto.setBatTinNhan(c.isBatTinNhan());
         return dto;
     }
 
@@ -110,7 +108,6 @@ public class NhacLichHenService {
         dto.setSoNgayTruoc(1);
         dto.setSoGioTruoc(2);
         dto.setBatThuDienTu(true);
-        dto.setBatTinNhan(false);
         return dto;
     }
 }

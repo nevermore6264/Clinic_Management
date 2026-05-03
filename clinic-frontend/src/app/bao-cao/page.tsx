@@ -32,8 +32,8 @@ export default function ReportsPage() {
     if (!loading && !user) router.replace("/dang-nhap");
     if (
       user &&
-      !user.cacVaiTro.includes("QUAN_TRI") &&
-      !user.cacVaiTro.includes("THU_NGAN")
+      !user.cacVaiTro?.includes("QUAN_TRI") &&
+      !user.cacVaiTro?.includes("THU_NGAN")
     )
       router.replace("/bang-dieu-khien");
   }, [user, loading, router]);
@@ -56,7 +56,10 @@ export default function ReportsPage() {
     const sId = serviceId ? Number(serviceId) : undefined;
     reportsApi
       .revenue(from, to, dId, sId)
-      .then(setList)
+      .then((data) => {
+        setError("");
+        setList(Array.isArray(data) ? data : []);
+      })
       .catch((e) => setError(e.message));
   }, [user, from, to, doctorId, serviceId]);
 
@@ -85,12 +88,15 @@ export default function ReportsPage() {
 
   if (loading) return <LoadingState />;
   if (
-    !user?.cacVaiTro.includes("QUAN_TRI") &&
-    !user?.cacVaiTro.includes("THU_NGAN")
+    !user?.cacVaiTro?.includes("QUAN_TRI") &&
+    !user?.cacVaiTro?.includes("THU_NGAN")
   )
     return null;
 
-  const totalRevenue = list.reduce((sum, r) => sum + (r.tongDoanhThu || 0), 0);
+  const totalRevenue = list.reduce(
+    (sum, r) => sum + Number(r.tongDoanhThu ?? 0),
+    0,
+  );
 
   return (
     <div>
@@ -190,10 +196,12 @@ export default function ReportsPage() {
             </tr>
           </thead>
           <tbody>
-            {list.map((r) => (
-              <tr key={r.ngay}>
-                <td>{r.ngay}</td>
-                <td>{(r.tongDoanhThu || 0).toLocaleString("vi-VN")}đ</td>
+            {list.map((r, i) => (
+              <tr key={typeof r.ngay === "string" ? r.ngay : `row-${i}`}>
+                <td>{String(r.ngay ?? "—")}</td>
+                <td>
+                  {Number(r.tongDoanhThu ?? 0).toLocaleString("vi-VN")}đ
+                </td>
                 <td>{r.soLichHen ?? "—"}</td>
               </tr>
             ))}

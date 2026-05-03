@@ -29,9 +29,6 @@ public class CauHinhNhacLich {
     @Column(name = "bat_thu_dien_tu")
     private boolean batThuDienTu = true;
 
-    @Column(name = "bat_tin_nhan")
-    private boolean batTinNhan = false;
-
     @Column(name = "tao_luc")
     private Instant taoLuc;
 

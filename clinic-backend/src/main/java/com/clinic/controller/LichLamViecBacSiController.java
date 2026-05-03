@@ -4,6 +4,7 @@ import com.clinic.dto.LichLamViecBacSiDto;
 import com.clinic.service.LichLamViecBacSiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/lich-lam-viec-bac-si")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','BAC_SI','THU_NGAN')")
 public class LichLamViecBacSiController {
 
     private final LichLamViecBacSiService lichLamViecBacSiService;

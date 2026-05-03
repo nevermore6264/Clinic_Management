@@ -17,4 +17,6 @@ public class DangNhapPhanHoi {
     private String hoTen;
     private Set<String> cacVaiTro;
     private Long maNguoiDung;
+    /** Mã hồ sơ bệnh nhân khi tài khoản được liên kết (vai trò BENH_NHAN). */
+    private Long maBenhNhan;
 }

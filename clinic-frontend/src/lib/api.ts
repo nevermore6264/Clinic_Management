@@ -248,8 +248,23 @@ export const lichHenApi = {
 export const hoSoKhamApi = {
   theoBenhNhan: (maBenhNhan: number) =>
     api<HoSoKham[]>(`/ho-so-kham/benh-nhan/${maBenhNhan}`),
-  theoLichHen: (maLichHen: number) =>
-    api<HoSoKham | null>(`/ho-so-kham/lich-hen/${maLichHen}`),
+  /** Chưa có hồ sơ cho lịch → backend trả JSON null (hoặc cũ 404); không báo lỗi đỏ. */
+  theoLichHen: async (maLichHen: number): Promise<HoSoKham | null> => {
+    try {
+      return await api<HoSoKham | null>(`/ho-so-kham/lich-hen/${maLichHen}`, {
+        notifyError: false,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (/\b404\b/i.test(msg)) return null;
+      if (typeof window !== "undefined") {
+        notify.error(
+          msg.length > 160 ? "Không tải được hồ sơ khám." : msg,
+        );
+      }
+      throw e;
+    }
+  },
   luu: (maLichHen: number, data: Partial<HoSoKham>) =>
     api<HoSoKham>(`/ho-so-kham/lich-hen/${maLichHen}`, {
       method: "POST",
@@ -368,7 +383,6 @@ export interface CauHinhNhacLich {
   soNgayTruoc: number;
   soGioTruoc: number;
   batThuDienTu: boolean;
-  batTinNhan: boolean;
 }
 
 export const cauHinhNhacLichApi = {
@@ -391,9 +405,17 @@ export interface TinNhanChatDto {
   id: number;
   maNguoiGui: number;
   tenNguoiGui: string;
+  maNguoiNhan?: number;
+  tenNguoiNhan?: string;
   noiDung: string;
   maPhong: number;
   taoLuc: string;
+}
+
+export interface NguoiDungChatEntry {
+  id: number;
+  hoTen?: string;
+  tenDangNhap: string;
 }
 
 export const troChuyenApi = {
@@ -401,6 +423,11 @@ export const troChuyenApi = {
     api<TinNhanChatDto[]>(
       `/tro-chuyen/lich-su?maPhong=${encodeURIComponent(maPhong)}&gioiHan=${gioiHan}`,
     ),
+  layDoiThoai: (maDoiTuong: number, gioiHan = 120) =>
+    api<TinNhanChatDto[]>(
+      `/tro-chuyen/doi-thoai?maDoiTuong=${encodeURIComponent(String(maDoiTuong))}&gioiHan=${gioiHan}`,
+    ),
+  danhBa: () => api<NguoiDungChatEntry[]>("/tro-chuyen/danh-ba"),
 };
 
 export const lichLamViecBacSiApi = {
@@ -640,6 +667,8 @@ export const auditLogsApi = {
 export const chatApi = {
   ...troChuyenApi,
   history: troChuyenApi.layLichSu,
+  dmHistory: troChuyenApi.layDoiThoai,
+  contacts: troChuyenApi.danhBa,
 };
 export const doctorSchedulesApi = {
   ...lichLamViecBacSiApi,

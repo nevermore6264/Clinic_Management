@@ -4,7 +4,9 @@ import com.clinic.dto.LichHenDto;
 import com.clinic.entity.*;
 import com.clinic.repository.*;
 import com.clinic.security.NguoiDungChinhThuc;
+import com.clinic.security.QuyenTruyCapHoSoBenhNhan;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -25,6 +27,7 @@ public class LichHenService {
     private final BacSiRepository bacSiRepository;
     private final DichVuRepository dichVuRepository;
     private final LichSuTrangThaiLichHenRepository lichSuTrangThaiLichHenRepository;
+    private final QuyenTruyCapHoSoBenhNhan quyenTruyCapHoSoBenhNhan;
 
     @Transactional(readOnly = true)
     public Page<LichHenDto> timTrongKhoang(LocalDate tuNgay, LocalDate denNgay, Pageable phanTrang) {
@@ -34,6 +37,7 @@ public class LichHenService {
 
     @Transactional(readOnly = true)
     public List<LichHenDto> timTheoBenhNhan(Long maBenhNhan) {
+        quyenTruyCapHoSoBenhNhan.yeuCauDuocTruyCapHoSo(maBenhNhan);
         return lichHenRepository.findByBenhNhanIdOrderByNgayHenDescGioHenDesc(maBenhNhan, Pageable.ofSize(50)).stream()
                 .map(this::sangDto).collect(Collectors.toList());
     }
@@ -46,11 +50,20 @@ public class LichHenService {
 
     @Transactional(readOnly = true)
     public LichHenDto layTheoMa(Long ma) {
-        return sangDto(lichHenRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy lịch hẹn: " + ma)));
+        LichHen lh = lichHenRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy lịch hẹn: " + ma));
+        quyenTruyCapHoSoBenhNhan.yeuCauDuocTruyCapHoSo(lh.getBenhNhan().getId());
+        return sangDto(lh);
     }
 
     @Transactional
     public LichHenDto tao(LichHenDto dto) {
+        if (!quyenTruyCapHoSoBenhNhan.laNhanVien()) {
+            Long lienKet = quyenTruyCapHoSoBenhNhan.layMaBenhNhanLienKetVoiTaiKhoan()
+                    .orElseThrow(() -> new AccessDeniedException("Tài khoản chưa được liên kết hồ sơ bệnh nhân."));
+            if (!lienKet.equals(dto.getMaBenhNhan())) {
+                throw new AccessDeniedException("Chỉ được đặt lịch cho chính mình.");
+            }
+        }
         if (coTrung(dto.getMaBacSi(), dto.getNgayHen(), dto.getGioHen(), null)) {
             throw new RuntimeException("Trùng lịch khám với bác sĩ tại thời điểm này.");
         }
@@ -98,6 +111,12 @@ public class LichHenService {
     @Transactional
     public LichHenDto capNhat(Long ma, LichHenDto dto) {
         LichHen lh = lichHenRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy lịch hẹn: " + ma));
+        quyenTruyCapHoSoBenhNhan.yeuCauDuocTruyCapHoSo(lh.getBenhNhan().getId());
+        if (!quyenTruyCapHoSoBenhNhan.laNhanVien()) {
+            if (!dto.getMaBenhNhan().equals(lh.getBenhNhan().getId())) {
+                throw new AccessDeniedException("Không được đổi bệnh nhân của lịch.");
+            }
+        }
         if (coTrung(dto.getMaBacSi(), dto.getNgayHen(), dto.getGioHen(), ma)) {
             throw new RuntimeException("Trùng lịch khám.");
         }

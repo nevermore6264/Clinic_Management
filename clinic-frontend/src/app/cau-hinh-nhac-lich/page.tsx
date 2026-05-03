@@ -33,7 +33,6 @@ export default function ReminderConfigPage() {
           soNgayTruoc: 1,
           soGioTruoc: 2,
           batThuDienTu: true,
-          batTinNhan: false,
         }),
       );
   }, [user]);
@@ -114,19 +113,6 @@ export default function ReminderConfigPage() {
                     c ? { ...c, batThuDienTu: e.target.checked } : null,
                   )
                 }
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Check
-                type="switch"
-                label="Bật gửi SMS (chưa triển khai)"
-                checked={config?.batTinNhan ?? false}
-                onChange={(e) =>
-                  setConfig((c) =>
-                    c ? { ...c, batTinNhan: e.target.checked } : null,
-                  )
-                }
-                disabled
               />
             </Form.Group>
             <Button type="submit" variant="primary">

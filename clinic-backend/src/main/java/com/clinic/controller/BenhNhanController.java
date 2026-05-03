@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class BenhNhanController {
     private final BenhNhanService benhNhanService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','BAC_SI','THU_NGAN')")
     public ResponseEntity<Page<BenhNhanDto>> danhSach(
             Pageable phanTrang,
             @RequestParam(required = false) String ten,
@@ -34,6 +36,7 @@ public class BenhNhanController {
     }
 
     @GetMapping("/tim-kiem")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','BAC_SI','THU_NGAN')")
     public ResponseEntity<List<BenhNhanDto>> timKiem(@RequestParam String ten) {
         return ResponseEntity.ok(benhNhanService.timTheoTen(ten));
     }
@@ -44,6 +47,7 @@ public class BenhNhanController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN')")
     public ResponseEntity<BenhNhanDto> tao(@Valid @RequestBody BenhNhanDto dto) {
         return ResponseEntity.ok(benhNhanService.tao(dto));
     }
@@ -54,6 +58,7 @@ public class BenhNhanController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN')")
     public ResponseEntity<Void> voHieuHoa(@PathVariable Long id) {
         benhNhanService.voHieuHoa(id);
         return ResponseEntity.noContent().build();

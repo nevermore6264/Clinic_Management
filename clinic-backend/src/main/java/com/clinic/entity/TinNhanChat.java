@@ -27,17 +27,27 @@ public class TinNhanChat {
     @JoinColumn(name = "ma_nguoi_nhan")
     private NguoiDung nguoiNhan;
 
-    @Column(name = "noi_dung", nullable = false, length = 2000)
+    /** utf8mb4 để lưu emoji và tiếng Việt đầy đủ (MySQL utf8 cũ chỉ 3 byte). */
+    @Column(
+            name = "noi_dung",
+            nullable = false,
+            columnDefinition = "varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL")
     private String noiDung;
 
     /** Đường dẫn API tải tệp, ví dụ /api/tro-chuyen/tep/uuid.pdf */
-    @Column(name = "dinh_kem_duong_dan", length = 512)
+    @Column(
+            name = "dinh_kem_duong_dan",
+            columnDefinition = "varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     private String dinhKemDuongDan;
 
-    @Column(name = "dinh_kem_ten", length = 255)
+    @Column(
+            name = "dinh_kem_ten",
+            columnDefinition = "varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     private String dinhKemTen;
 
-    @Column(name = "dinh_kem_loai", length = 128)
+    @Column(
+            name = "dinh_kem_loai",
+            columnDefinition = "varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
     private String dinhKemLoai;
 
     @Column(name = "ma_phong")

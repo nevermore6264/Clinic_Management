@@ -71,7 +71,6 @@ export function metaTrangThaiLichHen(code: string | undefined) {
   );
 }
 
-/** Không cho lập HĐ mới: đã hủy, không đến, đã có HĐ chờ thanh toán, hoặc đã thanh toán xong. */
 const TRANG_THAI_KHONG_LAP_HOA_DON = new Set([
   "HUY",
   "VANG",

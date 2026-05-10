@@ -22,7 +22,6 @@ public class BacSi {
     @JoinColumn(name = "ma_nguoi_dung", unique = true)
     private NguoiDung nguoiDung;
 
-    /** Họ tên khi chưa gắn tài khoản đăng nhập (khi {@link #nguoiDung} null). */
     @Column(name = "ho_ten")
     private String hoTen;
 

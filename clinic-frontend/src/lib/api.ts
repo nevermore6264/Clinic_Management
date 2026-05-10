@@ -254,7 +254,6 @@ export const lichHenApi = {
 export const hoSoKhamApi = {
   theoBenhNhan: (maBenhNhan: number) =>
     api<HoSoKham[]>(`/ho-so-kham/benh-nhan/${maBenhNhan}`),
-  /** Chưa có hồ sơ cho lịch → backend trả JSON null (hoặc cũ 404); không báo lỗi đỏ. */
   theoLichHen: async (maLichHen: number): Promise<HoSoKham | null> => {
     try {
       return await api<HoSoKham | null>(`/ho-so-kham/lich-hen/${maLichHen}`, {
@@ -412,7 +411,6 @@ export interface TinNhanChatDto {
   maNguoiNhan?: number;
   tenNguoiNhan?: string;
   noiDung: string;
-  /** Đường dẫn API, ví dụ /tro-chuyen/tep/uuid.pdf */
   dinhKemDuongDan?: string;
   dinhKemTen?: string;
   dinhKemLoai?: string;

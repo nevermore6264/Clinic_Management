@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { LoadingState } from "@/components/LoadingState";
 
-/** Trang chi tiết cũ chuyển về danh sách và mở modal sửa. */
 export default function BenhNhanIdRedirectPage() {
   const params = useParams();
   const router = useRouter();

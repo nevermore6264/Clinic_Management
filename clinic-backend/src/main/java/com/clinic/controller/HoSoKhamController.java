@@ -22,9 +22,6 @@ public class HoSoKhamController {
         return ResponseEntity.ok(hoSoKhamService.timTheoBenhNhan(maBenhNhan));
     }
 
-    /**
-     * Chưa có hồ sơ khám cho lịch → JSON {@code null}, HTTP 200 (không dùng 404).
-     */
     @GetMapping(value = "/lich-hen/{maLichHen}", produces = MediaType.APPLICATION_JSON_VALUE)
     public HoSoKhamDto theoLichHen(@PathVariable Long maLichHen) {
         return hoSoKhamService.layTheoMaLichHen(maLichHen);

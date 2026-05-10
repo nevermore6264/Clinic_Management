@@ -1,4 +1,3 @@
-/** Avatar SVG (DiceBear) — seed cố định theo người dùng, không đổi mỗi lần load. */
 
 const BASE =
   "https://api.dicebear.com/9.x/notionists/svg";

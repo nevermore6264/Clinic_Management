@@ -251,7 +251,6 @@ html.app-ready body {
   padding-right: 0;
 }
 
-/* Trang chat: dùng gần hết chiều ngang / cao viewport */
 .page-shell:has(.chat-dm-app) {
   width: 100%;
   max-width: 100%;
@@ -366,7 +365,6 @@ html.app-ready body {
   color: #fff !important;
 }
 
-/* Quản lý bác sĩ — một hàng nút (wrap khi hẹp), gradient điều hướng */
 .bac-si-page .bac-si-toolbar {
   flex: 1 1 auto;
   min-width: 0;
@@ -378,7 +376,6 @@ html.app-ready body {
   justify-content: center;
   gap: 0.45rem;
   white-space: nowrap;
-  /* Cùng tầm với nút Export / Điều hướng ở Loại DV — btn-lg + padding rõ ràng */
   --bs-btn-font-size: 1.0625rem;
   --bs-btn-padding-y: 0.58rem;
   --bs-btn-padding-x: 1.25rem;
@@ -390,7 +387,6 @@ html.app-ready body {
   line-height: 1;
 }
 
-/* Combobox chuyên khoa — không bọc .bac-si-page: Modal portal ra body nên con không nằm trong .bac-si-page */
 .bac-si-ck-dropdown .dropdown-toggle {
   min-height: calc(1.5em + 0.75rem + 2px);
   border-color: var(--clinic-border);
@@ -401,7 +397,6 @@ html.app-ready body {
   border-color: rgba(37, 99, 235, 0.45);
   box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12);
 }
-/* Không dùng Popper strategy "fixed" + w-100: % width tính theo viewport → menu full màn hình */
 .bac-si-ck-dropdown .dropdown-menu.bac-si-ck-dropdown__menu {
   width: 100%;
   min-width: 0;
@@ -412,7 +407,6 @@ html.app-ready body {
   white-space: normal;
 }
 
-/* Modal « Tạo bác sĩ mới » — rộng hơn (portal ra body, không bọc .bac-si-page) */
 .modal-dialog.bac-si-modal-tao-moi {
   max-width: min(1140px, calc(100vw - 2rem));
 }
@@ -466,7 +460,6 @@ html.app-ready body {
   color: #fff !important;
 }
 
-/* Modal — Hủy (xám) / Xác nhận xanh (#2d68e2); không bọc .bac-si-page vì modal portal ra body */
 .bac-si-modal-footer {
   gap: 0.65rem !important;
 }
@@ -537,7 +530,6 @@ html.app-ready body {
   box-shadow: 0 6px 14px rgba(220, 38, 38, 0.32);
 }
 
-/* Lịch hẹn / xem lịch — cùng cỡ nút Sửa, tông cyan */
 .btn-action-calendar {
   background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%) !important;
   border: none !important;
@@ -1153,18 +1145,434 @@ html.app-ready body {
   justify-content: center;
   min-height: 100vh;
   position: relative;
-  background: linear-gradient(
-    155deg,
-    #eef2f7 0%,
-    #f0f6ff 38%,
-    #fafbfd 72%,
-    #f1f5f9 100%
-  );
+  background: radial-gradient(
+      ellipse 85% 55% at 15% 20%,
+      rgba(59, 130, 246, 0.11) 0%,
+      transparent 52%
+    ),
+    radial-gradient(
+      ellipse 70% 50% at 92% 18%,
+      rgba(56, 189, 248, 0.09) 0%,
+      transparent 48%
+    ),
+    radial-gradient(
+      ellipse 60% 45% at 78% 88%,
+      rgba(14, 165, 233, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse 45% 35% at 8% 85%,
+      rgba(249, 115, 22, 0.06) 0%,
+      transparent 55%
+    ),
+    linear-gradient(
+      158deg,
+      #e6edf7 0%,
+      #eef4ff 30%,
+      #f7f9fc 58%,
+      #eceef5 100%
+    );
   overflow: hidden;
 }
 
 .login-bg--redirect {
   background: linear-gradient(160deg, #f4f6f9 0%, #eff6ff 45%, #f8fafc 100%);
+}
+
+.login-bg > .login-redirect-card {
+  position: relative;
+  z-index: 1;
+}
+
+.login-bg__decor {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.login-bg__mesh-layer {
+  position: absolute;
+  inset: -35%;
+  background: radial-gradient(
+      circle at 25% 35%,
+      rgba(96, 165, 250, 0.22) 0%,
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 78% 22%,
+      rgba(125, 211, 252, 0.17) 0%,
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 55% 78%,
+      rgba(34, 211, 238, 0.14) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 12% 72%,
+      rgba(251, 146, 60, 0.09) 0%,
+      transparent 36%
+    );
+  animation: loginAuroraDrift 26s ease-in-out infinite alternate;
+  opacity: 0.92;
+}
+
+@keyframes loginAuroraDrift {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(-3%, 2.5%) scale(1.04) rotate(-0.8deg);
+  }
+  66% {
+    transform: translate(2.5%, -2%) scale(1.02) rotate(0.6deg);
+  }
+  100% {
+    transform: translate(1%, 1.5%) scale(1.05) rotate(0deg);
+  }
+}
+
+.login-bg__noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.04) 0px,
+      transparent 1px,
+      transparent 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(15, 23, 42, 0.03) 0px,
+      transparent 1px,
+      transparent 2px
+    );
+  background-size: 3px 3px;
+}
+
+.login-bg__rings {
+  position: absolute;
+  left: max(-14%, -5rem);
+  top: 50%;
+  width: min(48vw, 400px);
+  height: auto;
+  transform: translateY(-50%);
+  opacity: 0.88;
+  animation: loginRingBreath 14s ease-in-out infinite alternate;
+}
+
+@keyframes loginRingBreath {
+  from {
+    opacity: 0.68;
+    transform: translateY(-50%) scale(1);
+  }
+  to {
+    opacity: 0.92;
+    transform: translateY(-50%) scale(1.04);
+  }
+}
+
+.login-bg__dots {
+  position: absolute;
+  inset: 0;
+  opacity: 0.42;
+  background-image: radial-gradient(
+    rgba(37, 99, 235, 0.11) 1.2px,
+    transparent 1.2px
+  );
+  background-size: 22px 22px;
+  mask-image: radial-gradient(
+    ellipse 78% 72% at 48% 48%,
+    #000 15%,
+    transparent 72%
+  );
+  pointer-events: none;
+}
+
+.login-bg__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(68px);
+  pointer-events: none;
+}
+
+.login-bg__orb--warm {
+  width: min(42vw, 300px);
+  height: min(42vw, 300px);
+  background: radial-gradient(
+    circle,
+    rgba(251, 146, 60, 0.35) 0%,
+    rgba(249, 115, 22, 0) 68%
+  );
+  top: 8%;
+  right: -4%;
+  animation: loginOrbFloatA 22s ease-in-out infinite;
+}
+
+.login-bg__orb--cool {
+  width: min(38vw, 280px);
+  height: min(38vw, 280px);
+  background: radial-gradient(
+    circle,
+    rgba(14, 165, 233, 0.22) 0%,
+    rgba(8, 145, 178, 0) 70%
+  );
+  bottom: 18%;
+  left: -6%;
+  animation: loginOrbFloatB 18s ease-in-out infinite;
+}
+
+@keyframes loginOrbFloatA {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-4%, 6%) scale(1.08);
+  }
+}
+
+@keyframes loginOrbFloatB {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(8%, -5%) scale(1.06);
+  }
+}
+
+.login-bg__shard {
+  position: absolute;
+  border-radius: 22px;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.45) 0%,
+    rgba(239, 246, 255, 0.12) 45%,
+    rgba(219, 234, 254, 0.18) 100%
+  );
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(4px);
+}
+
+.login-bg__shard--a {
+  width: min(22vw, 200px);
+  height: min(48vh, 340px);
+  left: 6%;
+  bottom: 14%;
+  transform: rotate(-14deg);
+  opacity: 0.65;
+}
+
+.login-bg__shard--b {
+  width: min(18vw, 160px);
+  height: min(28vh, 220px);
+  right: 10%;
+  top: 22%;
+  transform: rotate(11deg);
+  opacity: 0.5;
+  background: linear-gradient(
+    205deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    rgba(219, 234, 254, 0.18) 50%,
+    rgba(224, 242, 254, 0.22) 100%
+  );
+}
+
+.login-bg__wave {
+  display: block;
+}
+
+.login-bg__wave--bottom {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: clamp(110px, 21vh, 220px);
+}
+
+.login-bg__wave--top {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: clamp(70px, 12vh, 130px);
+}
+
+.login-bg__wave--mid {
+  position: absolute;
+  left: 0;
+  bottom: clamp(22%, 11rem);
+  width: 100%;
+  height: clamp(52px, 9vh, 96px);
+  opacity: 0.72;
+}
+
+.login-bg__glyph {
+  display: block;
+}
+
+.login-bg__glyph--cross {
+  position: absolute;
+  top: min(9vh, 5rem);
+  right: max(-2%, -1rem);
+  width: min(36vw, 240px);
+  height: auto;
+}
+
+.login-bg__glyph--ecg {
+  position: absolute;
+  bottom: min(28vh, 14rem);
+  left: max(-4vw, -2.5rem);
+  width: min(48vw, 380px);
+  height: auto;
+  transform: rotate(-4.5deg);
+  animation: loginEcgNudge 12s ease-in-out infinite alternate;
+}
+
+.login-bg__glyph--ecg2 {
+  position: absolute;
+  top: min(20vh, 7.5rem);
+  left: min(14%, 7rem);
+  width: min(34vw, 280px);
+  height: auto;
+  transform: rotate(7deg);
+  opacity: 0.95;
+}
+
+.login-bg__glyph--pills {
+  position: absolute;
+  bottom: min(36vh, 13rem);
+  right: max(6%, 1.5rem);
+  width: min(42vw, 300px);
+  height: auto;
+  opacity: 0.9;
+}
+
+@keyframes loginEcgNudge {
+  from {
+    transform: rotate(-4.5deg) translateX(0);
+  }
+  to {
+    transform: rotate(-4deg) translateX(6px);
+  }
+}
+
+.login-bg__blobs {
+  position: absolute;
+  inset: 0;
+}
+
+.login-bg__blobs::before,
+.login-bg__blobs::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(78px);
+  pointer-events: none;
+}
+
+.login-bg__blobs::before {
+  width: min(58vw, 460px);
+  height: min(58vw, 460px);
+  background: radial-gradient(
+    circle,
+    rgba(59, 130, 246, 0.24) 0%,
+    rgba(59, 130, 246, 0) 68%
+  );
+  top: -16%;
+  left: -12%;
+  opacity: 0.82;
+}
+
+.login-bg__blobs::after {
+  width: min(46vw, 360px);
+  height: min(46vw, 360px);
+  background: radial-gradient(
+    circle,
+    rgba(14, 165, 233, 0.2) 0%,
+    rgba(59, 130, 246, 0.09) 45%,
+    rgba(14, 165, 233, 0) 70%
+  );
+  bottom: 10%;
+  right: -8%;
+  opacity: 0.88;
+}
+
+@media (max-width: 991.98px) {
+  .login-bg__rings {
+    left: -22%;
+    width: min(62vw, 320px);
+    opacity: 0.55;
+  }
+
+  .login-bg__shard--a,
+  .login-bg__shard--b {
+    opacity: 0.35;
+  }
+
+  .login-bg__glyph--cross {
+    width: min(52vw, 200px);
+    top: 5%;
+    right: -8%;
+    opacity: 0.72;
+  }
+
+  .login-bg__glyph--ecg {
+    width: min(88vw, 420px);
+    bottom: 22%;
+    left: -18%;
+    opacity: 0.58;
+    transform: rotate(-3deg);
+  }
+
+  .login-bg__glyph--ecg2 {
+    width: min(58vw, 240px);
+    top: 14%;
+    left: 4%;
+    opacity: 0.45;
+  }
+
+  .login-bg__glyph--pills {
+    width: min(72vw, 280px);
+    bottom: 32%;
+    right: 2%;
+    opacity: 0.65;
+  }
+
+  .login-bg__wave--bottom {
+    height: clamp(96px, 18vh, 180px);
+  }
+
+  .login-bg__wave--mid {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-bg__mesh-layer,
+  .login-bg__rings,
+  .login-bg__orb--warm,
+  .login-bg__orb--cool,
+  .login-bg__glyph--ecg {
+    animation: none !important;
+  }
+
+  .login-bg__glyph--ecg {
+    transform: rotate(-4.5deg);
+  }
+
+  .login-bg__rings {
+    opacity: 0.78;
+    transform: translateY(-50%) scale(1);
+  }
 }
 
 .login-bg::before {
@@ -1173,25 +1581,26 @@ html.app-ready body {
   inset: 0;
   background-image: radial-gradient(
       circle at 14% 18%,
-      rgba(37, 99, 235, 0.2) 0%,
+      rgba(37, 99, 235, 0.11) 0%,
       transparent 42%
     ),
     radial-gradient(
       circle at 92% 78%,
-      rgba(99, 102, 241, 0.14) 0%,
+      rgba(59, 130, 246, 0.09) 0%,
       transparent 40%
     ),
     radial-gradient(
       circle at 48% 108%,
-      rgba(56, 189, 248, 0.12) 0%,
+      rgba(56, 189, 248, 0.07) 0%,
       transparent 46%
     ),
     radial-gradient(
       ellipse 55% 40% at 70% -8%,
-      rgba(14, 165, 233, 0.09) 0%,
+      rgba(14, 165, 233, 0.06) 0%,
       transparent 55%
     );
   pointer-events: none;
+  z-index: 0;
 }
 
 .login-bg::after {
@@ -1210,11 +1619,11 @@ html.app-ready body {
     );
   background-size: 36px 36px;
   transform: translateZ(0);
-  opacity: 0.38;
+  opacity: 0.28;
   pointer-events: none;
   mask-image: radial-gradient(
-    ellipse 85% 75% at 50% 45%,
-    #000 25%,
+    ellipse 92% 88% at 50% 52%,
+    #000 22%,
     transparent 100%
   );
 }
@@ -1734,7 +2143,6 @@ html.app-ready body {
   box-shadow: var(--clinic-shadow-lg);
 }
 
-/* Modal thêm bệnh nhân — rộng hơn mặc định, vùng cuộn cao hơn */
 .patient-create-modal-dialog.modal-xl {
   max-width: min(1240px, 96vw);
   margin-left: auto;
@@ -1818,7 +2226,6 @@ html.app-ready body {
   padding: 1rem 1.5rem;
 }
 
-/* Footer popup — đồng bộ với modal bệnh nhân / thuốc (nền, nút đủ cao) */
 .clinic-modal-footer {
   border-top: 1px solid var(--clinic-border);
   background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
@@ -1837,7 +2244,6 @@ html.app-ready body {
   border-radius: var(--clinic-radius-sm, 10px);
 }
 
-/* Xác nhận (khóa / mở khóa tài khoản) — không dùng React-Bootstrap Modal */
 .clinic-confirm-overlay {
   position: fixed;
   inset: 0;
@@ -1988,7 +2394,6 @@ html.app-ready body {
   border: 1px solid var(--clinic-border) !important;
 }
 
-/* —— Chat riêng (DM) hiện đại —— */
 .chat-dm-app {
   width: 100%;
   max-width: 100%;
@@ -2002,7 +2407,6 @@ html.app-ready body {
   border: 1px solid var(--clinic-border, #e5e7eb);
   background: var(--bs-body-bg, #fff);
   box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
-  /* Gần full chiều cao giữa nav và footer (bỏ giới hạn 560px cũ) */
   min-height: max(20rem, calc(100dvh - 12rem));
 }
 
@@ -2148,7 +2552,6 @@ html.app-ready body {
   font-size: 0.85rem;
 }
 
-/* Avatar minh họa (DiceBear SVG) */
 .chat-dm-app__avatar--gen {
   padding: 0;
   overflow: hidden;
@@ -2350,7 +2753,6 @@ html.app-ready body {
   min-height: 2rem;
 }
 
-/* Thanh Emoji + Đính kèm: segmented control, không dùng outline kiểu form mặc định */
 .chat-dm-app__tool-strip {
   flex-shrink: 0;
   padding: 4px;
@@ -3458,7 +3860,6 @@ html.app-ready body {
   }
 }
 
-/* lich-hen detail: status tags */
 .lich-hen-detail-page .lich-hen-status-tag {
   display: inline-flex;
   align-items: center;
@@ -3712,7 +4113,6 @@ html.app-ready body {
   vertical-align: -0.1em;
 }
 
-/* Nút xóa dòng trong bảng đơn thuốc */
 .lich-hen-detail-page .lich-hen-remove-row-thuoc {
   width: 2.25rem;
   height: 2.25rem;
@@ -3743,7 +4143,6 @@ html.app-ready body {
   box-shadow: none;
 }
 
-/* Bảng lịch sử trạng thái — cuộn dọc khi quá dài */
 .lich-hen-detail-page .lich-hen-status-log-scroll {
   max-height: min(42vh, 340px);
   overflow-y: auto;
@@ -3775,7 +4174,6 @@ html.app-ready body {
   white-space: nowrap;
 }
 
-/* invoice print preview */
 .invoice-print-page {
   max-width: 820px;
   margin-inline: auto;
@@ -4295,7 +4693,6 @@ html.app-ready body {
   color: var(--clinic-muted);
 }
 
-/* —— Toast thông báo (AppShell) —— */
 .clinic-toast-container {
   z-index: 10800 !important;
   width: min(420px, calc(100vw - 1.25rem));
@@ -4554,7 +4951,6 @@ html.app-ready body {
     border-color: #333 !important;
   }
 
-  /* Trang chi tiết /hoa-don/[id]: in toàn bộ khối .hoa-don-printable */
   .hoa-don-detail-page h2 {
     font-size: 1.35rem;
     margin-bottom: 1rem !important;
@@ -4568,7 +4964,6 @@ html.app-ready body {
   }
 }
 
-/* —— Phiếu chi: layout nổi bật —— */
 .phieu-chi-page .phieu-chi-hero {
   background: linear-gradient(
     135deg,

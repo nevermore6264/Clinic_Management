@@ -13,9 +13,6 @@ type Props = {
   className: string;
 };
 
-/**
- * Avatar minh họa (DiceBear notionists). Nếu không tải được ảnh thì hiện 2 chữ cái như trước.
- */
 export function ChatGeneratedAvatar({
   userId,
   hoTen,

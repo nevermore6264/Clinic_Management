@@ -92,7 +92,6 @@ function AppointmentsPageInner() {
   const [locBenhNhan, setLocBenhNhan] = useState("");
   const [locBacSi, setLocBacSi] = useState("");
   const [locDichVu, setLocDichVu] = useState("");
-  /** Lọc danh sách trang (theo tên bác sĩ + trạng thái) */
   const [timBacSiTrang, setTimBacSiTrang] = useState("");
   const [locTrangThaiBang, setLocTrangThaiBang] = useState("");
 

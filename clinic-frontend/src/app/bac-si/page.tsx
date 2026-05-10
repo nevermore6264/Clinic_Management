@@ -97,7 +97,6 @@ export default function QuanLyBacSiPage() {
     );
   }, [nguoiDung, maBsDaCo]);
 
-  /** Dropdown: tài khoản chưa gắn hồ sơ + tài khoản vừa tạo (đã có hồ sơ rỗng từ backend) */
   const tuyChonTaiKhoan = useMemo(() => {
     const id = Number(taoMaNguoiDung);
     if (

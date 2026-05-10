@@ -19,9 +19,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-/**
- * Tải lên / tải xuống tệp đính kèm tin nhắn (ảnh, PDF, Office nhỏ).
- */
 @RestController
 @RequestMapping("/api/tro-chuyen")
 public class TroChuyenTepController {

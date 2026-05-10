@@ -15,7 +15,6 @@ export interface NguoiDung {
   hoTen: string;
   cacVaiTro: string[];
   maNguoiDung: number;
-  /** Có khi tài khoản liên kết với hồ sơ bệnh nhân (đăng nhập phản hồi từ API). */
   maBenhNhan?: number;
 }
 
@@ -31,7 +30,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-/** Không hiển thị JSON/technical message cho người dùng khi đăng nhập sai. */
 function thongBaoLoiDangNhap(body: string): string {
   const fallback = "Đăng nhập thất bại";
   const raw = body.trim();
@@ -49,9 +47,7 @@ function thongBaoLoiDangNhap(body: string): string {
         return fallback;
       }
     }
-  } catch {
-    /* không phải JSON — lỗi mạng / text thuần */
-  }
+  } catch {}
   if (raw.startsWith("{")) return fallback;
   const out = raw.length > 200 ? fallback : raw;
   return out.trim() || fallback;
@@ -82,7 +78,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch {
-      /* localStorage có thể throw (private mode, chặn cookie…) */
     } finally {
       setLoading(false);
     }

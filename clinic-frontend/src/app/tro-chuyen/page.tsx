@@ -129,7 +129,6 @@ function ChatDmFileBlock({ m, mine }: { m: TinNhanChatDto; mine: boolean }) {
   );
 }
 
-/** Ẩn dòng “📎 tên file” trùng với khối đính kèm (backend tự tạo khi không có chú thích). */
 function showCaptionDm(m: TinNhanChatDto): boolean {
   const t = (m.noiDung ?? "").trim();
   if (!t) return false;
@@ -150,7 +149,6 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
   const [connected, setConnected] = useState(false);
-  /** Tin đến chưa đọc theo mã người đối thoại (chỉ khi không đang mở hội thoại đó). */
   const [unreadByPeer, setUnreadByPeer] = useState<Record<number, number>>(
     {},
   );
@@ -242,7 +240,6 @@ export default function ChatPage() {
     };
   }, [user]);
 
-  /** Đăng ký mọi kênh DM với từng liên hệ để nhận tin realtime và badge chưa đọc. */
   useEffect(() => {
     const client = clientRef.current;
     if (!client?.connected || !user || contacts.length === 0) return;
@@ -280,7 +277,6 @@ export default function ChatPage() {
     };
   }, [user, contacts, connected]);
 
-  /** Khi chọn hội thoại, xóa số tin chưa đọc của người đó. */
   useEffect(() => {
     if (peerId == null) return;
     setUnreadByPeer((u) => {

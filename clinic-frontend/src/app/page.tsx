@@ -30,6 +30,7 @@ export default function HomePage() {
 
   return (
     <div className="landing-bg">
+      <div className="landing-bg__mesh" aria-hidden />
       <section className="landing-hero">
         <div className="page-shell">
           <div className="landing-topbar">
@@ -62,7 +63,10 @@ export default function HomePage() {
               </div>
               <h1 className="landing-title">
                 Vận hành phòng khám
-                <br />hiện đại và nhất quán
+                <br />
+                <span className="landing-title__gradient">
+                  hiện đại và nhất quán
+                </span>
               </h1>
               <p className="landing-lead">
                 Từ đặt lịch, tiếp nhận, khám bệnh, kê đơn đến hóa đơn, thanh toán và báo cáo, mọi thao tác đều được chuẩn
@@ -107,6 +111,7 @@ export default function HomePage() {
 
             <div className="landing-visual landing-reveal landing-reveal--3">
               <div className="landing-preview">
+                <div className="landing-preview__accent-bar" aria-hidden />
                 <div className="landing-preview__head">
                   <div>
                     <div className="landing-preview__eyebrow">Live Operations</div>
@@ -175,6 +180,7 @@ export default function HomePage() {
       <section className="landing-section landing-section--muted">
         <div className="page-shell">
           <div className="landing-section__head landing-section__head--center">
+            <p className="landing-section__eyebrow">Tính năng cốt lõi</p>
             <h2 className="landing-section__title">Điểm nổi bật của hệ thống</h2>
             <p className="landing-section__desc">
               Thiết kế theo đúng bài toán nghiệp vụ thực tế của phòng khám: rõ luồng, rõ vai trò, rõ dữ liệu.
@@ -182,7 +188,7 @@ export default function HomePage() {
           </div>
 
           <div className="landing-feature-grid">
-            <article className="landing-feature-card landing-reveal landing-reveal--1">
+            <article className="landing-feature-card landing-feature-card--accent-a landing-reveal landing-reveal--1">
               <div className="landing-feature-card__icon">
                 <i className="bi bi-calendar-check" aria-hidden />
               </div>
@@ -191,7 +197,7 @@ export default function HomePage() {
                 Hỗ trợ đặt lịch theo bác sĩ, dịch vụ, khung giờ; kiểm tra trùng lịch và theo dõi trạng thái từng lượt khám.
               </p>
             </article>
-            <article className="landing-feature-card landing-reveal landing-reveal--2">
+            <article className="landing-feature-card landing-feature-card--accent-b landing-reveal landing-reveal--2">
               <div className="landing-feature-card__icon">
                 <i className="bi bi-journal-medical" aria-hidden />
               </div>
@@ -200,7 +206,7 @@ export default function HomePage() {
                 Bác sĩ cập nhật chẩn đoán, ghi chú chuyên môn, đơn thuốc và lịch sử trạng thái để truy vết đầy đủ.
               </p>
             </article>
-            <article className="landing-feature-card landing-reveal landing-reveal--3">
+            <article className="landing-feature-card landing-feature-card--accent-c landing-reveal landing-reveal--3">
               <div className="landing-feature-card__icon">
                 <i className="bi bi-credit-card-2-front" aria-hidden />
               </div>
@@ -209,7 +215,7 @@ export default function HomePage() {
                 Tạo hóa đơn theo lịch hẹn, ghi nhận nhiều giao dịch thanh toán và in chứng từ phục vụ đối soát.
               </p>
             </article>
-            <article className="landing-feature-card landing-reveal landing-reveal--4">
+            <article className="landing-feature-card landing-feature-card--accent-d landing-reveal landing-reveal--4">
               <div className="landing-feature-card__icon">
                 <i className="bi bi-graph-up-arrow" aria-hidden />
               </div>
@@ -227,6 +233,7 @@ export default function HomePage() {
           <div className="landing-process">
             <div className="landing-process__intro">
               <div className="landing-section__head">
+                <p className="landing-section__eyebrow">Luồng nghiệp vụ</p>
                 <h2 className="landing-section__title">Quy trình vận hành khép kín</h2>
                 <p className="landing-section__desc">
                   Hệ thống được thiết kế theo luồng nghiệp vụ thực tế, giúp giảm sai sót và tăng tốc độ xử lý tại quầy tiếp nhận.
@@ -262,6 +269,7 @@ export default function HomePage() {
       <section className="landing-section landing-section--muted">
         <div className="page-shell">
           <div className="landing-section__head landing-section__head--center">
+            <p className="landing-section__eyebrow">Phản hồi</p>
             <h2 className="landing-section__title">Khách hàng nói gì về trải nghiệm</h2>
             <p className="landing-section__desc">
               Phản hồi từ đội ngũ vận hành và bệnh nhân sau khi sử dụng hệ thống.
@@ -269,30 +277,45 @@ export default function HomePage() {
           </div>
           <div className="landing-testimonials">
             <article className="testimonial-card landing-reveal landing-reveal--1">
-              <p>
+              <p className="testimonial-card__quote">
                 “Từ lúc dùng hệ thống, lễ tân xử lý lịch hẹn nhanh hơn rõ rệt, giảm trùng lịch và đỡ sót lịch nhắc.”
               </p>
               <div className="testimonial-card__author">
-                <strong>Nguyễn Thị H.</strong>
-                <span>Điều phối phòng khám</span>
+                <span className="testimonial-card__avatar" aria-hidden>
+                  NH
+                </span>
+                <div className="testimonial-card__meta">
+                  <strong>Nguyễn Thị H.</strong>
+                  <span>Điều phối phòng khám</span>
+                </div>
               </div>
             </article>
             <article className="testimonial-card landing-reveal landing-reveal--2">
-              <p>
+              <p className="testimonial-card__quote">
                 “Hồ sơ khám và đơn thuốc được lưu tập trung, bác sĩ tra cứu lại rất tiện khi bệnh nhân tái khám.”
               </p>
               <div className="testimonial-card__author">
-                <strong>BS. Trần Minh Q.</strong>
-                <span>Bác sĩ nội tổng quát</span>
+                <span className="testimonial-card__avatar" aria-hidden>
+                  TQ
+                </span>
+                <div className="testimonial-card__meta">
+                  <strong>BS. Trần Minh Q.</strong>
+                  <span>Bác sĩ nội tổng quát</span>
+                </div>
               </div>
             </article>
             <article className="testimonial-card landing-reveal landing-reveal--3">
-              <p>
+              <p className="testimonial-card__quote">
                 “Phần hóa đơn và báo cáo doanh thu giúp bộ phận thu ngân đối soát cuối ngày nhanh, hạn chế sai số.”
               </p>
               <div className="testimonial-card__author">
-                <strong>Lê Khánh V.</strong>
-                <span>Thu ngân</span>
+                <span className="testimonial-card__avatar" aria-hidden>
+                  LV
+                </span>
+                <div className="testimonial-card__meta">
+                  <strong>Lê Khánh V.</strong>
+                  <span>Thu ngân</span>
+                </div>
               </div>
             </article>
           </div>
@@ -302,6 +325,7 @@ export default function HomePage() {
       <section className="landing-section">
         <div className="page-shell">
           <div className="landing-section__head landing-section__head--center">
+            <p className="landing-section__eyebrow">Hỗ trợ</p>
             <h2 className="landing-section__title">Câu hỏi thường gặp (FAQ)</h2>
           </div>
           <div className="landing-faq">

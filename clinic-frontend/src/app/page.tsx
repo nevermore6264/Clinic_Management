@@ -93,15 +93,15 @@ export default function HomePage() {
               </div>
 
               <div className="landing-kpis">
-                <div className="landing-kpi landing-reveal landing-reveal--2">
+                <div className="landing-kpi">
                   <div className="landing-kpi__value">24/7</div>
                   <div className="landing-kpi__label">Tiếp nhận lịch hẹn trực tuyến</div>
                 </div>
-                <div className="landing-kpi landing-reveal landing-reveal--3">
+                <div className="landing-kpi">
                   <div className="landing-kpi__value">4 bước</div>
                   <div className="landing-kpi__label">Khép kín từ đặt lịch đến thanh toán</div>
                 </div>
-                <div className="landing-kpi landing-reveal landing-reveal--4">
+                <div className="landing-kpi">
                   <div className="landing-kpi__value">1 nền tảng</div>
                   <div className="landing-kpi__label">Lễ tân, bác sĩ, thu ngân cùng vận hành</div>
                 </div>
@@ -188,7 +188,7 @@ export default function HomePage() {
           </div>
 
           <div className="landing-feature-grid">
-            <article className="landing-feature-card landing-feature-card--accent-a landing-reveal landing-reveal--1">
+            <article className="landing-feature-card landing-feature-card--accent-a">
               <div className="landing-feature-card__icon">
                 <i className="bi bi-calendar-check" aria-hidden />
               </div>
@@ -197,7 +197,7 @@ export default function HomePage() {
                 Hỗ trợ đặt lịch theo bác sĩ, dịch vụ, khung giờ; kiểm tra trùng lịch và theo dõi trạng thái từng lượt khám.
               </p>
             </article>
-            <article className="landing-feature-card landing-feature-card--accent-b landing-reveal landing-reveal--2">
+            <article className="landing-feature-card landing-feature-card--accent-b">
               <div className="landing-feature-card__icon">
                 <i className="bi bi-journal-medical" aria-hidden />
               </div>
@@ -206,7 +206,7 @@ export default function HomePage() {
                 Bác sĩ cập nhật chẩn đoán, ghi chú chuyên môn, đơn thuốc và lịch sử trạng thái để truy vết đầy đủ.
               </p>
             </article>
-            <article className="landing-feature-card landing-feature-card--accent-c landing-reveal landing-reveal--3">
+            <article className="landing-feature-card landing-feature-card--accent-c">
               <div className="landing-feature-card__icon">
                 <i className="bi bi-credit-card-2-front" aria-hidden />
               </div>
@@ -215,7 +215,7 @@ export default function HomePage() {
                 Tạo hóa đơn theo lịch hẹn, ghi nhận nhiều giao dịch thanh toán và in chứng từ phục vụ đối soát.
               </p>
             </article>
-            <article className="landing-feature-card landing-feature-card--accent-d landing-reveal landing-reveal--4">
+            <article className="landing-feature-card landing-feature-card--accent-d">
               <div className="landing-feature-card__icon">
                 <i className="bi bi-graph-up-arrow" aria-hidden />
               </div>
@@ -241,22 +241,22 @@ export default function HomePage() {
               </div>
             </div>
             <div className="landing-process__steps">
-              <div className="process-step landing-reveal landing-reveal--1">
+              <div className="process-step">
                 <div className="process-step__number">01</div>
                 <h3>Tiếp nhận lịch hẹn</h3>
                 <p>Bệnh nhân chọn dịch vụ, bác sĩ, ngày giờ; hệ thống lưu lịch và hỗ trợ nhắc lịch.</p>
               </div>
-              <div className="process-step landing-reveal landing-reveal--2">
+              <div className="process-step">
                 <div className="process-step__number">02</div>
                 <h3>Khám và cập nhật trạng thái</h3>
                 <p>Lễ tân check-in, bác sĩ ghi nhận tình trạng, chẩn đoán và kết quả khám.</p>
               </div>
-              <div className="process-step landing-reveal landing-reveal--3">
+              <div className="process-step">
                 <div className="process-step__number">03</div>
                 <h3>Kê đơn và lưu hồ sơ</h3>
                 <p>Thông tin thuốc, liều dùng, hồ sơ khám và lịch sử trạng thái được quản lý tập trung.</p>
               </div>
-              <div className="process-step landing-reveal landing-reveal--4">
+              <div className="process-step">
                 <div className="process-step__number">04</div>
                 <h3>Thanh toán và báo cáo</h3>
                 <p>Tạo hóa đơn, ghi giao dịch thanh toán, theo dõi doanh thu và xuất báo cáo tổng hợp.</p>
@@ -276,7 +276,7 @@ export default function HomePage() {
             </p>
           </div>
           <div className="landing-testimonials">
-            <article className="testimonial-card landing-reveal landing-reveal--1">
+            <article className="testimonial-card">
               <p className="testimonial-card__quote">
                 “Từ lúc dùng hệ thống, lễ tân xử lý lịch hẹn nhanh hơn rõ rệt, giảm trùng lịch và đỡ sót lịch nhắc.”
               </p>
@@ -290,7 +290,7 @@ export default function HomePage() {
                 </div>
               </div>
             </article>
-            <article className="testimonial-card landing-reveal landing-reveal--2">
+            <article className="testimonial-card">
               <p className="testimonial-card__quote">
                 “Hồ sơ khám và đơn thuốc được lưu tập trung, bác sĩ tra cứu lại rất tiện khi bệnh nhân tái khám.”
               </p>
@@ -304,7 +304,7 @@ export default function HomePage() {
                 </div>
               </div>
             </article>
-            <article className="testimonial-card landing-reveal landing-reveal--3">
+            <article className="testimonial-card">
               <p className="testimonial-card__quote">
                 “Phần hóa đơn và báo cáo doanh thu giúp bộ phận thu ngân đối soát cuối ngày nhanh, hạn chế sai số.”
               </p>
@@ -329,19 +329,19 @@ export default function HomePage() {
             <h2 className="landing-section__title">Câu hỏi thường gặp (FAQ)</h2>
           </div>
           <div className="landing-faq">
-            <details className="landing-faq__item landing-reveal landing-reveal--1" open>
+            <details className="landing-faq__item" open>
               <summary>Hệ thống phù hợp cho phòng khám quy mô nào?</summary>
               <p>
                 Phù hợp từ phòng khám tư nhân quy mô nhỏ đến cơ sở có nhiều bộ phận vận hành. Có thể mở rộng tính năng theo nhu cầu thực tế.
               </p>
             </details>
-            <details className="landing-faq__item landing-reveal landing-reveal--2">
+            <details className="landing-faq__item">
               <summary>Có hỗ trợ nhắc lịch và theo dõi trạng thái khám không?</summary>
               <p>
                 Có. Hệ thống hỗ trợ cấu hình nhắc lịch, cập nhật trạng thái lượt khám và lưu lịch sử trạng thái đầy đủ.
               </p>
             </details>
-            <details className="landing-faq__item landing-reveal landing-reveal--3">
+            <details className="landing-faq__item">
               <summary>Dữ liệu hóa đơn có liên kết trực tiếp lịch hẹn không?</summary>
               <p>
                 Có. Hóa đơn được gắn theo mã lịch hẹn để truy vết xuyên suốt quy trình khám, thanh toán và báo cáo.
@@ -353,7 +353,7 @@ export default function HomePage() {
 
       <section className="landing-section landing-section--final">
         <div className="page-shell">
-          <div className="landing-final-cta landing-reveal landing-reveal--2">
+          <div className="landing-final-cta">
             <div>
               <div className="landing-final-cta__eyebrow">Sẵn sàng trải nghiệm bản demo?</div>
               <h2>Truy cập hệ thống để trải nghiệm đầy đủ các chức năng vận hành</h2>

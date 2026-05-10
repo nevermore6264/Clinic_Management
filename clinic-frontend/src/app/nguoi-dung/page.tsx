@@ -86,6 +86,18 @@ export default function UsersPage() {
     setError("");
     const laTaiKhoanBenhNhan = createForm.role === "BENH_NHAN";
     const benhNhanChon = danhSachBenhNhan.find((bn) => String(bn.id) === benhNhanDaChon);
+    if (!createForm.username.trim()) {
+      setError("Vui lòng nhập tên đăng nhập.");
+      return;
+    }
+    if (!createForm.password.trim()) {
+      setError("Vui lòng nhập mật khẩu.");
+      return;
+    }
+    if (createForm.password.length < 6) {
+      setError("Mật khẩu cần ít nhất 6 ký tự.");
+      return;
+    }
     if (laTaiKhoanBenhNhan && !benhNhanChon) {
       setError("Vui lòng chọn bệnh nhân trước khi tạo tài khoản.");
       return;
@@ -131,6 +143,10 @@ export default function UsersPage() {
     e.preventDefault();
     if (!editingUser?.id) return;
     setError("");
+    if (!editForm.fullName.trim()) {
+      setError("Vui lòng nhập họ tên.");
+      return;
+    }
     try {
       await usersApi.update(editingUser.id, {
         fullName: editForm.fullName,
@@ -446,27 +462,29 @@ export default function UsersPage() {
 
       <Modal show={showCreate} onHide={() => setShowCreate(false)} centered>
         <Modal.Header closeButton>Tạo tài khoản</Modal.Header>
-        <Form onSubmit={handleCreate}>
+        <Form noValidate onSubmit={handleCreate}>
           <Modal.Body>
             <Form.Group className="mb-2">
               <Form.Label className="required">Tên đăng nhập</Form.Label>
               <Form.Control
+                placeholder="vd: bs.nguyen, le.thu"
+                autoComplete="username"
                 value={createForm.username}
                 onChange={(e) =>
                   setCreateForm({ ...createForm, username: e.target.value })
                 }
-                required
               />
             </Form.Group>
             <Form.Group className="mb-2">
               <Form.Label className="required">Mật khẩu</Form.Label>
               <Form.Control
                 type="password"
+                placeholder="Tối thiểu 6 ký tự"
+                autoComplete="new-password"
                 value={createForm.password}
                 onChange={(e) =>
                   setCreateForm({ ...createForm, password: e.target.value })
                 }
-                required
               />
             </Form.Group>
             <Form.Group className="mb-2">
@@ -476,7 +494,6 @@ export default function UsersPage() {
                   <Form.Select
                     value={benhNhanDaChon}
                     onChange={(e) => setBenhNhanDaChon(e.target.value)}
-                    required
                   >
                     <option value="">-- Chọn bệnh nhân --</option>
                     {danhSachBenhNhan.map((bn) => (
@@ -490,6 +507,7 @@ export default function UsersPage() {
                 <>
                   <Form.Label>Họ tên</Form.Label>
                   <Form.Control
+                    placeholder="Họ và tên đầy đủ"
                     value={createForm.fullName}
                     onChange={(e) =>
                       setCreateForm({ ...createForm, fullName: e.target.value })
@@ -507,7 +525,6 @@ export default function UsersPage() {
                   setCreateForm((f) => ({ ...f, role }));
                   if (role !== "BENH_NHAN") setBenhNhanDaChon("");
                 }}
-                required
               >
                 {ROLES.map((r) => (
                   <option key={r} value={r}>
@@ -541,19 +558,21 @@ export default function UsersPage() {
         <Modal.Header closeButton>
           <Modal.Title>Sửa tài khoản</Modal.Title>
         </Modal.Header>
-        <Form onSubmit={handleEdit}>
+        <Form noValidate onSubmit={handleEdit}>
           <Modal.Body>
             <Form.Group className="mb-2">
               <Form.Label className="required">Họ tên</Form.Label>
               <Form.Control
+                placeholder="Họ và tên đầy đủ"
                 value={editForm.fullName}
                 onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
-                required
               />
             </Form.Group>
             <Form.Group className="mb-2">
               <Form.Label>Email</Form.Label>
               <Form.Control
+                type="email"
+                placeholder="email@example.com"
                 value={editForm.email}
                 onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
               />
@@ -561,6 +580,7 @@ export default function UsersPage() {
             <Form.Group className="mb-2">
               <Form.Label>Số điện thoại</Form.Label>
               <Form.Control
+                placeholder="0xxx xxx xxx"
                 value={editForm.phone}
                 onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
               />
@@ -570,7 +590,6 @@ export default function UsersPage() {
               <Form.Select
                 value={editForm.role}
                 onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                required
               >
                 {ROLES.map((r) => (
                   <option key={r} value={r}>

@@ -596,6 +596,7 @@ export default function ThuocPage() {
               <Form.Group className="mb-2">
                 <Form.Label>Tên thuốc *</Form.Label>
                 <Form.Control
+                  placeholder="VD: Paracetamol 500mg"
                   value={form.tenThuoc}
                   onChange={(e) =>
                     setForm({ ...form, tenThuoc: e.target.value })
@@ -605,6 +606,7 @@ export default function ThuocPage() {
               <Form.Group className="mb-2">
                 <Form.Label>Hoạt chất</Form.Label>
                 <Form.Control
+                  placeholder="VD: Paracetamol"
                   value={form.hoatChat ?? ""}
                   onChange={(e) =>
                     setForm({ ...form, hoatChat: e.target.value })
@@ -725,6 +727,7 @@ export default function ThuocPage() {
               <Form.Group className="mb-2">
                 <Form.Label>Số đăng ký</Form.Label>
                 <Form.Control
+                  placeholder="Số đăng ký thuốc"
                   value={form.soDangKy ?? ""}
                   onChange={(e) =>
                     setForm({ ...form, soDangKy: e.target.value })
@@ -734,6 +737,7 @@ export default function ThuocPage() {
               <Form.Group className="mb-2">
                 <Form.Label>Số lô</Form.Label>
                 <Form.Control
+                  placeholder="Mã lô (LOT)"
                   value={form.soLo ?? ""}
                   onChange={(e) => setForm({ ...form, soLo: e.target.value })}
                 />
@@ -753,6 +757,7 @@ export default function ThuocPage() {
                 <Form.Control
                   type="number"
                   min={0}
+                  placeholder="0"
                   value={form.giaNhap ?? ""}
                   onChange={(e) =>
                     setForm({ ...form, giaNhap: Number(e.target.value) || 0 })
@@ -764,6 +769,7 @@ export default function ThuocPage() {
                 <Form.Control
                   type="number"
                   min={0}
+                  placeholder="0"
                   value={form.giaBan ?? ""}
                   onChange={(e) =>
                     setForm({ ...form, giaBan: Number(e.target.value) || 0 })
@@ -775,6 +781,7 @@ export default function ThuocPage() {
                 <Form.Control
                   type="number"
                   min={0}
+                  placeholder="0"
                   value={form.tonKho ?? ""}
                   onChange={(e) =>
                     setForm({ ...form, tonKho: Number(e.target.value) || 0 })
@@ -786,6 +793,7 @@ export default function ThuocPage() {
                 <Form.Control
                   type="number"
                   min={0}
+                  placeholder="0"
                   value={form.mucTonToiThieu ?? ""}
                   onChange={(e) =>
                     setForm({
@@ -805,6 +813,7 @@ export default function ThuocPage() {
                 <Form.Control
                   as="textarea"
                   rows={2}
+                  placeholder="Công dụng, chỉ định lâm sàng..."
                   value={form.chiDinh ?? ""}
                   onChange={(e) =>
                     setForm({ ...form, chiDinh: e.target.value })
@@ -816,6 +825,7 @@ export default function ThuocPage() {
                 <Form.Control
                   as="textarea"
                   rows={2}
+                  placeholder="Trường hợp không được dùng thuốc..."
                   value={form.chongChiDinh ?? ""}
                   onChange={(e) =>
                     setForm({ ...form, chongChiDinh: e.target.value })
@@ -827,6 +837,7 @@ export default function ThuocPage() {
                 <Form.Control
                   as="textarea"
                   rows={2}
+                  placeholder="Tác dụng không mong muốn (nếu có)..."
                   value={form.tacDungPhu ?? ""}
                   onChange={(e) =>
                     setForm({ ...form, tacDungPhu: e.target.value })

@@ -30,6 +30,10 @@ export default function NewPatientPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (!form.hoTen?.trim()) {
+      setError("Họ tên là bắt buộc.");
+      return;
+    }
     try {
       await patientsApi.create(form);
       router.push("/benh-nhan");
@@ -49,13 +53,13 @@ export default function NewPatientPage() {
       {error && <Alert variant="danger">{error}</Alert>}
       <Card>
         <Card.Body>
-          <Form onSubmit={handleSubmit}>
+          <Form noValidate onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
               <Form.Label className="required">Họ tên</Form.Label>
               <Form.Control
+                placeholder="VD: Nguyễn Văn A"
                 value={form.hoTen || ""}
                 onChange={(e) => setForm({ ...form, hoTen: e.target.value })}
-                required
               />
             </Form.Group>
             <div className="row g-3">
@@ -64,6 +68,7 @@ export default function NewPatientPage() {
                   <Form.Label>Ngày sinh</Form.Label>
                   <Form.Control
                     type="date"
+                    title="Chọn ngày sinh"
                     value={form.ngaySinh || ""}
                     onChange={(e) => setForm({ ...form, ngaySinh: e.target.value })}
                   />
@@ -73,6 +78,7 @@ export default function NewPatientPage() {
                 <Form.Group>
                   <Form.Label>Số điện thoại</Form.Label>
                   <Form.Control
+                    placeholder="0xxx xxx xxx"
                     value={form.soDienThoai || ""}
                     onChange={(e) => setForm({ ...form, soDienThoai: e.target.value })}
                   />
@@ -83,6 +89,7 @@ export default function NewPatientPage() {
                   <Form.Label>Email</Form.Label>
                   <Form.Control
                     type="email"
+                    placeholder="email@example.com"
                     value={form.thuDienTu || ""}
                     onChange={(e) => setForm({ ...form, thuDienTu: e.target.value })}
                   />
@@ -106,6 +113,7 @@ export default function NewPatientPage() {
                 <Form.Group>
                   <Form.Label>Số CCCD</Form.Label>
                   <Form.Control
+                    placeholder="Số căn cước"
                     value={form.soCccd || ""}
                     onChange={(e) => setForm({ ...form, soCccd: e.target.value })}
                   />
@@ -115,6 +123,7 @@ export default function NewPatientPage() {
                 <Form.Group>
                   <Form.Label>Nghề nghiệp</Form.Label>
                   <Form.Control
+                    placeholder="VD: Kỹ sư"
                     value={form.ngheNghiep || ""}
                     onChange={(e) => setForm({ ...form, ngheNghiep: e.target.value })}
                   />
@@ -139,6 +148,7 @@ export default function NewPatientPage() {
                 <Form.Group>
                   <Form.Label>Người liên hệ</Form.Label>
                   <Form.Control
+                    placeholder="Họ tên người thân"
                     value={form.nguoiLienHe || ""}
                     onChange={(e) => setForm({ ...form, nguoiLienHe: e.target.value })}
                   />
@@ -148,6 +158,7 @@ export default function NewPatientPage() {
                 <Form.Group>
                   <Form.Label>SĐT liên hệ</Form.Label>
                   <Form.Control
+                    placeholder="0xxx xxx xxx"
                     value={form.soDienThoaiLienHe || ""}
                     onChange={(e) =>
                       setForm({ ...form, soDienThoaiLienHe: e.target.value })
@@ -159,6 +170,7 @@ export default function NewPatientPage() {
             <Form.Group className="mb-3 mt-3">
               <Form.Label>Địa chỉ</Form.Label>
               <Form.Control
+                placeholder="Số nhà, đường, phường/xã, tỉnh/thành..."
                 value={form.diaChi || ""}
                 onChange={(e) => setForm({ ...form, diaChi: e.target.value })}
               />
@@ -168,6 +180,7 @@ export default function NewPatientPage() {
               <Form.Control
                 as="textarea"
                 rows={2}
+                placeholder="Bệnh mãn tính, phẫu thuật trước đây..."
                 value={form.tienSuBenh || ""}
                 onChange={(e) => setForm({ ...form, tienSuBenh: e.target.value })}
               />
@@ -177,6 +190,7 @@ export default function NewPatientPage() {
               <Form.Control
                 as="textarea"
                 rows={2}
+                placeholder="Thuốc, thực phẩm, môi trường..."
                 value={form.diUng || ""}
                 onChange={(e) => setForm({ ...form, diUng: e.target.value })}
               />

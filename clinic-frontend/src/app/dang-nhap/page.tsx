@@ -264,9 +264,18 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    const u = username.trim();
+    if (!u) {
+      setError("Vui lòng nhập tên đăng nhập.");
+      return;
+    }
+    if (!password) {
+      setError("Vui lòng nhập mật khẩu.");
+      return;
+    }
     setLoading(true);
     try {
-      await login(username, password);
+      await login(u, password);
     } catch (err: unknown) {
       const msg =
         err instanceof Error && err.message?.trim()
@@ -371,7 +380,7 @@ export default function LoginPage() {
                 </Alert>
               )}
 
-              <Form onSubmit={handleSubmit} className="login-form">
+              <Form noValidate onSubmit={handleSubmit} className="login-form">
                 <Form.Group className="mb-3">
                   <Form.Label className="small fw-semibold text-secondary">
                     Tên đăng nhập
@@ -384,7 +393,6 @@ export default function LoginPage() {
                       type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      required
                       autoComplete="username"
                       placeholder="VD: admin"
                       className="login-input py-2"
@@ -403,7 +411,6 @@ export default function LoginPage() {
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      required
                       autoComplete="current-password"
                       placeholder="••••••••"
                       className="login-input login-input--mid py-2"

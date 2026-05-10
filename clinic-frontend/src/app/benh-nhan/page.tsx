@@ -665,7 +665,7 @@ function BenhNhanPageInner() {
             </div>
           </div>
         </Modal.Header>
-        <Form onSubmit={handleCreate}>
+        <Form noValidate onSubmit={handleCreate}>
           <Modal.Body className="patient-create-modal__body pt-0">
             <PatientRecordFormFields
               form={createForm}
@@ -735,7 +735,7 @@ function BenhNhanPageInner() {
             </div>
           </div>
         </Modal.Header>
-        <Form onSubmit={handleEditSubmit}>
+        <Form noValidate onSubmit={handleEditSubmit}>
           <Modal.Body className="patient-create-modal__body pt-0">
             {editError && (
               <Alert

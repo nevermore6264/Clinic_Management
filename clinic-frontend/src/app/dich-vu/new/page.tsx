@@ -5,8 +5,18 @@ import { useRouter } from "next/navigation";
 import { Card, Form, Button, Alert } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
-import { serviceTypesApi, servicesApi, type DichVu, type LoaiDichVu } from "@/lib/api";
+import {
+  serviceTypesApi,
+  servicesApi,
+  type DichVu,
+  type LoaiDichVu,
+} from "@/lib/api";
 import { formatVndInput, parseVndInput } from "@/lib/moneyVnd";
+import {
+  validateDichVuForm,
+  coLoiDichVuForm,
+  type DichVuFormErrors,
+} from "@/lib/validateDichVuForm";
 
 export default function NewServicePage() {
   const { user, loading } = useAuth();
@@ -20,6 +30,8 @@ export default function NewServicePage() {
     gia: 0,
     hoatDong: true,
   });
+  const [danhSachDichVu, setDanhSachDichVu] = useState<DichVu[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<DichVuFormErrors>({});
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -28,14 +40,14 @@ export default function NewServicePage() {
 
   useEffect(() => {
     if (!user?.cacVaiTro.includes("QUAN_TRI")) return;
-    serviceTypesApi
-      .list()
-      .then((data) => {
-        setLoaiDichVu(data);
-        if (data.length > 0) {
+    Promise.all([serviceTypesApi.list(), servicesApi.list()])
+      .then(([loai, dichVu]) => {
+        setLoaiDichVu(loai);
+        setDanhSachDichVu(dichVu);
+        if (loai.length > 0) {
           setForm((prev) => ({
             ...prev,
-            maLoaiDichVu: prev.maLoaiDichVu ?? data[0].id,
+            maLoaiDichVu: prev.maLoaiDichVu ?? loai[0].id,
           }));
         }
       })
@@ -47,8 +59,16 @@ export default function NewServicePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    const loi = validateDichVuForm(form, danhSachDichVu);
+    setFieldErrors(loi);
+    if (coLoiDichVuForm(loi)) return;
     try {
-      await servicesApi.create(form);
+      await servicesApi.create({
+        ...form,
+        ten: form.ten?.trim(),
+        moTa: form.moTa?.trim() || "",
+      });
+      setFieldErrors({});
       router.push("/dich-vu");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Lỗi");
@@ -72,18 +92,22 @@ export default function NewServicePage() {
       ) : null}
       <Card>
         <Card.Body>
-          <Form onSubmit={handleSubmit}>
+          <Form noValidate onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
               <Form.Label className="required">Loại dịch vụ</Form.Label>
               <Form.Select
                 value={form.maLoaiDichVu ?? ""}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    maLoaiDichVu: Number(e.target.value) || undefined,
-                  })
-                }
-                required
+                onChange={(e) => {
+                  const maLoaiDichVu = Number(e.target.value) || undefined;
+                  setForm({ ...form, maLoaiDichVu });
+                  setFieldErrors((x) => {
+                    const n = { ...x };
+                    delete n.maLoaiDichVu;
+                    delete n.ten;
+                    return n;
+                  });
+                }}
+                isInvalid={Boolean(fieldErrors.maLoaiDichVu)}
                 disabled={loaiDichVu.length === 0}
               >
                 {loaiDichVu.map((item) => (
@@ -92,20 +116,35 @@ export default function NewServicePage() {
                   </option>
                 ))}
               </Form.Select>
+              <Form.Control.Feedback type="invalid" className="d-block">
+                {fieldErrors.maLoaiDichVu}
+              </Form.Control.Feedback>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label className="required">Tên dịch vụ</Form.Label>
               <Form.Control
+                placeholder="Ví dụ: Khám tổng quát, Siêu âm..."
                 value={form.ten || ""}
-                onChange={(e) => setForm({ ...form, ten: e.target.value })}
-                required
+                onChange={(e) => {
+                  setForm({ ...form, ten: e.target.value });
+                  setFieldErrors((x) => {
+                    const n = { ...x };
+                    delete n.ten;
+                    return n;
+                  });
+                }}
+                isInvalid={Boolean(fieldErrors.ten)}
               />
+              <Form.Control.Feedback type="invalid">
+                {fieldErrors.ten}
+              </Form.Control.Feedback>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Mô tả</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={2}
+                placeholder="Mô tả ngắn cho nhân viên và bệnh nhân (tuỳ chọn)"
                 value={form.moTa || ""}
                 onChange={(e) =>
                   setForm({ ...form, moTa: e.target.value })
@@ -122,9 +161,17 @@ export default function NewServicePage() {
                 onChange={(e) => {
                   const gia = parseVndInput(e.target.value);
                   setForm({ ...form, gia });
+                  setFieldErrors((x) => {
+                    const n = { ...x };
+                    delete n.gia;
+                    return n;
+                  });
                 }}
-                required
+                isInvalid={Boolean(fieldErrors.gia)}
               />
+              <Form.Control.Feedback type="invalid">
+                {fieldErrors.gia}
+              </Form.Control.Feedback>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Check

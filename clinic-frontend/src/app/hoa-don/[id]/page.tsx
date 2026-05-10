@@ -196,6 +196,7 @@ export default function InvoiceDetailPage() {
           <Form.Group>
             <Form.Label>Mã giao dịch (nếu có)</Form.Label>
             <Form.Control
+              placeholder="Mã giao dịch ngân hàng / cổng thanh toán"
               value={payRef}
               onChange={(e) => setPayRef(e.target.value)}
             />

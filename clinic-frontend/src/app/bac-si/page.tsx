@@ -428,7 +428,7 @@ export default function QuanLyBacSiPage() {
         dialogClassName="bac-si-modal-tao-moi"
         enforceFocus={!showPopupTaiKhoan}
       >
-        <Form onSubmit={luuTaoMoi}>
+        <Form noValidate onSubmit={luuTaoMoi}>
           <Modal.Header closeButton>
             <Modal.Title>Tạo bác sĩ mới</Modal.Title>
           </Modal.Header>
@@ -440,7 +440,6 @@ export default function QuanLyBacSiPage() {
                 onChange={(e) => setTaoHoTen(e.target.value)}
                 placeholder="Nhập tên bác sĩ"
                 autoComplete="name"
-                required
               />
             </Form.Group>
             <Form.Group className="mb-3">
@@ -573,7 +572,7 @@ export default function QuanLyBacSiPage() {
         centered
         enforceFocus={false}
       >
-        <Form onSubmit={luuPopupTaiKhoan}>
+        <Form noValidate onSubmit={luuPopupTaiKhoan}>
           <Modal.Header closeButton>
             <Modal.Title>Tạo tài khoản</Modal.Title>
           </Modal.Header>
@@ -585,7 +584,6 @@ export default function QuanLyBacSiPage() {
                 onChange={(e) => setTkTenDn(e.target.value)}
                 placeholder="Tên đăng nhập"
                 autoComplete="username"
-                required
               />
             </Form.Group>
             <Form.Group className="mb-0">
@@ -596,8 +594,6 @@ export default function QuanLyBacSiPage() {
                 onChange={(e) => setTkMatKhau(e.target.value)}
                 placeholder="Tối thiểu 6 ký tự"
                 autoComplete="new-password"
-                minLength={6}
-                required
               />
             </Form.Group>
           </Modal.Body>
@@ -624,7 +620,7 @@ export default function QuanLyBacSiPage() {
       </Modal>
 
       <Modal show={Boolean(dangSua)} onHide={dongSua} centered>
-        <Form onSubmit={luuSua}>
+        <Form noValidate onSubmit={luuSua}>
           <Modal.Header closeButton>
             <Modal.Title>
               Sửa hồ sơ — {dangSua?.hoTen ?? dangSua?.tenDangNhap}
@@ -638,7 +634,6 @@ export default function QuanLyBacSiPage() {
                   value={hoTenSua}
                   onChange={(e) => setHoTenSua(e.target.value)}
                   placeholder="Tên hiển thị (hồ sơ chưa gắn tài khoản)"
-                  required
                 />
               </Form.Group>
             ) : null}
@@ -659,6 +654,7 @@ export default function QuanLyBacSiPage() {
             <Form.Group className="mb-3">
               <Form.Label>Bằng cấp</Form.Label>
               <Form.Control
+                placeholder="Ví dụ: Bác sĩ đa khoa"
                 value={bangCapSua}
                 onChange={(e) => setBangCapSua(e.target.value)}
               />

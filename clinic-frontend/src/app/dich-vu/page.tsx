@@ -13,6 +13,10 @@ import {
 } from "@/lib/api";
 import { formatVndInput, parseVndInput } from "@/lib/moneyVnd";
 import { notify } from "@/lib/notify";
+import {
+  validateDichVuForm,
+  coLoiDichVuForm,
+} from "@/lib/validateDichVuForm";
 
 export default function ServicesPage() {
   const { user, loading } = useAuth();
@@ -42,6 +46,12 @@ export default function ServicesPage() {
     gia: 0,
     hoatDong: true,
   });
+  /** Lỗi form Thêm dịch vụ (tránh validation mặc định trình duyệt) */
+  const [themDichVuLoi, setThemDichVuLoi] = useState<{
+    maLoaiDichVu?: string;
+    ten?: string;
+    gia?: string;
+  }>({});
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -86,6 +96,7 @@ export default function ServicesPage() {
     setModalTitle(title);
     setModalError("");
     setTenLoaiDichVuError("");
+    setThemDichVuLoi({});
     setHienModal(true);
   };
 
@@ -138,8 +149,16 @@ export default function ServicesPage() {
   const handleThemDichVu = async (e: React.FormEvent) => {
     e.preventDefault();
     setModalError("");
+    const loi = validateDichVuForm(form, list);
+    setThemDichVuLoi(loi);
+    if (coLoiDichVuForm(loi)) return;
     try {
-      await servicesApi.create(form);
+      await servicesApi.create({
+        ...form,
+        ten: form.ten?.trim(),
+        moTa: form.moTa?.trim() || "",
+      });
+      setThemDichVuLoi({});
       setHienModal(false);
       setForm({
         maLoaiDichVu: loaiDichVu.length > 0 ? loaiDichVu[0].id : undefined,
@@ -149,8 +168,8 @@ export default function ServicesPage() {
         hoatDong: true,
       });
       await napDuLieu();
-    } catch (e: unknown) {
-      setModalError(e instanceof Error ? e.message : "Không thêm được dịch vụ");
+    } catch (err: unknown) {
+      setModalError(err instanceof Error ? err.message : "Không thêm được dịch vụ");
     }
   };
 
@@ -372,6 +391,8 @@ export default function ServicesPage() {
                   {dangSuaId === s.id ? (
                     <Form.Select
                       size="sm"
+                      aria-label="Chọn loại dịch vụ"
+                      title="Chọn loại dịch vụ"
                       value={formSua.maLoaiDichVu ?? ""}
                       onChange={(e) =>
                         setFormSua({
@@ -394,6 +415,7 @@ export default function ServicesPage() {
                   {dangSuaId === s.id ? (
                     <Form.Control
                       size="sm"
+                      placeholder="Tên dịch vụ"
                       value={formSua.ten || ""}
                       onChange={(e) =>
                         setFormSua({ ...formSua, ten: e.target.value })
@@ -407,6 +429,7 @@ export default function ServicesPage() {
                   {dangSuaId === s.id ? (
                     <Form.Control
                       size="sm"
+                      placeholder="Mô tả (tuỳ chọn)"
                       value={formSua.moTa || ""}
                       onChange={(e) =>
                         setFormSua({ ...formSua, moTa: e.target.value })
@@ -422,6 +445,7 @@ export default function ServicesPage() {
                       size="sm"
                       type="text"
                       inputMode="numeric"
+                      placeholder="Ví dụ: 150.000"
                       value={formatVndInput(formSua.gia)}
                       onChange={(e) =>
                         setFormSua({
@@ -525,7 +549,11 @@ export default function ServicesPage() {
 
       <Modal
         show={hienModal}
-        onHide={() => setHienModal(false)}
+        onHide={() => {
+          setHienModal(false);
+          setThemDichVuLoi({});
+          setModalError("");
+        }}
         size="xl"
         centered
       >
@@ -581,18 +609,28 @@ export default function ServicesPage() {
               </div>
             </>
           ) : (
-            <Form id="form-them-dich-vu" onSubmit={handleThemDichVu}>
+            <Form
+              id="form-them-dich-vu"
+              noValidate
+              onSubmit={handleThemDichVu}
+            >
               <Form.Group className="mb-3">
                 <Form.Label className="required">Loại dịch vụ</Form.Label>
                 <Form.Select
+                  aria-label="Chọn loại dịch vụ"
+                  title="Chọn loại dịch vụ"
                   value={form.maLoaiDichVu ?? ""}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      maLoaiDichVu: Number(e.target.value) || undefined,
-                    })
-                  }
-                  required
+                  onChange={(e) => {
+                    const maLoaiDichVu = Number(e.target.value) || undefined;
+                    setForm({ ...form, maLoaiDichVu });
+                    setThemDichVuLoi((x) => {
+                      const n = { ...x };
+                      delete n.maLoaiDichVu;
+                      delete n.ten;
+                      return n;
+                    });
+                  }}
+                  isInvalid={Boolean(themDichVuLoi.maLoaiDichVu)}
                   disabled={loaiDichVu.length === 0}
                 >
                   {loaiDichVu.map((item) => (
@@ -601,20 +639,35 @@ export default function ServicesPage() {
                     </option>
                   ))}
                 </Form.Select>
+                <Form.Control.Feedback type="invalid" className="d-block">
+                  {themDichVuLoi.maLoaiDichVu}
+                </Form.Control.Feedback>
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label className="required">Tên dịch vụ</Form.Label>
                 <Form.Control
+                  placeholder="Ví dụ: Khám tổng quát, Siêu âm..."
                   value={form.ten || ""}
-                  onChange={(e) => setForm({ ...form, ten: e.target.value })}
-                  required
+                  onChange={(e) => {
+                    setForm({ ...form, ten: e.target.value });
+                    setThemDichVuLoi((x) => {
+                      const n = { ...x };
+                      delete n.ten;
+                      return n;
+                    });
+                  }}
+                  isInvalid={Boolean(themDichVuLoi.ten)}
                 />
+                <Form.Control.Feedback type="invalid">
+                  {themDichVuLoi.ten}
+                </Form.Control.Feedback>
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label>Mô tả</Form.Label>
                 <Form.Control
                   as="textarea"
                   rows={2}
+                  placeholder="Mô tả ngắn cho nhân viên và bệnh nhân (tuỳ chọn)"
                   value={form.moTa || ""}
                   onChange={(e) => setForm({ ...form, moTa: e.target.value })}
                 />
@@ -629,9 +682,17 @@ export default function ServicesPage() {
                   onChange={(e) => {
                     const gia = parseVndInput(e.target.value);
                     setForm({ ...form, gia });
+                    setThemDichVuLoi((x) => {
+                      const n = { ...x };
+                      delete n.gia;
+                      return n;
+                    });
                   }}
-                  required
+                  isInvalid={Boolean(themDichVuLoi.gia)}
                 />
+                <Form.Control.Feedback type="invalid">
+                  {themDichVuLoi.gia}
+                </Form.Control.Feedback>
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Check

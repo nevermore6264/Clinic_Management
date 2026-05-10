@@ -254,6 +254,7 @@ export default function ServiceTypesPage() {
             <div className="d-flex align-items-start gap-2">
               <div className="flex-grow-1">
                 <Form.Control
+                  aria-label="Tên loại dịch vụ mới"
                   placeholder="Ví dụ: Khám tổng quát, Cận lâm sàng..."
                   value={tenLoaiDichVu}
                   onChange={(e) => {
@@ -296,6 +297,7 @@ export default function ServiceTypesPage() {
                   {dangSuaId === item.id ? (
                     <>
                       <Form.Control
+                        aria-label="Sửa tên loại dịch vụ"
                         placeholder="Nhập tên loại dịch vụ"
                         value={tenDangSua}
                         onChange={(e) => {

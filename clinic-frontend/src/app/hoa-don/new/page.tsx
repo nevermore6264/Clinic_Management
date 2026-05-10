@@ -311,6 +311,7 @@ function NewInvoicePageInner() {
                         <Form.Control
                           type="number"
                           min={1}
+                          placeholder="1"
                           value={item.quantity}
                           disabled={lapBiChan}
                           onChange={(e) =>

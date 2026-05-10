@@ -71,6 +71,7 @@ export default function ReminderConfigPage() {
                 type="number"
                 min={0}
                 max={7}
+                placeholder="Ví dụ: 1"
                 value={config?.soNgayTruoc ?? 1}
                 onChange={(e) =>
                   setConfig((c) =>
@@ -90,6 +91,7 @@ export default function ReminderConfigPage() {
                 type="number"
                 min={0}
                 max={24}
+                placeholder="Ví dụ: 2"
                 value={config?.soGioTruoc ?? 2}
                 onChange={(e) =>
                   setConfig((c) =>

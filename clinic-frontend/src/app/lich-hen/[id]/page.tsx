@@ -259,6 +259,7 @@ export default function AppointmentDetailPage() {
               <Form.Control
                 as="textarea"
                 rows={2}
+                placeholder="Chẩn đoán theo thăm khám (ICD / mô tả)..."
                 value={diagnosis}
                 onChange={(e) => setDiagnosis(e.target.value)}
               />
@@ -305,6 +306,7 @@ export default function AppointmentDetailPage() {
                         <Form.Control
                           type="number"
                           min={1}
+                          placeholder="1"
                           value={row.soLuong ?? 1}
                           onChange={(e) =>
                             patchRow(idx, {
@@ -353,6 +355,7 @@ export default function AppointmentDetailPage() {
               <Form.Control
                 as="textarea"
                 rows={3}
+                placeholder="Ghi thêm hướng dẫn, thuốc ngoài danh mục (nếu cần)..."
                 value={prescription}
                 onChange={(e) => setPrescription(e.target.value)}
               />
@@ -362,6 +365,7 @@ export default function AppointmentDetailPage() {
               <Form.Control
                 as="textarea"
                 rows={2}
+                placeholder="Ghi chú nội bộ cho lần khám..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />

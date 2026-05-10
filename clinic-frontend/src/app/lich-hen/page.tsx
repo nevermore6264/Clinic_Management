@@ -669,7 +669,7 @@ function AppointmentsPageInner() {
         <Modal.Header closeButton={!submitting}>
           <Modal.Title as="h5">Đặt lịch khám</Modal.Title>
         </Modal.Header>
-        <Form onSubmit={handleDatLichSubmit}>
+        <Form noValidate onSubmit={handleDatLichSubmit}>
           <Modal.Body className="pt-2">
             {modalError && (
               <Alert
@@ -896,7 +896,6 @@ function AppointmentsPageInner() {
                     type="date"
                     value={appointmentDate}
                     onChange={(e) => setAppointmentDate(e.target.value)}
-                    required
                   />
                 </Form.Group>
               </div>

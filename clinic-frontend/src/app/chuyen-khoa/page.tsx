@@ -229,6 +229,7 @@ export default function ChuyenKhoaPage() {
                   {dangSuaId === item.id ? (
                     <>
                       <Form.Control
+                        placeholder="Nhập tên chuyên khoa"
                         value={tenDangSua}
                         onChange={(e) => {
                           const value = e.target.value;

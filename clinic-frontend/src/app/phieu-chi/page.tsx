@@ -473,6 +473,7 @@ export default function PhieuChiPage() {
               <Form.Control
                 type="number"
                 min={0}
+                placeholder="Ví dụ: 500000"
                 value={form.soTien}
                 onChange={(e) =>
                   setForm({ ...form, soTien: Number(e.target.value) })

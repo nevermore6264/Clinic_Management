@@ -21,7 +21,6 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
             value={form.hoTen || ""}
             onChange={(e) => setForm((f) => ({ ...f, hoTen: e.target.value }))}
             placeholder="VD: Nguyễn Văn A"
-            required
           />
         </Form.Group>
         <div className="row g-2">
@@ -32,6 +31,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
               </Form.Label>
               <Form.Control
                 type="date"
+                title="Chọn ngày sinh"
                 value={form.ngaySinh || ""}
                 onChange={(e) => setForm((f) => ({ ...f, ngaySinh: e.target.value }))}
               />

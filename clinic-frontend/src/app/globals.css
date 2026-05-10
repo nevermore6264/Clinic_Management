@@ -368,6 +368,28 @@ html.app-ready body {
   color: #fff !important;
 }
 
+.service-type-page tr.service-edit-row > td {
+  vertical-align: top;
+  padding-bottom: 3.15rem;
+}
+
+.service-type-page .service-edit-field {
+  position: relative;
+}
+
+.service-type-page .service-edit-field__error {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin-top: 0.2rem;
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: var(--bs-danger);
+  word-break: break-word;
+  z-index: 1;
+}
+
 .bac-si-page .bac-si-toolbar {
   flex: 1 1 auto;
   min-width: 0;

@@ -381,10 +381,13 @@ export default function ServicesPage() {
           </thead>
           <tbody>
             {danhSachDichVuLoc.map((s) => (
-              <tr key={s.id}>
+              <tr
+                key={s.id}
+                className={dangSuaId === s.id ? "service-edit-row" : undefined}
+              >
                 <td>
                   {dangSuaId === s.id ? (
-                    <>
+                    <div className="service-edit-field">
                       <Form.Select
                         size="sm"
                         aria-label="Chọn loại dịch vụ"
@@ -411,17 +414,19 @@ export default function ServicesPage() {
                           </option>
                         ))}
                       </Form.Select>
-                      <Form.Control.Feedback type="invalid" className="d-block">
-                        {suaDichVuLoi.maLoaiDichVu}
-                      </Form.Control.Feedback>
-                    </>
+                      {suaDichVuLoi.maLoaiDichVu ? (
+                        <div className="service-edit-field__error" role="alert">
+                          {suaDichVuLoi.maLoaiDichVu}
+                        </div>
+                      ) : null}
+                    </div>
                   ) : (
                     s.tenLoaiDichVu || "Chưa phân loại"
                   )}
                 </td>
                 <td>
                   {dangSuaId === s.id ? (
-                    <>
+                    <div className="service-edit-field">
                       <Form.Control
                         size="sm"
                         placeholder="Tên dịch vụ"
@@ -436,10 +441,12 @@ export default function ServicesPage() {
                         }}
                         isInvalid={Boolean(suaDichVuLoi.ten)}
                       />
-                      <Form.Control.Feedback type="invalid">
-                        {suaDichVuLoi.ten}
-                      </Form.Control.Feedback>
-                    </>
+                      {suaDichVuLoi.ten ? (
+                        <div className="service-edit-field__error" role="alert">
+                          {suaDichVuLoi.ten}
+                        </div>
+                      ) : null}
+                    </div>
                   ) : (
                     s.ten
                   )}
@@ -460,7 +467,7 @@ export default function ServicesPage() {
                 </td>
                 <td>
                   {dangSuaId === s.id ? (
-                    <>
+                    <div className="service-edit-field">
                       <Form.Control
                         size="sm"
                         type="text"
@@ -480,10 +487,12 @@ export default function ServicesPage() {
                         }}
                         isInvalid={Boolean(suaDichVuLoi.gia)}
                       />
-                      <Form.Control.Feedback type="invalid">
-                        {suaDichVuLoi.gia}
-                      </Form.Control.Feedback>
-                    </>
+                      {suaDichVuLoi.gia ? (
+                        <div className="service-edit-field__error" role="alert">
+                          {suaDichVuLoi.gia}
+                        </div>
+                      ) : null}
+                    </div>
                   ) : (
                     `${s.gia?.toLocaleString("vi-VN")}đ`
                   )}

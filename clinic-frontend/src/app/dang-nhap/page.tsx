@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card, Form, Button, Alert, InputGroup, Spinner } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
@@ -295,6 +296,10 @@ export default function LoginPage() {
   return (
     <div className="login-bg">
       <LoginBackgroundDecor />
+      <Link href="/" className="login-back-home">
+        <i className="bi bi-arrow-left" aria-hidden />
+        <span>Về trang chủ</span>
+      </Link>
       <div className="login-grid">
         <div className="login-brand login-brand--animate">
           <div className="login-brand-panel">

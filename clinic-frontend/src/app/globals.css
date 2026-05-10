@@ -1178,6 +1178,52 @@ html.app-ready body {
   z-index: 1;
 }
 
+.login-back-home {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.95rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--clinic-blue-dark);
+  text-decoration: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.98);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07);
+  backdrop-filter: blur(12px);
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.login-back-home:hover {
+  color: var(--clinic-primary);
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.11);
+  transform: translateY(-1px);
+}
+
+.login-back-home:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.45);
+  outline-offset: 2px;
+}
+
+@media (max-width: 575.98px) {
+  .login-back-home {
+    top: 0.6rem;
+    left: 0.6rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.82rem;
+  }
+}
+
 .login-bg__decor {
   position: absolute;
   inset: 0;
@@ -3146,10 +3192,21 @@ html.app-ready body {
 
 .landing-title__gradient {
   background: linear-gradient(105deg, #1d4ed8 0%, #0284c7 42%, #0ea5e9 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
+  animation: landingGradientShift 8s ease infinite alternate;
+}
+
+@keyframes landingGradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
 }
 
 .landing-lead {
@@ -3277,13 +3334,39 @@ html.app-ready body {
 }
 
 .landing-preview__status {
+  position: relative;
   border-radius: 999px;
   background: #dcfce7;
   border: 1px solid #86efac;
   color: #166534;
   font-size: 0.76rem;
   font-weight: 800;
-  padding: 0.26rem 0.55rem;
+  padding: 0.26rem 0.55rem 0.26rem 1.05rem;
+}
+
+.landing-preview__status::before {
+  content: "";
+  position: absolute;
+  left: 0.42rem;
+  top: 50%;
+  margin-top: -3.5px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: landingPulseDot 2.2s ease-out infinite;
+}
+
+@keyframes landingPulseDot {
+  0% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55);
+  }
+  65% {
+    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
 }
 
 .landing-preview__metrics {
@@ -3417,6 +3500,15 @@ html.app-ready body {
   color: var(--clinic-blue-dark);
   font-weight: 700;
   font-size: 0.77rem;
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    background-color 0.22s ease;
+}
+
+.landing-preview__chips span:hover {
+  transform: translateY(-2px);
+  border-color: rgba(37, 99, 235, 0.35);
 }
 
 .landing-section {
@@ -3551,6 +3643,16 @@ html.app-ready body {
   font-size: 1.25rem;
   margin-bottom: 1rem;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  transition:
+    transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.35s ease;
+}
+
+.landing-feature-card:hover .landing-feature-card__icon {
+  transform: scale(1.09) rotate(-5deg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 10px 22px rgba(37, 99, 235, 0.15);
 }
 
 .landing-feature-card--accent-a .landing-feature-card__icon {
@@ -3636,13 +3738,13 @@ html.app-ready body {
   padding: 1.25rem 1.15rem;
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.04);
   transition:
-    transform 0.22s ease,
-    box-shadow 0.22s ease;
+    transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.28s ease;
 }
 
 .process-step:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.1);
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 20px 38px rgba(15, 23, 42, 0.12);
 }
 
 .process-step__number {
@@ -3968,92 +4070,6 @@ html.app-ready body {
   transform: translateX(130%);
 }
 
-.landing-preview__status {
-  padding-left: 1.05rem !important;
-}
-
-.landing-preview__status::before {
-  content: "";
-  position: absolute;
-  left: 0.42rem;
-  top: 50%;
-  margin-top: -3.5px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #22c55e;
-  animation: landingPulseDot 2.2s ease-out infinite;
-}
-
-@keyframes landingPulseDot {
-  0% {
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55);
-  }
-  65% {
-    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-  }
-}
-
-.landing-preview__status {
-  position: relative;
-}
-
-.landing-feature-card__icon {
-  transition:
-    transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.35s ease;
-}
-
-.landing-feature-card:hover .landing-feature-card__icon {
-  transform: scale(1.09) rotate(-5deg);
-  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.15);
-}
-
-.landing-preview__chips span {
-  transition:
-    transform 0.22s ease,
-    border-color 0.22s ease,
-    background-color 0.22s ease;
-}
-
-.landing-preview__chips span:hover {
-  transform: translateY(-2px);
-  border-color: rgba(37, 99, 235, 0.35);
-}
-
-.process-step {
-  transition:
-    transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.28s ease;
-}
-
-.process-step:hover {
-  transform: translateY(-6px) scale(1.01);
-}
-
-.testimonial-card {
-  transition:
-    transform 0.28s ease,
-    box-shadow 0.28s ease;
-}
-
-.landing-title__gradient {
-  background-size: 200% auto;
-  animation: landingGradientShift 8s ease infinite alternate;
-}
-
-@keyframes landingGradientShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 100% 50%;
-  }
-}
-
 .landing-reveal {
   opacity: 0;
   transform: translateY(16px);
@@ -4139,6 +4155,22 @@ html.app-ready body {
 
   .btn::before {
     display: none !important;
+  }
+
+  .landing-badge i,
+  .landing-brand__mark,
+  .landing-title__gradient,
+  .landing-preview__status::before {
+    animation: none !important;
+  }
+
+  .landing-cta__primary::after {
+    display: none !important;
+  }
+
+  .landing-bg > section.landing-section.reveal-on-scroll.is-visible
+    .landing-section__head {
+    animation: none !important;
   }
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Table, Button, Card, Alert, Modal, Form, Badge } from "react-bootstrap";
 import Link from "next/link";
@@ -18,6 +18,10 @@ import {
   coLoiDichVuForm,
   type DichVuFormErrors,
 } from "@/lib/validateDichVuForm";
+
+function tomTatLoiSuaDichVu(loi: DichVuFormErrors): string {
+  return [loi.maLoaiDichVu, loi.ten, loi.gia].filter(Boolean).join(" · ");
+}
 
 export default function ServicesPage() {
   const { user, loading } = useAuth();
@@ -381,72 +385,56 @@ export default function ServicesPage() {
           </thead>
           <tbody>
             {danhSachDichVuLoc.map((s) => (
-              <tr
-                key={s.id}
-                className={dangSuaId === s.id ? "service-edit-row" : undefined}
-              >
+              <Fragment key={s.id}>
+                <tr>
                 <td>
                   {dangSuaId === s.id ? (
-                    <div className="service-edit-field">
-                      <Form.Select
-                        size="sm"
-                        aria-label="Chọn loại dịch vụ"
-                        title="Chọn loại dịch vụ"
-                        value={formSua.maLoaiDichVu ?? ""}
-                        onChange={(e) => {
-                          const maLoaiDichVu = Number(e.target.value) || undefined;
-                          setFormSua({
-                            ...formSua,
-                            maLoaiDichVu,
-                          });
-                          setSuaDichVuLoi((x) => {
-                            const n = { ...x };
-                            delete n.maLoaiDichVu;
-                            delete n.ten;
-                            return n;
-                          });
-                        }}
-                        isInvalid={Boolean(suaDichVuLoi.maLoaiDichVu)}
-                      >
-                        {loaiDichVu.map((item) => (
-                          <option key={item.id} value={item.id}>
-                            {item.tenLoaiDichVu}
-                          </option>
-                        ))}
-                      </Form.Select>
-                      {suaDichVuLoi.maLoaiDichVu ? (
-                        <div className="service-edit-field__error" role="alert">
-                          {suaDichVuLoi.maLoaiDichVu}
-                        </div>
-                      ) : null}
-                    </div>
+                    <Form.Select
+                      size="sm"
+                      aria-label="Chọn loại dịch vụ"
+                      title="Chọn loại dịch vụ"
+                      value={formSua.maLoaiDichVu ?? ""}
+                      onChange={(e) => {
+                        const maLoaiDichVu = Number(e.target.value) || undefined;
+                        setFormSua({
+                          ...formSua,
+                          maLoaiDichVu,
+                        });
+                        setSuaDichVuLoi((x) => {
+                          const n = { ...x };
+                          delete n.maLoaiDichVu;
+                          delete n.ten;
+                          return n;
+                        });
+                      }}
+                      isInvalid={Boolean(suaDichVuLoi.maLoaiDichVu)}
+                    >
+                      {loaiDichVu.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.tenLoaiDichVu}
+                        </option>
+                      ))}
+                    </Form.Select>
                   ) : (
                     s.tenLoaiDichVu || "Chưa phân loại"
                   )}
                 </td>
                 <td>
                   {dangSuaId === s.id ? (
-                    <div className="service-edit-field">
-                      <Form.Control
-                        size="sm"
-                        placeholder="Tên dịch vụ"
-                        value={formSua.ten || ""}
-                        onChange={(e) => {
-                          setFormSua({ ...formSua, ten: e.target.value });
-                          setSuaDichVuLoi((x) => {
-                            const n = { ...x };
-                            delete n.ten;
-                            return n;
-                          });
-                        }}
-                        isInvalid={Boolean(suaDichVuLoi.ten)}
-                      />
-                      {suaDichVuLoi.ten ? (
-                        <div className="service-edit-field__error" role="alert">
-                          {suaDichVuLoi.ten}
-                        </div>
-                      ) : null}
-                    </div>
+                    <Form.Control
+                      size="sm"
+                      placeholder="Tên dịch vụ"
+                      value={formSua.ten || ""}
+                      onChange={(e) => {
+                        setFormSua({ ...formSua, ten: e.target.value });
+                        setSuaDichVuLoi((x) => {
+                          const n = { ...x };
+                          delete n.ten;
+                          return n;
+                        });
+                      }}
+                      isInvalid={Boolean(suaDichVuLoi.ten)}
+                    />
                   ) : (
                     s.ten
                   )}
@@ -467,32 +455,25 @@ export default function ServicesPage() {
                 </td>
                 <td>
                   {dangSuaId === s.id ? (
-                    <div className="service-edit-field">
-                      <Form.Control
-                        size="sm"
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="Ví dụ: 150.000"
-                        value={formatVndInput(formSua.gia)}
-                        onChange={(e) => {
-                          setFormSua({
-                            ...formSua,
-                            gia: parseVndInput(e.target.value),
-                          });
-                          setSuaDichVuLoi((x) => {
-                            const n = { ...x };
-                            delete n.gia;
-                            return n;
-                          });
-                        }}
-                        isInvalid={Boolean(suaDichVuLoi.gia)}
-                      />
-                      {suaDichVuLoi.gia ? (
-                        <div className="service-edit-field__error" role="alert">
-                          {suaDichVuLoi.gia}
-                        </div>
-                      ) : null}
-                    </div>
+                    <Form.Control
+                      size="sm"
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="Ví dụ: 150.000"
+                      value={formatVndInput(formSua.gia)}
+                      onChange={(e) => {
+                        setFormSua({
+                          ...formSua,
+                          gia: parseVndInput(e.target.value),
+                        });
+                        setSuaDichVuLoi((x) => {
+                          const n = { ...x };
+                          delete n.gia;
+                          return n;
+                        });
+                      }}
+                      isInvalid={Boolean(suaDichVuLoi.gia)}
+                    />
                   ) : (
                     `${s.gia?.toLocaleString("vi-VN")}đ`
                   )}
@@ -574,6 +555,20 @@ export default function ServicesPage() {
                   )}
                 </td>
               </tr>
+              {dangSuaId === s.id && coLoiDichVuForm(suaDichVuLoi) ? (
+                <tr className="service-edit-error-strip" aria-live="polite">
+                  <td colSpan={6}>
+                    <div className="service-edit-inline-msg" role="alert">
+                      <i
+                        className="bi bi-exclamation-circle-fill flex-shrink-0"
+                        aria-hidden
+                      />
+                      <span>{tomTatLoiSuaDichVu(suaDichVuLoi)}</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : null}
+              </Fragment>
             ))}
             {danhSachDichVuLoc.length === 0 ? (
               <tr>

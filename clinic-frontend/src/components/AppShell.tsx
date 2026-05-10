@@ -102,46 +102,36 @@ export function AppShell({ children }: { children: ReactNode }) {
         position="top-end"
         className={`clinic-toast-container p-3 ${hideChrome ? "clinic-toast-container--no-nav" : ""}`}
       >
-        {toasts.map((item) => (
-          <Toast
-            key={item.id}
-            className="clinic-toast"
-            bg={
-              item.kind === "success"
-                ? "success"
-                : item.kind === "error"
-                  ? "danger"
-                  : item.kind === "warning"
-                    ? "warning"
-                    : "primary"
-            }
-            onClose={() =>
-              setToasts((prev) => prev.filter((toast) => toast.id !== item.id))
-            }
-            autohide
-            delay={item.durationMs}
-          >
-            <Toast.Header
-              closeButton
-              className={
-                item.kind === "warning"
-                  ? "clinic-toast__header clinic-toast__header--warning"
-                  : "clinic-toast__header"
+        {toasts.map((item) => {
+          const kindClass =
+            item.kind === "success"
+              ? "clinic-toast--success"
+              : item.kind === "error"
+                ? "clinic-toast--error"
+                : item.kind === "warning"
+                  ? "clinic-toast--warning"
+                  : "clinic-toast--info";
+          return (
+            <Toast
+              key={item.id}
+              className={`clinic-toast ${kindClass}`}
+              onClose={() =>
+                setToasts((prev) =>
+                  prev.filter((toast) => toast.id !== item.id),
+                )
               }
+              autohide
+              delay={item.durationMs}
             >
-              <strong className="me-auto">{item.title}</strong>
-            </Toast.Header>
-            <Toast.Body
-              className={
-                item.kind === "warning"
-                  ? "clinic-toast__body clinic-toast__body--warning text-dark"
-                  : "clinic-toast__body text-white"
-              }
-            >
-              {item.message}
-            </Toast.Body>
-          </Toast>
-        ))}
+              <Toast.Header closeButton className="clinic-toast__header">
+                <strong className="me-auto">{item.title}</strong>
+              </Toast.Header>
+              <Toast.Body className="clinic-toast__body">
+                {item.message}
+              </Toast.Body>
+            </Toast>
+          );
+        })}
       </ToastContainer>
     </>
   );

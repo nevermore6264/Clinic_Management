@@ -2,9 +2,22 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Alert, Button, Card, Form, Modal, Table } from "react-bootstrap";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Form,
+  Modal,
+  Table,
+} from "react-bootstrap";
 import Link from "next/link";
-import { serviceTypesApi, servicesApi, type DichVu, type LoaiDichVu } from "@/lib/api";
+import {
+  serviceTypesApi,
+  servicesApi,
+  type DichVu,
+  type LoaiDichVu,
+} from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { notify } from "@/lib/notify";
 
@@ -21,6 +34,7 @@ export default function ServiceTypesPage() {
   const [tenDangSuaError, setTenDangSuaError] = useState("");
   const [mucCanXoa, setMucCanXoa] = useState<LoaiDichVu | null>(null);
   const [dangXoa, setDangXoa] = useState(false);
+  const [loaiXemDichVu, setLoaiXemDichVu] = useState<LoaiDichVu | null>(null);
 
   const napDuLieu = async () => {
     try {
@@ -43,6 +57,11 @@ export default function ServiceTypesPage() {
     });
     return dem;
   }, [danhSachDichVu]);
+
+  const dichVuTheoLoaiXem = useMemo(() => {
+    if (!loaiXemDichVu) return [];
+    return danhSachDichVu.filter((d) => d.maLoaiDichVu === loaiXemDichVu.id);
+  }, [danhSachDichVu, loaiXemDichVu]);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -112,7 +131,9 @@ export default function ServiceTypesPage() {
       resetInlineEdit();
       await napDuLieu();
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Không cập nhật được loại dịch vụ");
+      setError(
+        e instanceof Error ? e.message : "Không cập nhật được loại dịch vụ",
+      );
     }
   };
 
@@ -152,8 +173,14 @@ export default function ServiceTypesPage() {
 
     const csvEscape = (value: string) => `"${value.replace(/"/g, '""')}"`;
     const header = ["MaLoaiDichVu", "TenLoaiDichVu"];
-    const rows = list.map((item) => [String(item.id), csvEscape(item.tenLoaiDichVu)]);
-    const content = [header.join(","), ...rows.map((row) => row.join(","))].join("\n");
+    const rows = list.map((item) => [
+      String(item.id),
+      csvEscape(item.tenLoaiDichVu),
+    ]);
+    const content = [
+      header.join(","),
+      ...rows.map((row) => row.join(",")),
+    ].join("\n");
 
     const bom = "\uFEFF";
     const blob = new Blob([bom + content], { type: "text/csv;charset=utf-8;" });
@@ -251,7 +278,9 @@ export default function ServiceTypesPage() {
                     item.tenLoaiDichVu
                   )}
                 </td>
-                <td className="text-center">{demDichVuTheoLoai.get(item.id) ?? 0}</td>
+                <td className="text-center">
+                  {demDichVuTheoLoai.get(item.id) ?? 0}
+                </td>
                 <td className="text-end">
                   {dangSuaId === item.id ? (
                     <>
@@ -265,9 +294,9 @@ export default function ServiceTypesPage() {
                         Lưu
                       </Button>
                       <Button
+                        type="button"
                         size="sm"
-                        variant="secondary"
-                        className="me-2"
+                        className="btn-modal-dismiss me-2"
                         onClick={resetInlineEdit}
                       >
                         <i className="bi bi-x-lg me-1" aria-hidden />
@@ -275,20 +304,34 @@ export default function ServiceTypesPage() {
                       </Button>
                     </>
                   ) : (
-                    <Button
-                      size="sm"
-                      className="btn-action-edit me-2"
-                      onClick={() => handleEdit(item)}
-                    >
-                      <i className="bi bi-pencil-square me-1" aria-hidden />
-                      Sửa
-                    </Button>
+                    <>
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="btn-action-view-services me-2"
+                        onClick={() => setLoaiXemDichVu(item)}
+                      >
+                        <i className="bi bi-list-ul me-1" aria-hidden />
+                        Xem dịch vụ
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="btn-action-edit me-2"
+                        onClick={() => handleEdit(item)}
+                      >
+                        <i className="bi bi-pencil-square me-1" aria-hidden />
+                        Sửa
+                      </Button>
+                    </>
                   )}
                   <Button
                     size="sm"
                     className="btn-action-delete"
                     onClick={() => handleDelete(item.id)}
-                    disabled={dangSuaId === item.id || (demDichVuTheoLoai.get(item.id) ?? 0) > 0}
+                    disabled={
+                      dangSuaId === item.id ||
+                      (demDichVuTheoLoai.get(item.id) ?? 0) > 0
+                    }
                     title={
                       (demDichVuTheoLoai.get(item.id) ?? 0) > 0
                         ? "Không thể xóa vì đang có dịch vụ thuộc loại này"
@@ -319,7 +362,10 @@ export default function ServiceTypesPage() {
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            <i className="bi bi-exclamation-triangle-fill text-danger me-2" aria-hidden />
+            <i
+              className="bi bi-exclamation-triangle-fill text-danger me-2"
+              aria-hidden
+            />
             Xác nhận xóa
           </Modal.Title>
         </Modal.Header>
@@ -329,17 +375,91 @@ export default function ServiceTypesPage() {
         </Modal.Body>
         <Modal.Footer>
           <Button
-            variant="secondary"
+            type="button"
+            className="btn-modal-dismiss"
             onClick={() => setMucCanXoa(null)}
             disabled={dangXoa}
           >
-            <i className="bi bi-x-circle me-2" aria-hidden />
+            <i className="bi bi-x-lg me-2" aria-hidden />
             Hủy
           </Button>
-          <Button variant="danger" onClick={handleConfirmDelete} disabled={dangXoa}>
+          <Button onClick={handleConfirmDelete} disabled={dangXoa}>
             <i className="bi bi-trash me-2" aria-hidden />
             {dangXoa ? "Đang xóa..." : "Xóa"}
           </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <Modal
+        show={Boolean(loaiXemDichVu)}
+        onHide={() => setLoaiXemDichVu(null)}
+        centered
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <i className="bi bi-hospital me-2" aria-hidden />
+            Dịch vụ — {loaiXemDichVu?.tenLoaiDichVu}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {dichVuTheoLoaiXem.length === 0 ? (
+            <p className="text-muted mb-0">
+              Chưa có dịch vụ nào thuộc loại này.
+            </p>
+          ) : (
+            <Table responsive hover size="sm" className="mb-0">
+              <thead>
+                <tr>
+                  <th>Tên dịch vụ</th>
+                  <th className="text-end">Đơn giá</th>
+                  <th className="text-center">Trạng thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dichVuTheoLoaiXem.map((dv) => (
+                  <tr key={dv.id}>
+                    <td>{dv.ten}</td>
+                    <td className="text-end">
+                      {(dv.gia ?? 0).toLocaleString("vi-VN")}đ
+                    </td>
+                    <td className="text-center">
+                      {dv.hoatDong !== false ? (
+                        <Badge bg="success">Đang áp dụng</Badge>
+                      ) : (
+                        <Badge bg="secondary">Ngưng</Badge>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="justify-content-between">
+          <span className="text-muted small">
+            {loaiXemDichVu ? `${dichVuTheoLoaiXem.length} dịch vụ` : ""}
+          </span>
+          <div className="d-flex gap-2">
+            <Button
+              type="button"
+              className="btn-modal-dismiss"
+              onClick={() => setLoaiXemDichVu(null)}
+            >
+              <i className="bi bi-x-lg me-1" aria-hidden />
+              Đóng
+            </Button>
+            {loaiXemDichVu ? (
+              <Link
+                href={`/dich-vu?maLoai=${loaiXemDichVu.id}`}
+                className="btn btn-primary"
+                onClick={() => setLoaiXemDichVu(null)}
+              >
+                <i className="bi bi-box-arrow-up-right me-2" aria-hidden />
+                Mở trang dịch vụ
+              </Link>
+            ) : null}
+          </div>
         </Modal.Footer>
       </Modal>
     </div>

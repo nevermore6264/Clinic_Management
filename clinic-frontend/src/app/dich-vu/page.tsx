@@ -74,6 +74,12 @@ export default function ServicesPage() {
     napDuLieu();
   }, [user]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const maLoai = new URLSearchParams(window.location.search).get("maLoai");
+    if (maLoai != null && maLoai !== "") setBoLocLoaiDichVu(maLoai);
+  }, []);
+
   const moModal = (loai: "them-dich-vu" | "loai-dich-vu", title: string) => {
     setModalLoai(loai);
     setModalTitle(title);

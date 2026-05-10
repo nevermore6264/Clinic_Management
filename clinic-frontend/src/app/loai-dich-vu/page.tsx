@@ -296,6 +296,7 @@ export default function ServiceTypesPage() {
                   {dangSuaId === item.id ? (
                     <>
                       <Form.Control
+                        placeholder="Nhập tên loại dịch vụ"
                         value={tenDangSua}
                         onChange={(e) => {
                           const value = e.target.value;

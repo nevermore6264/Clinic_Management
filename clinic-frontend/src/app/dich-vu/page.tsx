@@ -12,6 +12,7 @@ import {
   type LoaiDichVu,
 } from "@/lib/api";
 import { formatVndInput, parseVndInput } from "@/lib/moneyVnd";
+import { notify } from "@/lib/notify";
 
 export default function ServicesPage() {
   const { user, loading } = useAuth();
@@ -155,36 +156,71 @@ export default function ServicesPage() {
 
   const handleExportCsv = () => {
     if (list.length === 0) {
-      setError("Chưa có dữ liệu để xuất CSV.");
+      notify.warning("Chưa có dữ liệu để xuất CSV");
       return;
     }
 
-    const csvEscape = (value: string) => `"${value.replace(/"/g, '""')}"`;
-    const header = [
-      "MaDichVu",
-      "LoaiDichVu",
-      "TenDichVu",
-      "MoTa",
-      "DonGia",
-      "TrangThai",
-    ];
-    const rows = list.map((item) => [
-      String(item.id),
-      csvEscape(item.tenLoaiDichVu || "Chưa phân loại"),
-      csvEscape(item.ten || ""),
-      csvEscape(item.moTa || ""),
-      String(item.gia ?? 0),
-      item.hoatDong ? "Dang ap dung" : "Ngung",
+    const quote = (v: string | number) => {
+      const s = String(v);
+      if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    };
+    const line = (cells: (string | number)[]) => cells.map(quote).join(",");
+
+    const now = new Date();
+    const ngayXuat = now.toLocaleString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    const sorted = [...list].sort((a, b) => {
+      const loaiA = a.tenLoaiDichVu?.trim() || "Chưa phân loại";
+      const loaiB = b.tenLoaiDichVu?.trim() || "Chưa phân loại";
+      const x = loaiA.localeCompare(loaiB, "vi");
+      if (x !== 0) return x;
+      return (a.ten || "").localeCompare(b.ten || "", "vi");
+    });
+    const soDangApDung = sorted.filter((x) => x.hoatDong !== false).length;
+    const soNgung = sorted.length - soDangApDung;
+
+    const header = line([
+      "STT",
+      "Mã dịch vụ",
+      "Loại dịch vụ",
+      "Tên dịch vụ",
+      "Mô tả",
+      "Đơn giá (VNĐ)",
+      "Trạng thái",
     ]);
+    const dataRows = sorted.map((item, i) =>
+      line([
+        i + 1,
+        item.id,
+        item.tenLoaiDichVu || "Chưa phân loại",
+        item.ten || "",
+        item.moTa || "",
+        item.gia ?? 0,
+        item.hoatDong !== false ? "Đang áp dụng" : "Ngưng",
+      ]),
+    );
     const content = [
-      header.join(","),
-      ...rows.map((row) => row.join(",")),
+      line(["Báo cáo", "Danh sách dịch vụ & bảng giá – Phòng khám"]),
+      line(["Ngày xuất", ngayXuat]),
+      line(["Tổng số dịch vụ", sorted.length]),
+      line(["Đang áp dụng", soDangApDung]),
+      line(["Ngưng áp dụng", soNgung]),
+      "",
+      header,
+      ...dataRows,
     ].join("\n");
+
     const bom = "\uFEFF";
     const blob = new Blob([bom + content], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
-    const now = new Date();
     const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}-${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
     anchor.href = url;
     anchor.download = `danh-sach-dich-vu-${stamp}.csv`;
@@ -283,6 +319,8 @@ export default function ServicesPage() {
           <div className="d-flex gap-2 flex-wrap align-items-center">
             <Form.Group style={{ minWidth: 260 }}>
               <Form.Select
+                aria-label="Lọc theo loại dịch vụ"
+                title="Chọn loại để lọc danh sách"
                 value={boLocLoaiDichVu}
                 onChange={(e) => setBoLocLoaiDichVu(e.target.value)}
               >
@@ -621,6 +659,7 @@ export default function ServicesPage() {
             <Button
               type="submit"
               form="form-them-dich-vu"
+              className="btn-action-edit"
               disabled={loaiDichVu.length === 0}
             >
               <i className="bi bi-check2-circle me-2" aria-hidden />

@@ -6,6 +6,14 @@ export type DichVuFormErrors = {
   gia?: string;
 };
 
+function cungMaLoaiDichVu(a: unknown, b: unknown): boolean {
+  if (a == null || b == null) return false;
+  const na = Number(a);
+  const nb = Number(b);
+  if (Number.isNaN(na) || Number.isNaN(nb)) return false;
+  return na === nb;
+}
+
 /** Kiểm tra form thêm/sửa dịch vụ (tiếng Việt, trùng tên trong cùng loại). */
 export function validateDichVuForm(
   f: Partial<DichVu>,
@@ -19,11 +27,11 @@ export function validateDichVuForm(
   const ten = f.ten?.trim() ?? "";
   if (!ten) {
     loi.ten = "Vui lòng nhập tên dịch vụ.";
-  } else if (f.maLoaiDichVu) {
+  } else if (f.maLoaiDichVu != null) {
     const trungTen = danhSachHienTai.some(
       (d) =>
         d.id !== opts?.excludeId &&
-        d.maLoaiDichVu === f.maLoaiDichVu &&
+        cungMaLoaiDichVu(d.maLoaiDichVu, f.maLoaiDichVu) &&
         (d.ten?.trim().toLocaleLowerCase() ?? "") === ten.toLocaleLowerCase(),
     );
     if (trungTen) {

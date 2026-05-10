@@ -16,6 +16,7 @@ import { notify } from "@/lib/notify";
 import {
   validateDichVuForm,
   coLoiDichVuForm,
+  type DichVuFormErrors,
 } from "@/lib/validateDichVuForm";
 
 export default function ServicesPage() {
@@ -46,12 +47,8 @@ export default function ServicesPage() {
     gia: 0,
     hoatDong: true,
   });
-  /** Lỗi form Thêm dịch vụ (tránh validation mặc định trình duyệt) */
-  const [themDichVuLoi, setThemDichVuLoi] = useState<{
-    maLoaiDichVu?: string;
-    ten?: string;
-    gia?: string;
-  }>({});
+  const [themDichVuLoi, setThemDichVuLoi] = useState<DichVuFormErrors>({});
+  const [suaDichVuLoi, setSuaDichVuLoi] = useState<DichVuFormErrors>({});
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -249,6 +246,7 @@ export default function ServicesPage() {
 
   const batDauSua = (item: DichVu) => {
     setDangSuaId(item.id);
+    setSuaDichVuLoi({});
     setFormSua({
       maLoaiDichVu: item.maLoaiDichVu,
       ten: item.ten || "",
@@ -261,26 +259,22 @@ export default function ServicesPage() {
   const huySua = () => {
     setDangSuaId(null);
     setFormSua({});
+    setSuaDichVuLoi({});
   };
 
   const luuSua = async (id: number) => {
-    if (!formSua.ten?.trim()) {
-      setError("Tên dịch vụ không được để trống.");
+    const loi = validateDichVuForm(formSua, list, { excludeId: id });
+    if (coLoiDichVuForm(loi)) {
+      setSuaDichVuLoi(loi);
+      setError("");
       return;
     }
-    if (!formSua.maLoaiDichVu) {
-      setError("Vui lòng chọn loại dịch vụ.");
-      return;
-    }
-    if (!formSua.gia || formSua.gia <= 0) {
-      setError("Đơn giá phải lớn hơn 0.");
-      return;
-    }
+    setSuaDichVuLoi({});
     setError("");
     try {
       await servicesApi.update(id, {
         maLoaiDichVu: formSua.maLoaiDichVu,
-        ten: formSua.ten.trim(),
+        ten: (formSua.ten ?? "").trim(),
         moTa: formSua.moTa || "",
         gia: formSua.gia,
         hoatDong: formSua.hoatDong !== false,
@@ -288,6 +282,7 @@ export default function ServicesPage() {
       huySua();
       await napDuLieu();
     } catch (e: unknown) {
+      setSuaDichVuLoi({});
       setError(e instanceof Error ? e.message : "Không cập nhật được dịch vụ");
     }
   };
@@ -389,38 +384,62 @@ export default function ServicesPage() {
               <tr key={s.id}>
                 <td>
                   {dangSuaId === s.id ? (
-                    <Form.Select
-                      size="sm"
-                      aria-label="Chọn loại dịch vụ"
-                      title="Chọn loại dịch vụ"
-                      value={formSua.maLoaiDichVu ?? ""}
-                      onChange={(e) =>
-                        setFormSua({
-                          ...formSua,
-                          maLoaiDichVu: Number(e.target.value) || undefined,
-                        })
-                      }
-                    >
-                      {loaiDichVu.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.tenLoaiDichVu}
-                        </option>
-                      ))}
-                    </Form.Select>
+                    <>
+                      <Form.Select
+                        size="sm"
+                        aria-label="Chọn loại dịch vụ"
+                        title="Chọn loại dịch vụ"
+                        value={formSua.maLoaiDichVu ?? ""}
+                        onChange={(e) => {
+                          const maLoaiDichVu = Number(e.target.value) || undefined;
+                          setFormSua({
+                            ...formSua,
+                            maLoaiDichVu,
+                          });
+                          setSuaDichVuLoi((x) => {
+                            const n = { ...x };
+                            delete n.maLoaiDichVu;
+                            delete n.ten;
+                            return n;
+                          });
+                        }}
+                        isInvalid={Boolean(suaDichVuLoi.maLoaiDichVu)}
+                      >
+                        {loaiDichVu.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.tenLoaiDichVu}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <Form.Control.Feedback type="invalid" className="d-block">
+                        {suaDichVuLoi.maLoaiDichVu}
+                      </Form.Control.Feedback>
+                    </>
                   ) : (
                     s.tenLoaiDichVu || "Chưa phân loại"
                   )}
                 </td>
                 <td>
                   {dangSuaId === s.id ? (
-                    <Form.Control
-                      size="sm"
-                      placeholder="Tên dịch vụ"
-                      value={formSua.ten || ""}
-                      onChange={(e) =>
-                        setFormSua({ ...formSua, ten: e.target.value })
-                      }
-                    />
+                    <>
+                      <Form.Control
+                        size="sm"
+                        placeholder="Tên dịch vụ"
+                        value={formSua.ten || ""}
+                        onChange={(e) => {
+                          setFormSua({ ...formSua, ten: e.target.value });
+                          setSuaDichVuLoi((x) => {
+                            const n = { ...x };
+                            delete n.ten;
+                            return n;
+                          });
+                        }}
+                        isInvalid={Boolean(suaDichVuLoi.ten)}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {suaDichVuLoi.ten}
+                      </Form.Control.Feedback>
+                    </>
                   ) : (
                     s.ten
                   )}
@@ -441,19 +460,30 @@ export default function ServicesPage() {
                 </td>
                 <td>
                   {dangSuaId === s.id ? (
-                    <Form.Control
-                      size="sm"
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="Ví dụ: 150.000"
-                      value={formatVndInput(formSua.gia)}
-                      onChange={(e) =>
-                        setFormSua({
-                          ...formSua,
-                          gia: parseVndInput(e.target.value),
-                        })
-                      }
-                    />
+                    <>
+                      <Form.Control
+                        size="sm"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="Ví dụ: 150.000"
+                        value={formatVndInput(formSua.gia)}
+                        onChange={(e) => {
+                          setFormSua({
+                            ...formSua,
+                            gia: parseVndInput(e.target.value),
+                          });
+                          setSuaDichVuLoi((x) => {
+                            const n = { ...x };
+                            delete n.gia;
+                            return n;
+                          });
+                        }}
+                        isInvalid={Boolean(suaDichVuLoi.gia)}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {suaDichVuLoi.gia}
+                      </Form.Control.Feedback>
+                    </>
                   ) : (
                     `${s.gia?.toLocaleString("vi-VN")}đ`
                   )}

@@ -432,15 +432,22 @@ export default function ServicesPage() {
                   {dangSuaId === s.id ? (
                     <>
                       <Button
+                        type="button"
                         size="sm"
+                        variant="primary"
                         className="me-2"
                         onClick={() => luuSua(s.id)}
                       >
                         <i className="bi bi-check2 me-1" aria-hidden />
                         Lưu
                       </Button>
-                      <Button size="sm" variant="secondary" onClick={huySua}>
-                        <i className="bi bi-x me-1" aria-hidden />
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="btn-modal-dismiss"
+                        onClick={huySua}
+                      >
+                        <i className="bi bi-x-lg me-1" aria-hidden />
                         Hủy
                       </Button>
                     </>
@@ -536,7 +543,7 @@ export default function ServicesPage() {
               </div>
             </>
           ) : (
-            <Form onSubmit={handleThemDichVu}>
+            <Form id="form-them-dich-vu" onSubmit={handleThemDichVu}>
               <Form.Group className="mb-3">
                 <Form.Label className="required">Loại dịch vụ</Form.Label>
                 <Form.Select
@@ -598,19 +605,29 @@ export default function ServicesPage() {
                   }
                 />
               </Form.Group>
-              <div className="d-flex justify-content-end gap-2">
-                <Button variant="secondary" onClick={() => setHienModal(false)}>
-                  <i className="bi bi-x-circle me-2" aria-hidden />
-                  Hủy
-                </Button>
-                <Button type="submit" disabled={loaiDichVu.length === 0}>
-                  <i className="bi bi-check2-circle me-2" aria-hidden />
-                  Lưu
-                </Button>
-              </div>
             </Form>
           )}
         </Modal.Body>
+        {modalLoai === "them-dich-vu" ? (
+          <Modal.Footer className="align-items-center gap-2">
+            <Button
+              type="button"
+              className="btn-modal-dismiss"
+              onClick={() => setHienModal(false)}
+            >
+              <i className="bi bi-x-lg me-2" aria-hidden />
+              Hủy
+            </Button>
+            <Button
+              type="submit"
+              form="form-them-dich-vu"
+              disabled={loaiDichVu.length === 0}
+            >
+              <i className="bi bi-check2-circle me-2" aria-hidden />
+              Lưu
+            </Button>
+          </Modal.Footer>
+        ) : null}
       </Modal>
 
       <Modal show={xoaId !== null} onHide={() => setXoaId(null)} centered>
@@ -627,17 +644,23 @@ export default function ServicesPage() {
           Bạn có chắc muốn xóa dịch vụ <strong>{dichVuCanXoa?.ten}</strong>{" "}
           không?
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className="align-items-center gap-2">
           <Button
-            variant="secondary"
+            type="button"
+            className="btn-modal-dismiss"
             onClick={() => setXoaId(null)}
             disabled={dangXoa}
           >
-            <i className="bi bi-x-circle me-2" aria-hidden />
+            <i className="bi bi-x-lg me-2" aria-hidden />
             Hủy
           </Button>
-          <Button variant="danger" onClick={xacNhanXoa} disabled={dangXoa}>
-            <i className="bi bi-trash me-2" aria-hidden />
+          <Button
+            type="button"
+            className="btn-action-delete"
+            onClick={xacNhanXoa}
+            disabled={dangXoa}
+          >
+            <i className="bi bi-trash me-1" aria-hidden />
             {dangXoa ? "Đang xóa..." : "Xóa"}
           </Button>
         </Modal.Footer>

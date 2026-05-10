@@ -588,6 +588,12 @@ html.app-ready body {
   color: #f8fafc !important;
 }
 
+.modal-footer .btn-action-delete.btn-primary {
+  background: linear-gradient(180deg, #ef4444 0%, #dc2626 100%) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+
 .btn-modal-dismiss.btn-sm {
   --bs-btn-padding-y: 0.25rem;
   --bs-btn-padding-x: 0.5rem;
@@ -602,6 +608,7 @@ html.app-ready body {
 .btn-action-delete,
 .btn-action-calendar,
 .btn-action-view-services,
+.btn-modal-dismiss,
 .btn-thuoc-action-stop,
 .btn-thuoc-action-reopen {
   --bs-btn-padding-y: 0.25rem;
@@ -611,6 +618,8 @@ html.app-ready body {
   min-height: 31px;
   min-width: 84px;
   justify-content: center;
+  display: inline-flex;
+  align-items: center;
 }
 
 .bg-primary {

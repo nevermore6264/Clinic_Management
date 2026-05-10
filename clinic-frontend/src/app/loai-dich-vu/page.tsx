@@ -171,22 +171,58 @@ export default function ServiceTypesPage() {
       return;
     }
 
-    const csvEscape = (value: string) => `"${value.replace(/"/g, '""')}"`;
-    const header = ["MaLoaiDichVu", "TenLoaiDichVu"];
-    const rows = list.map((item) => [
-      String(item.id),
-      csvEscape(item.tenLoaiDichVu),
+    const quote = (v: string | number) => {
+      const s = String(v);
+      if (/[",\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    };
+    const line = (cells: (string | number)[]) => cells.map(quote).join(",");
+
+    const now = new Date();
+    const ngayXuat = now.toLocaleString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+    const sorted = [...list].sort((a, b) =>
+      a.tenLoaiDichVu.localeCompare(b.tenLoaiDichVu, "vi"),
+    );
+    const tongDichVu = sorted.reduce(
+      (t, item) => t + (demDichVuTheoLoai.get(item.id) ?? 0),
+      0,
+    );
+
+    const header = line([
+      "STT",
+      "Mã loại",
+      "Tên loại dịch vụ",
+      "Số dịch vụ thuộc loại",
     ]);
+    const dataRows = sorted.map((item, i) =>
+      line([
+        i + 1,
+        item.id,
+        item.tenLoaiDichVu,
+        demDichVuTheoLoai.get(item.id) ?? 0,
+      ]),
+    );
     const content = [
-      header.join(","),
-      ...rows.map((row) => row.join(",")),
+      line(["Báo cáo", "Danh sách loại dịch vụ – Phòng khám"]),
+      line(["Ngày xuất", ngayXuat]),
+      line(["Tổng số loại", sorted.length]),
+      line(["Tổng số dịch vụ (mọi loại)", tongDichVu]),
+      "",
+      header,
+      ...dataRows,
     ].join("\n");
 
     const bom = "\uFEFF";
     const blob = new Blob([bom + content], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
-    const now = new Date();
     const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}-${String(now.getHours()).padStart(2, "0")}${String(now.getMinutes()).padStart(2, "0")}`;
     anchor.href = url;
     anchor.download = `loai-dich-vu-${stamp}.csv`;
@@ -383,8 +419,13 @@ export default function ServiceTypesPage() {
             <i className="bi bi-x-lg me-2" aria-hidden />
             Hủy
           </Button>
-          <Button onClick={handleConfirmDelete} disabled={dangXoa}>
-            <i className="bi bi-trash me-2" aria-hidden />
+          <Button
+            type="button"
+            className="btn-action-delete"
+            onClick={handleConfirmDelete}
+            disabled={dangXoa}
+          >
+            <i className="bi bi-trash me-1" aria-hidden />
             {dangXoa ? "Đang xóa..." : "Xóa"}
           </Button>
         </Modal.Footer>

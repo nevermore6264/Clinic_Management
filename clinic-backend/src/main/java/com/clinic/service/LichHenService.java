@@ -1,6 +1,8 @@
 package com.clinic.service;
 
 import com.clinic.dto.LichHenDto;
+import com.clinic.dto.BacSiSlotKhaDungDto;
+import com.clinic.dto.SlotKhaDungDto;
 import com.clinic.entity.*;
 import com.clinic.repository.*;
 import com.clinic.security.NguoiDungChinhThuc;
@@ -15,7 +17,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,8 +36,13 @@ public class LichHenService {
     private final BenhNhanRepository benhNhanRepository;
     private final BacSiRepository bacSiRepository;
     private final DichVuRepository dichVuRepository;
+    private final LichLamViecCoDinhRepository lichLamViecCoDinhRepository;
+    private final LichNgoaiLeRepository lichNgoaiLeRepository;
     private final LichSuTrangThaiLichHenRepository lichSuTrangThaiLichHenRepository;
     private final QuyenTruyCapHoSoBenhNhan quyenTruyCapHoSoBenhNhan;
+    private static final int SUC_CHUA_MOI_GIO = 10;
+    private static final EnumSet<LichHen.TrangThaiLichHen> TRANG_THAI_KHONG_TINH_SLOT =
+            EnumSet.of(LichHen.TrangThaiLichHen.HUY, LichHen.TrangThaiLichHen.VANG);
 
     @Transactional(readOnly = true)
     public Page<LichHenDto> timTrongKhoang(LocalDate tuNgay, LocalDate denNgay, Pageable phanTrang) {
@@ -66,6 +81,9 @@ public class LichHenService {
         }
         if (coTrung(dto.getMaBacSi(), dto.getNgayHen(), dto.getGioHen(), null)) {
             throw new RuntimeException("Trùng lịch khám với bác sĩ tại thời điểm này.");
+        }
+        if (!slotHopLeVaChuaDay(dto.getMaBacSi(), dto.getNgayHen(), dto.getGioHen(), null)) {
+            throw new RuntimeException("Khung giờ không hợp lệ hoặc đã đầy.");
         }
         LichHen lh = new LichHen();
         lh.setBenhNhan(benhNhanRepository.findById(dto.getMaBenhNhan()).orElseThrow());
@@ -120,6 +138,9 @@ public class LichHenService {
         if (coTrung(dto.getMaBacSi(), dto.getNgayHen(), dto.getGioHen(), ma)) {
             throw new RuntimeException("Trùng lịch khám.");
         }
+        if (!slotHopLeVaChuaDay(dto.getMaBacSi(), dto.getNgayHen(), dto.getGioHen(), ma)) {
+            throw new RuntimeException("Khung giờ không hợp lệ hoặc đã đầy.");
+        }
         lh.setBenhNhan(benhNhanRepository.findById(dto.getMaBenhNhan()).orElseThrow());
         lh.setBacSi(bacSiRepository.findById(dto.getMaBacSi()).orElseThrow());
         lh.setDichVu(dichVuRepository.findById(dto.getMaDichVu()).orElseThrow());
@@ -132,6 +153,103 @@ public class LichHenService {
     private boolean coTrung(Long maBacSi, LocalDate ngay, java.time.LocalTime gio, Long boQuaMaLich) {
         var ds = lichHenRepository.findTrungLich(maBacSi, ngay, gio);
         return ds.stream().anyMatch(a -> !a.getId().equals(boQuaMaLich));
+    }
+
+    @Transactional(readOnly = true)
+    public List<BacSiSlotKhaDungDto> timSlotKhaDung(LocalDate ngay, Long maChuyenKhoa) {
+        List<BacSi> bacSiHoatDong = maChuyenKhoa == null
+                ? bacSiRepository.findByHoatDongTrue()
+                : bacSiRepository.findByHoatDongTrueAndChuyenKhoa_Id(maChuyenKhoa);
+        return bacSiHoatDong.stream()
+                .map(bs -> {
+                    BacSiSlotKhaDungDto dto = new BacSiSlotKhaDungDto();
+                    dto.setMaBacSi(bs.getId());
+                    dto.setTenBacSi(bs.getNguoiDung() != null ? bs.getNguoiDung().getHoTen() : bs.getHoTen());
+                    dto.setMaChuyenKhoa(bs.getChuyenKhoa() != null ? bs.getChuyenKhoa().getId() : null);
+                    dto.setTenChuyenKhoa(bs.getChuyenKhoa() != null ? bs.getChuyenKhoa().getTenChuyenKhoa() : null);
+                    dto.setSlots(tinhSlotChoBacSi(bs.getId(), ngay, null));
+                    return dto;
+                })
+                .filter(x -> x.getSlots() != null && !x.getSlots().isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    private boolean slotHopLeVaChuaDay(Long maBacSi, LocalDate ngay, LocalTime gioHen, Long boQuaMaLich) {
+        String gio = gioHen.toString().substring(0, 5);
+        List<SlotKhaDungDto> slots = tinhSlotChoBacSi(maBacSi, ngay, boQuaMaLich);
+        return slots.stream().anyMatch(s -> s.getGio().equals(gio) && !s.isDaDay());
+    }
+
+    private List<SlotKhaDungDto> tinhSlotChoBacSi(Long maBacSi, LocalDate ngay, Long boQuaMaLich) {
+        Set<LocalTime> gioHopLe = layGioHopLeTheoLich(maBacSi, ngay);
+        if (gioHopLe.isEmpty()) {
+            return List.of();
+        }
+        List<LichHen> lichTheoNgay = lichHenRepository.findByBacSiIdAndNgayHenAndTrangThaiNotIn(
+                maBacSi, ngay, TRANG_THAI_KHONG_TINH_SLOT
+        );
+        Map<String, Integer> demTheoGio = new HashMap<>();
+        for (LichHen lichHen : lichTheoNgay) {
+            if (boQuaMaLich != null && boQuaMaLich.equals(lichHen.getId())) {
+                continue;
+            }
+            String gio = lichHen.getGioHen().toString().substring(0, 5);
+            demTheoGio.put(gio, demTheoGio.getOrDefault(gio, 0) + 1);
+        }
+        return gioHopLe.stream()
+                .sorted(Comparator.naturalOrder())
+                .map(gio -> {
+                    String label = gio.toString().substring(0, 5);
+                    int daDat = demTheoGio.getOrDefault(label, 0);
+                    SlotKhaDungDto dto = new SlotKhaDungDto();
+                    dto.setGio(label);
+                    dto.setSoLuongDaDat(daDat);
+                    dto.setSucChua(SUC_CHUA_MOI_GIO);
+                    dto.setDaDay(daDat >= SUC_CHUA_MOI_GIO);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private Set<LocalTime> layGioHopLeTheoLich(Long maBacSi, LocalDate ngay) {
+        List<LichNgoaiLe> ngoaiLe = lichNgoaiLeRepository.findByBacSiIdAndNgayNgoaiLe(maBacSi, ngay);
+        boolean coNghi = ngoaiLe.stream().anyMatch(x -> x.getLoaiNgoaiLe() == LichNgoaiLe.LoaiNgoaiLe.NGHI);
+        if (coNghi) {
+            return Set.of();
+        }
+        List<LichNgoaiLe> doiGio = ngoaiLe.stream()
+                .filter(x -> x.getLoaiNgoaiLe() == LichNgoaiLe.LoaiNgoaiLe.DOI_GIO)
+                .toList();
+        if (!doiGio.isEmpty()) {
+            Set<LocalTime> ketQua = new HashSet<>();
+            for (LichNgoaiLe item : doiGio) {
+                ketQua.addAll(tachTheoCa1Gio(item.getGioBatDau(), item.getGioKetThuc()));
+            }
+            return ketQua;
+        }
+        int thu = ngay.getDayOfWeek().getValue();
+        List<Integer> thuCanKiemTra = new ArrayList<>();
+        thuCanKiemTra.add(thu);
+        int thuChuNhatDangSo0 = thu % 7;
+        if (!thuCanKiemTra.contains(thuChuNhatDangSo0)) {
+            thuCanKiemTra.add(thuChuNhatDangSo0);
+        }
+        return lichLamViecCoDinhRepository.findByBacSiIdAndThuTrongTuanIn(maBacSi, thuCanKiemTra).stream()
+                .flatMap(x -> tachTheoCa1Gio(x.getKhungGioBatDau(), x.getKhungGioKetThuc()).stream())
+                .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    private List<LocalTime> tachTheoCa1Gio(LocalTime batDau, LocalTime ketThuc) {
+        if (batDau == null || ketThuc == null || !batDau.isBefore(ketThuc)) {
+            return List.of();
+        }
+        List<LocalTime> gio = new ArrayList<>();
+        LocalTime t = batDau;
+        while (!t.plusHours(1).isAfter(ketThuc)) {
+            gio.add(t);
+            t = t.plusHours(1);
+        }
+        return gio;
     }
 
     private LichHenDto sangDto(LichHen lh) {

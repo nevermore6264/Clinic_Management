@@ -101,12 +101,12 @@ export function AppShell({ children }: { children: ReactNode }) {
       {!hideChrome && <AppFooter />}
       <ToastContainer
         position="top-end"
-        className="p-3"
-        style={{ zIndex: 2000, marginTop: hideChrome ? 0 : "72px" }}
+        className={`clinic-toast-container p-3 ${hideChrome ? "clinic-toast-container--no-nav" : ""}`}
       >
         {toasts.map((item) => (
           <Toast
             key={item.id}
+            className="clinic-toast"
             bg={
               item.kind === "success"
                 ? "success"
@@ -122,11 +122,22 @@ export function AppShell({ children }: { children: ReactNode }) {
             autohide
             delay={item.durationMs}
           >
-            <Toast.Header closeButton>
+            <Toast.Header
+              closeButton
+              className={
+                item.kind === "warning"
+                  ? "clinic-toast__header clinic-toast__header--warning"
+                  : "clinic-toast__header"
+              }
+            >
               <strong className="me-auto">{item.title}</strong>
             </Toast.Header>
             <Toast.Body
-              className={item.kind === "warning" ? "text-dark" : "text-white"}
+              className={
+                item.kind === "warning"
+                  ? "clinic-toast__body clinic-toast__body--warning text-dark"
+                  : "clinic-toast__body text-white"
+              }
             >
               {item.message}
             </Toast.Body>

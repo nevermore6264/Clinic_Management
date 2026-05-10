@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Collection;
 
 public interface LichHenRepository extends JpaRepository<LichHen, Long> {
     List<LichHen> findByBenhNhanIdOrderByNgayHenDescGioHenDesc(Long maBenhNhan, Pageable pageable);
@@ -17,4 +18,6 @@ public interface LichHenRepository extends JpaRepository<LichHen, Long> {
 
     @Query("SELECT a FROM LichHen a WHERE a.bacSi.id = :maBacSi AND a.ngayHen = :ngay AND a.gioHen = :gio AND a.trangThai NOT IN ('HUY', 'VANG')")
     List<LichHen> findTrungLich(Long maBacSi, LocalDate ngay, LocalTime gio);
+
+    List<LichHen> findByBacSiIdAndNgayHenAndTrangThaiNotIn(Long maBacSi, LocalDate ngay, Collection<LichHen.TrangThaiLichHen> trangThai);
 }

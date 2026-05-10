@@ -2,6 +2,7 @@ package com.clinic.controller;
 
 import com.clinic.dto.LichHenDto;
 import com.clinic.dto.LichSuTrangThaiLichHenDto;
+import com.clinic.dto.BacSiSlotKhaDungDto;
 import com.clinic.entity.LichHen;
 import com.clinic.service.LichHenService;
 import com.clinic.service.LichSuTrangThaiLichHenService;
@@ -45,6 +46,13 @@ public class LichHenController {
             @PathVariable Long maBacSi,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngay) {
         return ResponseEntity.ok(lichHenService.timTheoBacSiVaNgay(maBacSi, ngay));
+    }
+
+    @GetMapping("/slot-kha-dung")
+    public ResponseEntity<List<BacSiSlotKhaDungDto>> slotKhaDungTheoNgay(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngay,
+            @RequestParam(required = false) Long maChuyenKhoa) {
+        return ResponseEntity.ok(lichHenService.timSlotKhaDung(ngay, maChuyenKhoa));
     }
 
     @GetMapping("/{id}/lich-su-trang-thai")

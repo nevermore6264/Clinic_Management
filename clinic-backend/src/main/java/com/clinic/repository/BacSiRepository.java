@@ -8,6 +8,7 @@ import java.util.Optional;
 
 public interface BacSiRepository extends JpaRepository<BacSi, Long> {
     List<BacSi> findByHoatDongTrue();
+    List<BacSi> findByHoatDongTrueAndChuyenKhoa_Id(Long maChuyenKhoa);
 
     Optional<BacSi> findByNguoiDung_Id(Long maNguoiDung);
 

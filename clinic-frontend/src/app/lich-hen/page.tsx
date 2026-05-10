@@ -19,10 +19,13 @@ import {
   patientsApi,
   doctorsApi,
   servicesApi,
+  chuyenKhoaApi,
   type LichHen,
   type BenhNhan,
   type BacSi,
   type DichVu,
+  type ChuyenKhoa,
+  type BacSiSlotKhaDung,
 } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
 import { LoadingState } from "@/components/LoadingState";
@@ -38,6 +41,17 @@ const TRANG_THAI_CO_LICH_DANG_XU_LY = new Set([
   "DA_KE_DON",
   "CHO_THANH_TOAN",
 ]);
+const SO_LUONG_TOI_DA_MOI_GIO = 10;
+type SlotThongTin = {
+  gio: string;
+  tong: number;
+  sucChua: number;
+};
+
+function normalizeTime(value?: string): string {
+  if (!value) return "00:00";
+  return value.slice(0, 5);
+}
 
 function AppointmentsPageInner() {
   const searchParams = useSearchParams();
@@ -62,10 +76,15 @@ function AppointmentsPageInner() {
   const [doctorId, setDoctorId] = useState("");
   const [serviceId, setServiceId] = useState("");
   const [appointmentDate, setAppointmentDate] = useState("");
-  const [appointmentTime, setAppointmentTime] = useState("08:00");
+  const [appointmentTime, setAppointmentTime] = useState("");
   const [note, setNote] = useState("");
   const [modalError, setModalError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isDangTaiCaKham, setIsDangTaiCaKham] = useState(false);
+  const [bacSiCoCaTheoNgay, setBacSiCoCaTheoNgay] = useState<Record<number, boolean>>({});
+  const [slotsTheoBacSi, setSlotsTheoBacSi] = useState<Record<number, SlotThongTin[]>>({});
+  const [chuyenKhoa, setChuyenKhoa] = useState<ChuyenKhoa[]>([]);
+  const [locChuyenKhoaId, setLocChuyenKhoaId] = useState("");
 
   const [maBenhNhanKhongThemLich, setMaBenhNhanKhongThemLich] = useState<
     Set<number>
@@ -82,12 +101,15 @@ function AppointmentsPageInner() {
     setDoctorId("");
     setServiceId("");
     setAppointmentDate(new Date().toISOString().slice(0, 10));
-    setAppointmentTime("08:00");
+    setAppointmentTime("");
     setNote("");
     setModalError("");
     setLocBenhNhan("");
     setLocBacSi("");
     setLocDichVu("");
+    setLocChuyenKhoaId("");
+    setBacSiCoCaTheoNgay({});
+    setSlotsTheoBacSi({});
   }, [maBenhNhanParam]);
 
   const chiTaiKhoanBn = useMemo(
@@ -181,6 +203,12 @@ function AppointmentsPageInner() {
         if (!cancelled) setServices(s ?? []);
       })
       .catch(() => {});
+    chuyenKhoaApi
+      .danhSach()
+      .then((rows) => {
+        if (!cancelled) setChuyenKhoa(rows ?? []);
+      })
+      .catch(() => {});
 
     const tu = new Date();
     tu.setDate(tu.getDate() - 14);
@@ -233,12 +261,13 @@ function AppointmentsPageInner() {
 
   const bacSiSauLoc = useMemo(() => {
     const q = locBacSi.trim().toLowerCase();
-    if (!q) return doctors;
-    return doctors.filter((d) => {
+    const ds = doctors.filter((d) => bacSiCoCaTheoNgay[d.id] !== false);
+    if (!q) return ds;
+    return ds.filter((d) => {
       const ck = (d.tenChuyenKhoa ?? d.chuyenMon ?? "").toLowerCase();
       return (d.hoTen ?? "").toLowerCase().includes(q) || ck.includes(q);
     });
-  }, [doctors, locBacSi]);
+  }, [doctors, locBacSi, bacSiCoCaTheoNgay]);
 
   const dichVuSauLoc = useMemo(() => {
     const q = locDichVu.trim().toLowerCase();
@@ -284,6 +313,19 @@ function AppointmentsPageInner() {
       ? `${s.ten} — ${s.gia.toLocaleString("vi-VN")}đ`
       : s.ten;
   }, [serviceId, services]);
+
+  const slotsDaChon = useMemo(() => {
+    const ma = Number(doctorId);
+    if (!ma || Number.isNaN(ma)) return [];
+    return slotsTheoBacSi[ma] ?? [];
+  }, [doctorId, slotsTheoBacSi]);
+
+  const appointmentTimeLabel = useMemo(() => {
+    if (!appointmentTime) return "— Chọn khung giờ —";
+    const slot = slotsDaChon.find((x) => x.gio === appointmentTime);
+    if (!slot) return appointmentTime;
+    return `${slot.gio} (${slot.tong}/${slot.sucChua})`;
+  }, [appointmentTime, slotsDaChon]);
 
   const danhSachLoc = useMemo(() => {
     let rows = list.filter(
@@ -334,11 +376,24 @@ function AppointmentsPageInner() {
       setModalError("Vui lòng chọn dịch vụ.");
       return;
     }
+    if (!appointmentDate) {
+      setModalError("Vui lòng chọn ngày khám.");
+      return;
+    }
+    if (!appointmentTime) {
+      setModalError("Vui lòng chọn giờ khám.");
+      return;
+    }
     const pid = Number(patientId);
     if (!Number.isNaN(pid) && maBenhNhanKhongThemLich.has(pid)) {
       setModalError(
         "Bệnh nhân này đã có lịch đang xử lý — không thể đặt thêm.",
       );
+      return;
+    }
+    const slotDaChon = slotsDaChon.find((s) => s.gio === appointmentTime);
+    if (slotDaChon && slotDaChon.tong >= slotDaChon.sucChua) {
+      setModalError("Khung giờ này đã đủ số lượng. Vui lòng chọn khung giờ khác.");
       return;
     }
     setSubmitting(true);
@@ -359,6 +414,69 @@ function AppointmentsPageInner() {
       setSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    if (!showDatLich || !appointmentDate) {
+      setBacSiCoCaTheoNgay({});
+      setSlotsTheoBacSi({});
+      return;
+    }
+    let cancelled = false;
+    setIsDangTaiCaKham(true);
+    const taiCaTheoNgay = async () => {
+      const maChuyenKhoa = locChuyenKhoaId ? Number(locChuyenKhoaId) : undefined;
+      const result = await appointmentsApi.slotKhaDungTheoNgay(appointmentDate, maChuyenKhoa);
+      if (cancelled) return;
+      const slotsMap: Record<number, SlotThongTin[]> = {};
+      const caHopLeMap: Record<number, boolean> = {};
+      for (const item of result as BacSiSlotKhaDung[]) {
+        slotsMap[item.maBacSi] = (item.slots ?? []).map((s) => ({
+          gio: normalizeTime(s.gio),
+          tong: s.soLuongDaDat ?? 0,
+          sucChua: s.sucChua ?? SO_LUONG_TOI_DA_MOI_GIO,
+        }));
+        caHopLeMap[item.maBacSi] = (item.slots ?? []).length > 0;
+      }
+      setSlotsTheoBacSi(slotsMap);
+      setBacSiCoCaTheoNgay(caHopLeMap);
+    };
+    taiCaTheoNgay()
+      .catch(() => {
+        if (!cancelled) {
+          setSlotsTheoBacSi({});
+          setBacSiCoCaTheoNgay({});
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsDangTaiCaKham(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [showDatLich, appointmentDate, locChuyenKhoaId]);
+
+  useEffect(() => {
+    if (!doctorId) {
+      setAppointmentTime("");
+      return;
+    }
+    const slotConCho = slotsDaChon.filter((s) => s.tong < s.sucChua);
+    if (slotConCho.length === 0) {
+      setAppointmentTime("");
+      return;
+    }
+    if (!slotConCho.some((s) => s.gio === appointmentTime)) {
+      setAppointmentTime(slotConCho[0].gio);
+    }
+  }, [doctorId, slotsDaChon, appointmentTime]);
+
+  useEffect(() => {
+    if (doctorId && bacSiCoCaTheoNgay[Number(doctorId)] === false) {
+      setDoctorId("");
+      setAppointmentTime("");
+      setModalError("Bác sĩ đã chọn không có ca làm việc trong ngày này. Vui lòng chọn bác sĩ khác.");
+    }
+  }, [doctorId, bacSiCoCaTheoNgay]);
 
   const handleExportCsv = () => {
     const rows = danhSachLoc;
@@ -631,6 +749,24 @@ function AppointmentsPageInner() {
               </Form.Group>
             )}
             <Form.Group className="mb-3">
+              <Form.Label id="label-loc-ck-dat-lich">Chuyên khoa (lọc bác sĩ)</Form.Label>
+              <Form.Select
+                aria-labelledby="label-loc-ck-dat-lich"
+                value={locChuyenKhoaId}
+                onChange={(e) => {
+                  setLocChuyenKhoaId(e.target.value);
+                  setDoctorId("");
+                  setAppointmentTime("");
+                }}
+                className="mb-3"
+              >
+                <option value="">Tất cả chuyên khoa</option>
+                {chuyenKhoa.map((ck) => (
+                  <option key={ck.id} value={String(ck.id)}>
+                    {ck.tenChuyenKhoa}
+                  </option>
+                ))}
+              </Form.Select>
               <Form.Label className="required" id="label-dat-bs">
                 Bác sĩ
               </Form.Label>
@@ -662,11 +798,16 @@ function AppointmentsPageInner() {
                     className="bac-si-ck-dropdown__list border rounded"
                     style={{ maxHeight: 220, overflowY: "auto" }}
                   >
+                    {isDangTaiCaKham && (
+                      <div className="px-2 py-2 text-muted small">
+                        Đang tải ca làm việc theo ngày đã chọn...
+                      </div>
+                    )}
                     {bacSiSauLoc.length === 0 ? (
                       <div className="px-2 py-3 text-muted small text-center">
                         {doctors.length === 0
                           ? "Chưa có bác sĩ trong hệ thống."
-                          : "Không có kết quả khớp bộ lọc."}
+                          : "Không có bác sĩ nào có ca làm việc trong ngày này."}
                       </div>
                     ) : (
                       bacSiSauLoc.map((d) => (
@@ -763,12 +904,50 @@ function AppointmentsPageInner() {
               <div className="col-md-6">
                 <Form.Group>
                   <Form.Label className="required">Giờ khám</Form.Label>
-                  <Form.Control
-                    type="time"
-                    value={appointmentTime}
-                    onChange={(e) => setAppointmentTime(e.target.value)}
-                    required
-                  />
+                  <Dropdown className="bac-si-ck-dropdown w-100">
+                    <Dropdown.Toggle
+                      variant="outline-secondary"
+                      id="dropdown-dat-gio-kham"
+                      className="w-100 text-start d-flex justify-content-between align-items-center"
+                    >
+                      <span className="text-truncate me-2 flex-grow-1">
+                        {appointmentTimeLabel}
+                      </span>
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu className="bac-si-ck-dropdown__menu w-100 shadow-sm pt-2 px-2 pb-2">
+                      <div
+                        className="bac-si-ck-dropdown__list border rounded"
+                        style={{ maxHeight: 220, overflowY: "auto" }}
+                      >
+                        {!doctorId ? (
+                          <div className="px-2 py-3 text-muted small text-center">
+                            Chọn bác sĩ trước khi chọn giờ khám.
+                          </div>
+                        ) : slotsDaChon.length === 0 ? (
+                          <div className="px-2 py-3 text-muted small text-center">
+                            Không có khung giờ hợp lệ trong ngày này.
+                          </div>
+                        ) : (
+                          slotsDaChon.map((slot) => {
+                            const daDay = slot.tong >= slot.sucChua;
+                            return (
+                              <Dropdown.Item
+                                key={slot.gio}
+                                active={slot.gio === appointmentTime}
+                                disabled={daDay}
+                                onClick={() => {
+                                  setAppointmentTime(slot.gio);
+                                }}
+                              >
+                                {slot.gio} ({slot.tong}/{slot.sucChua})
+                                {daDay ? " — Đã đầy" : ""}
+                              </Dropdown.Item>
+                            );
+                          })
+                        )}
+                      </div>
+                    </Dropdown.Menu>
+                  </Dropdown>
                 </Form.Group>
               </div>
             </div>

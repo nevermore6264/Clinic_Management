@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Table, Button, Card, Alert, Modal, Form } from "react-bootstrap";
+import { Table, Button, Card, Alert, Modal, Form, Badge } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import {
@@ -399,10 +399,27 @@ export default function ServicesPage() {
                         setFormSua({ ...formSua, hoatDong: e.target.checked })
                       }
                     />
-                  ) : s.hoatDong ? (
-                    "Đang áp dụng"
                   ) : (
-                    "Ngừng"
+                    <Badge
+                      bg={s.hoatDong !== false ? "success" : "secondary"}
+                      pill
+                      className="fw-normal text-white align-middle"
+                      aria-label={
+                        s.hoatDong !== false
+                          ? "Trạng thái: đang áp dụng"
+                          : "Trạng thái: ngừng"
+                      }
+                    >
+                      <i
+                        className={
+                          s.hoatDong !== false
+                            ? "bi bi-check-circle-fill me-1"
+                            : "bi bi-pause-circle-fill me-1"
+                        }
+                        aria-hidden
+                      />
+                      {s.hoatDong !== false ? "Đang áp dụng" : "Ngừng"}
+                    </Badge>
                   )}
                 </td>
                 <td>

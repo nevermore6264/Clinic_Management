@@ -227,6 +227,11 @@ export const lichHenApi = {
     api<LichHen[]>(`/lich-hen/benh-nhan/${maBenhNhan}`),
   theoBacSiVaNgay: (maBacSi: number, ngay: string) =>
     api<LichHen[]>(`/lich-hen/bac-si/${maBacSi}?ngay=${ngay}`),
+  slotKhaDungTheoNgay: (ngay: string, maChuyenKhoa?: number) => {
+    let q = `/lich-hen/slot-kha-dung?ngay=${encodeURIComponent(ngay)}`;
+    if (maChuyenKhoa != null) q += `&maChuyenKhoa=${maChuyenKhoa}`;
+    return api<BacSiSlotKhaDung[]>(q);
+  },
   layTheoMa: (id: number) => api<LichHen>(`/lich-hen/${id}`),
   tao: (data: Partial<LichHen>) =>
     api<LichHen>("/lich-hen", {
@@ -775,6 +780,21 @@ export interface LichHen {
   gioHen: string;
   trangThai?: TrangThaiLichHen;
   ghiChu?: string;
+}
+
+export interface SlotKhaDung {
+  gio: string;
+  soLuongDaDat: number;
+  sucChua: number;
+  daDay: boolean;
+}
+
+export interface BacSiSlotKhaDung {
+  maBacSi: number;
+  tenBacSi?: string;
+  maChuyenKhoa?: number;
+  tenChuyenKhoa?: string;
+  slots: SlotKhaDung[];
 }
 
 export interface ChiTietDonThuoc {

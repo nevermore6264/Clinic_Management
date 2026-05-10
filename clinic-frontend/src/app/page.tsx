@@ -64,7 +64,10 @@ export default function HomePage() {
             <i className="bi bi-geo-alt" aria-hidden />
             <strong>Đà Nẵng</strong>, Việt Nam
           </span>
-          <span className="landing-info-rail__dot landing-info-rail__dot--hide-sm" aria-hidden />
+          <span
+            className="landing-info-rail__dot landing-info-rail__dot--hide-sm"
+            aria-hidden
+          />
           <a href="#lien-he" className="landing-info-rail__link">
             Chỉ đường &amp; liên hệ
           </a>
@@ -79,21 +82,22 @@ export default function HomePage() {
               <i className="bi bi-heart-pulse-fill" />
             </span>
             <div>
-              <span className="landing-site-header__title">MEDLATEC Clinic</span>
+              <span className="landing-site-header__title">
+                MEDLATEC Clinic
+              </span>
               <span className="landing-site-header__tagline">
                 Phòng khám đa khoa
               </span>
             </div>
           </div>
 
-          <nav
-            className="landing-site-header__nav"
-            aria-label="Menu chính"
-          >
+          <nav className="landing-site-header__nav" aria-label="Menu chính">
             <a href="#thong-bao">Thông báo</a>
             <a href="#chuyen-khoa-landing">Chuyên khoa</a>
             <a href="#dich-vu">Dịch vụ</a>
+            <a href="#cam-ket">Cam kết</a>
             <a href="#quy-trinh">Quy trình</a>
+            <a href="#co-so">Cơ sở</a>
             <a href="#doi-ngu">Đội ngũ</a>
             <a href="#tin-tuc">Tin hoạt động</a>
             <a href="#danh-gia">Bệnh nhân</a>
@@ -163,7 +167,10 @@ export default function HomePage() {
                   Tra cứu / Đăng nhập
                 </button>
               </div>
-              <ul className="landing-hero-institutional__bullets" aria-label="Cam kết">
+              <ul
+                className="landing-hero-institutional__bullets"
+                aria-label="Cam kết"
+              >
                 <li>
                   <i className="bi bi-check-circle-fill" aria-hidden />
                   Đội ngũ bác sĩ chuyên khoa
@@ -183,8 +190,12 @@ export default function HomePage() {
               <div className="landing-clinic-panel landing-clinic-panel--hero">
                 <div className="landing-clinic-panel__header">
                   <div>
-                    <p className="landing-clinic-panel__eyebrow">Tiếp nhận hôm nay</p>
-                    <p className="landing-clinic-panel__title">Dịch vụ chọn nhanh</p>
+                    <p className="landing-clinic-panel__eyebrow">
+                      Tiếp nhận hôm nay
+                    </p>
+                    <p className="landing-clinic-panel__title">
+                      Dịch vụ chọn nhanh
+                    </p>
                   </div>
                   <span className="landing-clinic-panel__badge">
                     <i className="bi bi-check-circle-fill" aria-hidden />
@@ -237,7 +248,10 @@ export default function HomePage() {
       </section>
 
       {/* Hàng ô shortcut — rất giống web BV */}
-      <section className="landing-quick-tiles-section" aria-label="Truy cập nhanh">
+      <section
+        className="landing-quick-tiles-section"
+        aria-label="Truy cập nhanh"
+      >
         <div className="landing-hospital-shell">
           <div className="landing-quick-tiles">
             <button
@@ -312,9 +326,10 @@ export default function HomePage() {
               Thông báo
             </span>
             <p className="landing-announcement-card__text">
-              <strong>Lịch tiếp nhận dịp lễ:</strong> Phòng khám vẫn mở khám ngoại
-              trú theo giờ đăng ký; một số dịch vụ xét nghiệm có thể điều chỉnh
-              thời gian trả kết quả — vui lòng gọi hotline để được hướng dẫn.
+              <strong>Lịch tiếp nhận dịp lễ:</strong> Phòng khám vẫn mở khám
+              ngoại trú theo giờ đăng ký; một số dịch vụ xét nghiệm có thể điều
+              chỉnh thời gian trả kết quả — vui lòng gọi hotline để được hướng
+              dẫn.
             </p>
             <button
               type="button"
@@ -368,18 +383,23 @@ export default function HomePage() {
                 <span className="landing-specialty-chip__icon">
                   <i className={`bi ${item.icon}`} aria-hidden />
                 </span>
-                <span className="landing-specialty-chip__label">{item.label}</span>
+                <span className="landing-specialty-chip__label">
+                  {item.label}
+                </span>
               </button>
             ))}
           </div>
           <p className="text-center small text-muted mt-3 mb-0 fw-semibold">
-            Đặt lịch theo chuyên khoa sau khi đăng nhập — hoặc gọi hotline để được
-            tư vấn chọn bác sĩ phù hợp.
+            Đặt lịch theo chuyên khoa sau khi đăng nhập — hoặc gọi hotline để
+            được tư vấn chọn bác sĩ phù hợp.
           </p>
         </div>
       </section>
 
-      <section id="dich-vu" className="landing-section landing-section--muted landing-section--hospital">
+      <section
+        id="dich-vu"
+        className="landing-section landing-section--muted landing-section--hospital"
+      >
         <div className="landing-hospital-shell">
           <div className="landing-section__head landing-section__head--center">
             <p className="landing-section__eyebrow">Dịch vụ y khoa</p>
@@ -399,8 +419,8 @@ export default function HomePage() {
               </div>
               <h3>Đặt lịch &amp; ưu tiên khung giờ</h3>
               <p>
-                Giảm chờ tại quầy; nhận nhắc lịch trước ngày khám để chủ động thời
-                gian.
+                Giảm chờ tại quầy; nhận nhắc lịch trước ngày khám để chủ động
+                thời gian.
               </p>
             </article>
             <article className="landing-feature-card landing-feature-card--accent-b">
@@ -442,7 +462,9 @@ export default function HomePage() {
           <div className="landing-stats-ribbon__item">
             <span className="landing-stats-ribbon__value">15+</span>
             <span className="landing-stats-ribbon__unit">năm</span>
-            <span className="landing-stats-ribbon__label">Phục vụ cộng đồng</span>
+            <span className="landing-stats-ribbon__label">
+              Phục vụ cộng đồng
+            </span>
           </div>
           <div className="landing-stats-ribbon__divider" aria-hidden />
           <div className="landing-stats-ribbon__item">
@@ -462,7 +484,9 @@ export default function HomePage() {
           <div className="landing-stats-ribbon__item">
             <span className="landing-stats-ribbon__value">24/7</span>
             <span className="landing-stats-ribbon__unit">hotline</span>
-            <span className="landing-stats-ribbon__label">Tư vấn — cấp cứu</span>
+            <span className="landing-stats-ribbon__label">
+              Tư vấn — cấp cứu
+            </span>
           </div>
         </div>
       </section>
@@ -475,7 +499,9 @@ export default function HomePage() {
               <i className="bi bi-card-checklist" aria-hidden />
             </span>
             <div>
-              <h3 className="landing-bhyt-strip__title">BHYT &amp; chi phí khám</h3>
+              <h3 className="landing-bhyt-strip__title">
+                BHYT &amp; chi phí khám
+              </h3>
               <p className="landing-bhyt-strip__desc mb-0">
                 Tiếp nhận khám BHYT đúng tuyến và chi phí dịch vụ theo thông tư;
                 quầy hướng dẫn thủ tục ngay tại tiếp nhận.
@@ -499,7 +525,58 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="quy-trinh" className="landing-section landing-section--hospital">
+      <section
+        id="cam-ket"
+        className="landing-trust-strip"
+        aria-label="Cam kết vận hành"
+      >
+        <div className="landing-hospital-shell">
+          <ul className="landing-trust-strip__list">
+            {[
+              {
+                icon: "bi-shield-fill-check",
+                title: "Phòng ngừa nhiễm khuẩn",
+                text: "Khử khuẩn bề mặt, tách luồng, nhắc vệ sinh tay.",
+              },
+              {
+                icon: "bi-lock-fill",
+                title: "Bảo mật hồ sơ",
+                text: "Dữ liệu truy cập theo vai trò; lưu trữ theo thói quen phòng khám.",
+              },
+              {
+                icon: "bi-hourglass-split",
+                title: "Chờ có kiểm soát",
+                text: "Ưu tiên theo hẹn; hướng dẫn tại quầy khi đông.",
+              },
+              {
+                icon: "bi-chat-left-text",
+                title: "Tư vấn trước chỉ định",
+                text: "Giải thích cận lâm sàng; người bệnh đồng ý trước khi thực hiện.",
+              },
+            ].map((row) => (
+              <li
+                key={row.title}
+                className="landing-trust-strip__item landing-reveal"
+              >
+                <span className="landing-trust-strip__icon" aria-hidden>
+                  <i className={`bi ${row.icon}`} />
+                </span>
+                <div>
+                  <strong className="landing-trust-strip__item-title">
+                    {row.title}
+                  </strong>
+                  <p className="landing-trust-strip__item-text">{row.text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section
+        id="quy-trinh"
+        className="landing-section landing-section--hospital"
+      >
         <div className="landing-hospital-shell">
           <div className="landing-process">
             <div className="landing-process__intro">
@@ -531,9 +608,7 @@ export default function HomePage() {
               <div className="process-step">
                 <div className="process-step__number">03</div>
                 <h3>Khám &amp; chỉ định</h3>
-                <p>
-                  Bác sĩ khám, giải thích và chỉ định cận lâm sàng khi cần.
-                </p>
+                <p>Bác sĩ khám, giải thích và chỉ định cận lâm sàng khi cần.</p>
               </div>
               <div className="process-step">
                 <div className="process-step__number">04</div>
@@ -558,12 +633,8 @@ export default function HomePage() {
             <p className="landing-section__eyebrow">Con người</p>
             <h2 className="landing-section__title">Đội ngũ chuyên môn</h2>
             <p className="landing-section__desc">
-              Bác sĩ có chứng chỉ hành nghề, tham gia đào tạo liên tục và phối hợp
-              đa chuyên khoa khi cần.
-            </p>
-            <p className="small text-muted fw-semibold mb-0 mt-2">
-              Ảnh chân dung minh họa (stock); thay bằng ảnh thật tại phòng khám khi
-              có.
+              Bác sĩ có chứng chỉ hành nghề, tham gia đào tạo liên tục và phối
+              hợp đa chuyên khoa khi cần.
             </p>
           </div>
           <div className="landing-team-grid">
@@ -573,30 +644,33 @@ export default function HomePage() {
                 role: "Trưởng khoa Nội",
                 exp: "18 năm khám lâm sàng",
                 imageSrc:
-                  "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=320&h=320&q=80",
+                  "https://images.pexels.com/photos/5215024/pexels-photo-5215024.jpeg?auto=compress&cs=tinysrgb&w=640&h=640&fit=crop",
                 imageAlt:
-                  "Bác sĩ nam mặc blouse trắng trong phòng khám — ảnh minh họa",
+                  "Chân dung bác sĩ nam — ảnh minh họa stock (người mẫu châu Á)",
               },
               {
                 name: "BS.CKII Lê Thu",
                 role: "Chuyên khoa Tim mạch",
                 exp: "Siêu âm tim — HA",
                 imageSrc:
-                  "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=320&h=320&q=80",
+                  "https://images.pexels.com/photos/3825581/pexels-photo-3825581.jpeg?auto=compress&cs=tinysrgb&w=640&h=640&fit=crop",
                 imageAlt:
-                  "Bác sĩ nữ với ống nghe trong môi trường y tế — ảnh minh họa",
+                  "Chân dung bác sĩ nữ — ảnh minh họa stock (người mẫu châu Á)",
               },
               {
                 name: "BS.CKI Phạm Hoàng Anh",
                 role: "Nhi — tiêm chủng",
                 exp: "Tư vấn dinh dưỡng trẻ em",
                 imageSrc:
-                  "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=320&h=320&q=80",
+                  "https://images.pexels.com/photos/7904457/pexels-photo-7904457.jpeg?auto=compress&cs=tinysrgb&w=640&h=640&fit=crop",
                 imageAlt:
-                  "Nhân viên y tế trong phòng khám — ảnh minh họa",
+                  "Chân dung bác sĩ — ảnh minh họa stock (người mẫu châu Á)",
               },
             ].map((d) => (
-              <article key={d.name} className="landing-team-card landing-reveal">
+              <article
+                key={d.name}
+                className="landing-team-card landing-reveal"
+              >
                 <div className="landing-team-card__avatar">
                   <Image
                     src={d.imageSrc}
@@ -625,6 +699,60 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section
+        id="co-so"
+        className="landing-section landing-section--facility landing-section--muted landing-section--hospital"
+      >
+        <div className="landing-hospital-shell">
+          <div className="landing-section__head landing-section__head--center mb-4">
+            <p className="landing-section__eyebrow">Hạ tầng</p>
+            <h2 className="landing-section__title">Không gian phòng khám</h2>
+            <p className="landing-section__desc mb-0">
+              Không gian tiếp nhận và khám hiện đại — ảnh minh họa; thay bằng
+              ảnh thực tế cơ sở của bạn khi triển khai.
+            </p>
+          </div>
+          <div className="landing-facility-grid">
+            {[
+              {
+                src: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=720&h=480&q=80",
+                alt: "Sảnh và quầy tiếp nhận bệnh viện — ảnh minh họa",
+                cap: "Khu tiếp nhận",
+              },
+              {
+                src: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=720&h=480&q=80",
+                alt: "Bác sĩ khám cho bệnh nhân trong phòng khám — ảnh minh họa",
+                cap: "Phòng khám & thiết bị",
+              },
+              {
+                src: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=720&h=480&q=80",
+                alt: "Hành lang và khu chờ trong cơ sở y tế — ảnh minh họa",
+                cap: "Khu chờ",
+              },
+            ].map((item) => (
+              <figure
+                key={item.cap}
+                className="landing-facility-card landing-reveal"
+              >
+                <div className="landing-facility-card__media">
+                  <Image
+                    src={item.src}
+                    alt={item.alt}
+                    width={720}
+                    height={480}
+                    className="landing-facility-card__img"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                </div>
+                <figcaption className="landing-facility-card__cap">
+                  {item.cap}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Tin hoạt động — layout đa dạng kiểu tin BV */}
       <section
         id="tin-tuc"
@@ -634,7 +762,9 @@ export default function HomePage() {
           <div className="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
             <div>
               <p className="landing-section__eyebrow mb-2">Tin tức</p>
-              <h2 className="landing-section__title mb-0">Hoạt động &amp; sự kiện</h2>
+              <h2 className="landing-section__title mb-0">
+                Hoạt động &amp; sự kiện
+              </h2>
             </div>
             <button
               type="button"
@@ -647,10 +777,14 @@ export default function HomePage() {
           </div>
           <div className="landing-news-grid">
             <article className="landing-news-card landing-news-card--featured landing-reveal">
-              <div className="landing-news-card__media" aria-hidden>
-                <div className="landing-news-card__placeholder">
-                  <i className="bi bi-images" />
-                </div>
+              <div className="landing-news-card__featured-media">
+                <Image
+                  src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=900&h=560&q=80"
+                  alt="Thiết bị và không gian khám — ảnh minh họa tin"
+                  fill
+                  sizes="(max-width: 991px) 100vw, 280px"
+                  className="landing-news-card__featured-img"
+                />
               </div>
               <div className="landing-news-card__body">
                 <time className="landing-news-card__date" dateTime="2026-05-01">
@@ -660,12 +794,22 @@ export default function HomePage() {
                   Mở rộng khung giờ khám ngoại trú cuối tuần
                 </h3>
                 <p className="landing-news-card__excerpt">
-                  Phục vụ người bận đi làm; đặt lịch qua ứng dụng hoặc hotline để
-                  được xếp giờ phù hợp.
+                  Phục vụ người bận đi làm; đặt lịch qua ứng dụng hoặc hotline
+                  để được xếp giờ phù hợp.
                 </p>
               </div>
             </article>
-            <article className="landing-news-card landing-reveal">
+            <article className="landing-news-card landing-news-card--thumb landing-reveal">
+              <div className="landing-news-card__thumb">
+                <Image
+                  src="https://images.unsplash.com/photo-1587854692152-cbe660dbde88?auto=format&fit=crop&w=400&h=400&q=80"
+                  alt="Thiết bị chẩn đoán — ảnh minh họa"
+                  width={400}
+                  height={400}
+                  className="landing-news-card__thumb-img"
+                  sizes="120px"
+                />
+              </div>
               <div className="landing-news-card__body landing-news-card__body--compact">
                 <time className="landing-news-card__date" dateTime="2026-04-18">
                   18/04/2026
@@ -675,7 +819,17 @@ export default function HomePage() {
                 </h3>
               </div>
             </article>
-            <article className="landing-news-card landing-reveal">
+            <article className="landing-news-card landing-news-card--thumb landing-reveal">
+              <div className="landing-news-card__thumb">
+                <Image
+                  src="https://images.unsplash.com/photo-1551190822-a9333d879a1f?auto=format&fit=crop&w=400&h=400&q=80"
+                  alt="Đội ngũ y tế — ảnh minh họa"
+                  width={400}
+                  height={400}
+                  className="landing-news-card__thumb-img"
+                  sizes="120px"
+                />
+              </div>
               <div className="landing-news-card__body landing-news-card__body--compact">
                 <time className="landing-news-card__date" dateTime="2026-04-02">
                   02/04/2026
@@ -689,7 +843,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="danh-gia" className="landing-section landing-section--muted landing-section--hospital">
+      <section
+        id="danh-gia"
+        className="landing-section landing-section--muted landing-section--hospital"
+      >
         <div className="landing-hospital-shell">
           <div className="landing-section__head landing-section__head--center">
             <p className="landing-section__eyebrow">Phản hồi</p>
@@ -702,8 +859,8 @@ export default function HomePage() {
           <div className="landing-testimonials">
             <article className="testimonial-card">
               <p className="testimonial-card__quote">
-                “Đặt lịch online được nhắc trước, đến nơi không phải chờ lâu. Bác
-                sĩ giải thích rõ nên gia đình yên tâm.”
+                “Đặt lịch online được nhắc trước, đến nơi không phải chờ lâu.
+                Bác sĩ giải thích rõ nên gia đình yên tâm.”
               </p>
               <div className="testimonial-card__author">
                 <span className="testimonial-card__avatar" aria-hidden>
@@ -749,7 +906,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="hoi-dap" className="landing-section landing-section--hospital">
+      <section
+        id="hoi-dap"
+        className="landing-section landing-section--hospital"
+      >
         <div className="landing-hospital-shell">
           <div className="landing-section__head landing-section__head--center">
             <p className="landing-section__eyebrow">Hỏi — đáp</p>
@@ -773,8 +933,8 @@ export default function HomePage() {
             <details className="landing-faq__item">
               <summary>Có nhắc lịch tái khám không?</summary>
               <p>
-                Có. Hệ thống hỗ trợ lưu lịch hẹn và nhắc lịch theo cấu hình phòng
-                khám.
+                Có. Hệ thống hỗ trợ lưu lịch hẹn và nhắc lịch theo cấu hình
+                phòng khám.
               </p>
             </details>
           </div>
@@ -786,8 +946,8 @@ export default function HomePage() {
         className="landing-section landing-section--contact-hospital"
       >
         <div className="landing-hospital-shell">
-          <div className="landing-contact-grid">
-            <div>
+          <div className="landing-contact-layout">
+            <div className="landing-contact-layout__intro">
               <p className="landing-section__eyebrow">Liên hệ</p>
               <h2 className="landing-section__title landing-contact-grid__title">
                 MEDLATEC Clinic
@@ -802,6 +962,10 @@ export default function HomePage() {
                   1900 56 56 56
                 </a>
               </p>
+              <p className="small text-muted fw-semibold mt-3 mb-0">
+                Gợi ý: thay “Đà Nẵng” bằng địa chỉ đầy đủ &amp; nhúng Google
+                Maps iframe khi có.
+              </p>
             </div>
             <div className="landing-contact-card">
               <h3 className="h6 fw-bold text-uppercase text-muted mb-3">
@@ -809,10 +973,36 @@ export default function HomePage() {
               </h3>
               <ul className="list-unstyled mb-0 small fw-semibold">
                 <li className="mb-2">Thứ 2 – Thứ 7: 07:30 – 17:30</li>
-                <li className="mb-2">Chủ nhật: Nghỉ (trừ trường hợp đặc biệt)</li>
+                <li className="mb-2">
+                  Chủ nhật: Nghỉ (trừ trường hợp đặc biệt)
+                </li>
                 <li>Cấp cứu / tư vấn: gọi hotline 24/7</li>
               </ul>
             </div>
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=16.0544%2C108.2022"
+              className="landing-contact-map-card landing-reveal"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div className="landing-contact-map-card__visual" aria-hidden>
+                <span className="landing-contact-map-card__pin">
+                  <i className="bi bi-geo-alt-fill" />
+                </span>
+              </div>
+              <div className="landing-contact-map-card__body">
+                <strong className="landing-contact-map-card__title">
+                  Chỉ đường
+                </strong>
+                <span className="landing-contact-map-card__sub">
+                  Đà Nẵng — mở Google Maps
+                </span>
+                <span className="landing-contact-map-card__cta">
+                  Xem bản đồ
+                  <i className="bi bi-box-arrow-up-right ms-1" aria-hidden />
+                </span>
+              </div>
+            </a>
           </div>
         </div>
       </section>
@@ -830,25 +1020,50 @@ export default function HomePage() {
             </div>
             <div className="landing-final-cta__actions">
               <button
-                className="btn btn-light btn-lg fw-bold"
-                onClick={goLogin}
                 type="button"
+                className="landing-final-cta__btn landing-final-cta__btn--primary"
+                onClick={goLogin}
               >
-                <i className="bi bi-calendar2-heart me-2" aria-hidden />
+                <span className="landing-final-cta__btn-icon" aria-hidden>
+                  <i className="bi bi-calendar2-heart" />
+                </span>
                 Đặt lịch khám
               </button>
               <button
-                className="btn btn-outline-light btn-lg"
-                onClick={goLogin}
                 type="button"
+                className="landing-final-cta__btn landing-final-cta__btn--secondary"
+                onClick={goLogin}
               >
-                <i className="bi bi-box-arrow-in-right me-2" aria-hidden />
+                <span className="landing-final-cta__btn-icon" aria-hidden>
+                  <i className="bi bi-box-arrow-in-right" />
+                </span>
                 Cổng nhân viên
               </button>
             </div>
           </div>
         </div>
       </section>
+
+      <div
+        className="landing-float-cta d-lg-none"
+        role="region"
+        aria-label="Gọi hoặc đặt lịch nhanh"
+      >
+        <a href="tel:1900565656" className="landing-float-cta__call">
+          <i className="bi bi-telephone-fill" aria-hidden />
+          <span>
+            <small>Gọi ngay</small>
+            <strong>1900 56 56 56</strong>
+          </span>
+        </a>
+        <button
+          type="button"
+          className="landing-float-cta__book"
+          onClick={goLogin}
+        >
+          Đặt lịch khám
+        </button>
+      </div>
 
       <footer className="landing-marketing-footer landing-marketing-footer--hospital">
         <div className="landing-hospital-shell">

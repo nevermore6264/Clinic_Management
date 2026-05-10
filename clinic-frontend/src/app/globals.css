@@ -3532,19 +3532,6 @@ html.app-ready body {
   color: #0d9488;
 }
 
-.landing-section--clinic-final .landing-final-cta__actions .btn-outline-light {
-  border-color: rgba(255, 255, 255, 0.45);
-  color: #fff;
-}
-
-.landing-section--clinic-final
-  .landing-final-cta__actions
-  .btn-outline-light:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.65);
-  color: #fff;
-}
-
 @media (max-width: 991.98px) {
   .landing-topbar--clinic .landing-topbar__actions {
     display: flex !important;
@@ -4509,6 +4496,329 @@ html.app-ready body {
   margin-top: 0.15rem;
 }
 
+/* Cam kết vận hành — giống dải uy tín trên web PK/BV VN */
+.landing-trust-strip {
+  padding: 1.75rem 0;
+  background: linear-gradient(
+    180deg,
+    rgba(248, 250, 252, 0.98) 0%,
+    #fff 100%
+  );
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.landing-trust-strip__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 576px) {
+  .landing-trust-strip__list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.15rem 1.25rem;
+  }
+}
+
+@media (min-width: 992px) {
+  .landing-trust-strip__list {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+}
+
+.landing-trust-strip__item {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  padding: 1rem 1.05rem;
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
+}
+
+.landing-trust-strip__icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  color: var(--hospital-blue-mid);
+  background: linear-gradient(145deg, #e0f2fe 0%, #ecfdf5 100%);
+}
+
+.landing-trust-strip__item-title {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: var(--clinic-navy);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.25rem;
+}
+
+.landing-trust-strip__item-text {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--clinic-muted);
+}
+
+/* Galeri cơ sở */
+.landing-section--facility {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.landing-facility-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.15rem;
+}
+
+@media (min-width: 768px) {
+  .landing-facility-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+.landing-facility-card {
+  margin: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+.landing-facility-card__media {
+  position: relative;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.landing-facility-card__img {
+  display: block;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.landing-facility-card__cap {
+  padding: 0.85rem 1rem;
+  font-size: 0.86rem;
+  font-weight: 800;
+  color: var(--clinic-navy);
+  text-align: center;
+}
+
+/* Liên hệ + thẻ bản đồ */
+.landing-contact-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (min-width: 992px) {
+  .landing-contact-layout {
+    grid-template-columns: 1.15fr 0.85fr 1fr;
+    align-items: stretch;
+    gap: 1.25rem;
+  }
+
+  .landing-contact-map-card {
+    min-height: 100%;
+  }
+}
+
+.landing-contact-map-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.07);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.landing-contact-map-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+  color: inherit;
+}
+
+.landing-contact-map-card__visual {
+  position: relative;
+  flex: 1;
+  min-height: 140px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(14, 165, 233, 0.35) 0%,
+      rgba(13, 148, 136, 0.45) 50%,
+      rgba(30, 58, 138, 0.4) 100%
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cpath fill='%23ffffff' fill-opacity='0.12' d='M0 0h40v40H0zM40 40h40v40H40z'/%3E%3C/svg%3E");
+}
+
+@media (min-width: 992px) {
+  .landing-contact-map-card__visual {
+    min-height: 160px;
+  }
+}
+
+.landing-contact-map-card__pin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  color: #fff;
+  background: rgba(220, 38, 38, 0.95);
+  box-shadow: 0 10px 28px rgba(220, 38, 38, 0.35);
+}
+
+.landing-contact-map-card__body {
+  padding: 1rem 1.15rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.landing-contact-map-card__title {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--clinic-navy);
+}
+
+.landing-contact-map-card__sub {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--clinic-muted);
+}
+
+.landing-contact-map-card__cta {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--hospital-blue-mid);
+}
+
+/* Thanh CTA cố định — mobile */
+.landing-float-cta {
+  position: fixed;
+  z-index: 1040;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 0.65rem;
+  padding: 0.65rem var(--hospital-shell-pad)
+    calc(0.65rem + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 -8px 32px rgba(15, 23, 42, 0.08);
+}
+
+.landing-float-cta__call {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 14px;
+  border: 1px solid rgba(3, 105, 161, 0.22);
+  background: #fff;
+  text-decoration: none;
+  color: var(--clinic-navy);
+  min-width: 0;
+}
+
+.landing-float-cta__call:hover {
+  border-color: rgba(3, 105, 161, 0.4);
+  color: var(--clinic-navy);
+}
+
+.landing-float-cta__call i {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  color: var(--hospital-blue-mid);
+}
+
+.landing-float-cta__call small {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--clinic-muted);
+  line-height: 1.2;
+}
+
+.landing-float-cta__call strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.landing-float-cta__book {
+  flex-shrink: 0;
+  align-self: center;
+  padding: 0.75rem 1.15rem;
+  border: none;
+  border-radius: 14px;
+  font-weight: 900;
+  font-size: 0.88rem;
+  color: #fff;
+  background: linear-gradient(
+    145deg,
+    var(--hospital-blue-mid) 0%,
+    #0c4a6e 100%
+  );
+  box-shadow: 0 10px 28px rgba(3, 105, 161, 0.35);
+}
+
+.landing-float-cta__book:active {
+  transform: scale(0.98);
+}
+
+@media (min-width: 992px) {
+  .landing-float-cta {
+    display: none !important;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .landing-bg.landing-hospital {
+    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 .landing-section--team {
   padding-top: 3.5rem;
   padding-bottom: 3.5rem;
@@ -4640,6 +4950,61 @@ html.app-ready body {
 
 .landing-news-card__media {
   flex-shrink: 0;
+}
+
+/* Tin nổi bật — ảnh full cover */
+.landing-news-card__featured-media {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+
+.landing-news-card__featured-img {
+  object-fit: cover;
+}
+
+@media (min-width: 992px) {
+  .landing-news-card--featured .landing-news-card__featured-media {
+    width: 280px;
+    aspect-ratio: unset;
+    min-height: 220px;
+    height: auto;
+    align-self: stretch;
+  }
+}
+
+/* Tin nhỏ — ảnh thumbnail bên trái */
+.landing-news-card--thumb {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.landing-news-card__thumb {
+  flex-shrink: 0;
+  width: 112px;
+  position: relative;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+@media (max-width: 575.98px) {
+  .landing-news-card__thumb {
+    width: 92px;
+  }
+}
+
+.landing-news-card__thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  min-height: 100%;
 }
 
 .landing-news-card__placeholder {
@@ -5878,6 +6243,7 @@ html.app-ready body {
   .reveal-on-scroll,
   .reveal-on-scroll.is-visible,
   .btn,
+  .landing-final-cta__btn,
   .form-control,
   .form-select,
   .form-check-input,
@@ -5989,7 +6355,106 @@ html.app-ready body {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.65rem;
+  gap: 0.75rem;
+}
+
+/* Nút CTA cuối trang — bản health premium (gradient + glass) */
+.landing-final-cta__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.9rem 1.5rem;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 0.94rem;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  cursor: pointer;
+  border: none;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.22s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.landing-final-cta__btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+.landing-final-cta__btn--primary {
+  color: #fff;
+  background: linear-gradient(
+    165deg,
+    #5eead4 0%,
+    #2dd4bf 28%,
+    #14b8a6 55%,
+    #0d9488 100%
+  );
+  box-shadow:
+    0 12px 32px rgba(13, 148, 136, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.landing-final-cta__btn--primary .landing-final-cta__btn-icon {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.landing-final-cta__btn--primary:hover {
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow:
+    0 16px 40px rgba(13, 148, 136, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+.landing-final-cta__btn--secondary {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 8px 24px rgba(15, 23, 42, 0.15);
+}
+
+.landing-final-cta__btn--secondary .landing-final-cta__btn-icon {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+.landing-final-cta__btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.52);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 12px 28px rgba(15, 23, 42, 0.18);
+}
+
+.landing-final-cta__btn:focus-visible {
+  outline: 2px solid rgba(94, 234, 212, 0.85);
+  outline-offset: 3px;
+}
+
+.landing-final-cta__btn--secondary:focus-visible {
+  outline-color: rgba(255, 255, 255, 0.85);
+}
+
+.landing-final-cta__btn:active {
+  transform: translateY(0);
 }
 
 @media (max-width: 991.98px) {
@@ -6010,7 +6475,7 @@ html.app-ready body {
     max-width: 100%;
   }
 
-  .landing-final-cta__actions .btn {
+  .landing-final-cta__actions .landing-final-cta__btn {
     width: 100%;
   }
 }

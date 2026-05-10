@@ -49,11 +49,12 @@ export function AppShell({ children }: { children: ReactNode }) {
           ".landing-bg > section.landing-quick-tiles-section",
           ".landing-bg > section.landing-stats-ribbon",
           ".landing-bg > section.landing-bhyt-strip",
+          ".landing-bg > section.landing-trust-strip",
           ".landing-marketing-footer",
           ".page-shell .landing-kpi",
           ".page-shell [data-reveal]",
           ".landing-hospital-shell .landing-quick-tiles",
-          ".landing-hospital-shell .landing-contact-grid",
+          ".landing-hospital-shell .landing-contact-layout",
         ].join(","),
       ),
     ) as HTMLElement[];

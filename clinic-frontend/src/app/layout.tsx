@@ -12,9 +12,9 @@ const sans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Phòng khám — Quản lý & lịch hẹn",
+  title: "MEDLATEC Clinic — Phòng khám đa khoa & đặt lịch khám",
   description:
-    "Hệ thống quản lý phòng khám, bệnh nhân, lịch khám và thanh toán",
+    "Đặt lịch khám trực tuyến, khám đa khoa, xét nghiệm và chăm sóc sức khỏe gia đình tại MEDLATEC Clinic.",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [

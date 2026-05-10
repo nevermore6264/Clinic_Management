@@ -91,6 +91,30 @@ function QuickLinkCard({
   );
 }
 
+function DashboardQuanLyTile({
+  href,
+  icon,
+  label,
+}: {
+  href: string;
+  icon: string;
+  label: string;
+}) {
+  return (
+    <Col xs={6} md={4} xl={3}>
+      <Link
+        href={href}
+        className="dashboard-quan-ly-tile d-flex align-items-center gap-2 p-3 rounded-3 border bg-white text-decoration-none h-100 stagger-item"
+      >
+        <span className="dashboard-quan-ly-tile__icon">
+          <i className={`bi ${icon}`} aria-hidden />
+        </span>
+        <span className="dashboard-quan-ly-tile__label">{label}</span>
+      </Link>
+    </Col>
+  );
+}
+
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -159,6 +183,12 @@ export default function DashboardPage() {
         1,
       )
     : 1;
+
+  const roles = user.cacVaiTro;
+  const isAdmin = roles.includes("QUAN_TRI");
+  const isLeTan = roles.includes("LE_TAN");
+  const isThuNgan = roles.includes("THU_NGAN");
+  const coNhomQuanLy = isAdmin || isLeTan || isThuNgan;
 
   return (
     <div>
@@ -262,29 +292,104 @@ export default function DashboardPage() {
           icon="bi-calendar-heart"
         />
         <QuickLinkCard
+          href="/lich-lam-viec-bac-si"
+          title="Lịch bác sĩ"
+          desc="Xem lịch làm việc và khung giờ theo bác sĩ."
+          icon="bi-calendar3"
+        />
+        <QuickLinkCard
           href="/hoa-don"
           title="Hóa đơn & thanh toán"
           desc="Lập hóa đơn và ghi nhận thanh toán."
           icon="bi-wallet2"
         />
-        {user.cacVaiTro.includes("QUAN_TRI") && (
-          <QuickLinkCard
-            href="/dich-vu"
-            title="Dịch vụ & bảng giá"
-            desc="Cấu hình dịch vụ khám và đơn giá."
-            icon="bi-hospital"
-          />
-        )}
-        {(user.cacVaiTro.includes("QUAN_TRI") ||
-          user.cacVaiTro.includes("THU_NGAN")) && (
-          <QuickLinkCard
-            href="/bao-cao"
-            title="Báo cáo doanh thu"
-            desc="Thống kê theo ngày, bác sĩ, dịch vụ và xuất Excel."
-            icon="bi-file-earmark-bar-graph"
-          />
-        )}
+        <QuickLinkCard
+          href="/tro-chuyen"
+          title="Chat"
+          desc="Trao đổi nội bộ và với bệnh nhân."
+          icon="bi-chat-dots"
+        />
       </Row>
+
+      {coNhomQuanLy && (
+        <>
+          <h3 className="h5 fw-bold mb-3 mt-4">Quản lý &amp; cấu hình</h3>
+          <Card className="card--static border-0 shadow-sm mb-2">
+            <Card.Header className="d-flex align-items-center gap-2 py-3 fw-bold">
+              <i className="bi bi-grid-1x2-fill text-primary" aria-hidden />
+              Module hỗ trợ vận hành
+            </Card.Header>
+            <Card.Body className="pt-3 pb-4">
+              <p className="small text-muted mb-3">
+                Danh mục dịch vụ, báo cáo, nhắc lịch và tài khoản — cùng một
+                nhóm để dễ tìm.
+              </p>
+              <Row className="g-2 g-md-3 stagger-children">
+                {(isAdmin || isLeTan) && (
+                  <DashboardQuanLyTile
+                    href="/cau-hinh-nhac-lich"
+                    icon="bi-bell"
+                    label="Cấu hình nhắc lịch"
+                  />
+                )}
+                {(isAdmin || isThuNgan) && (
+                  <>
+                    <DashboardQuanLyTile
+                      href="/phieu-chi"
+                      icon="bi-cash-coin"
+                      label="Phiếu chi"
+                    />
+                    <DashboardQuanLyTile
+                      href="/bao-cao"
+                      icon="bi-graph-up-arrow"
+                      label="Báo cáo doanh thu"
+                    />
+                  </>
+                )}
+                {isAdmin && (
+                  <>
+                    <DashboardQuanLyTile
+                      href="/loai-dich-vu"
+                      icon="bi-tags"
+                      label="Loại dịch vụ"
+                    />
+                    <DashboardQuanLyTile
+                      href="/dich-vu"
+                      icon="bi-hospital"
+                      label="Dịch vụ &amp; giá"
+                    />
+                    <DashboardQuanLyTile
+                      href="/thuoc"
+                      icon="bi-capsule"
+                      label="Thuốc"
+                    />
+                    <DashboardQuanLyTile
+                      href="/chuyen-khoa"
+                      icon="bi-bookmarks"
+                      label="Chuyên khoa"
+                    />
+                    <DashboardQuanLyTile
+                      href="/bac-si"
+                      icon="bi-person-badge"
+                      label="Bác sĩ"
+                    />
+                    <DashboardQuanLyTile
+                      href="/nhat-ky-he-thong"
+                      icon="bi-journal-text"
+                      label="Nhật ký hệ thống"
+                    />
+                    <DashboardQuanLyTile
+                      href="/nguoi-dung"
+                      icon="bi-person-gear"
+                      label="Tài khoản người dùng"
+                    />
+                  </>
+                )}
+              </Row>
+            </Card.Body>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

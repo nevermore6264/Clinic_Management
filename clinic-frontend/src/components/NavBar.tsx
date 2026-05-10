@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Navbar, Nav, Container, Button, NavDropdown } from "react-bootstrap";
+import { Navbar, Nav, Container, NavDropdown } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
 import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
 
@@ -27,6 +27,154 @@ function NavLinkItem({
       <i className={`bi ${icon}`} aria-hidden />
       <span>{children}</span>
     </Nav.Link>
+  );
+}
+
+function QuanLyDropdown({
+  pathname,
+  userRoles,
+}: {
+  pathname: string;
+  userRoles: string[];
+}) {
+  const isAdmin = userRoles.includes("QUAN_TRI");
+  const isLeTan = userRoles.includes("LE_TAN");
+  const isThuNgan = userRoles.includes("THU_NGAN");
+
+  const pathsAdmin = [
+    "/loai-dich-vu",
+    "/dich-vu",
+    "/thuoc",
+    "/chuyen-khoa",
+    "/bac-si",
+    "/nhat-ky-he-thong",
+    "/nguoi-dung",
+  ];
+  const pathsThuNgan = ["/phieu-chi", "/bao-cao"];
+  const pathsNhacLich = ["/cau-hinh-nhac-lich"];
+
+  const activeQuanLy =
+    (isAdmin && pathsAdmin.some((p) => pathname.startsWith(p))) ||
+    ((isAdmin || isThuNgan) &&
+      pathsThuNgan.some((p) => pathname.startsWith(p))) ||
+    ((isAdmin || isLeTan) &&
+      pathsNhacLich.some((p) => pathname === p));
+
+  if (!isAdmin && !isLeTan && !isThuNgan) return null;
+
+  return (
+    <NavDropdown
+      title={
+        <span className="d-inline-flex align-items-center gap-2">
+          <i className="bi bi-grid-1x2-fill" aria-hidden />
+          <span>Quản lý</span>
+        </span>
+      }
+      id="nav-quan-ly"
+      className={`nav-quan-ly-dropdown${activeQuanLy ? " nav-quan-ly-dropdown--active" : ""}`}
+    >
+      <NavDropdown.Header className="small fw-bold text-uppercase text-muted py-2">
+        Hỗ trợ vận hành
+      </NavDropdown.Header>
+      {(isAdmin || isLeTan) && (
+        <NavDropdown.Item
+          as={Link}
+          href="/cau-hinh-nhac-lich"
+          active={pathname === "/cau-hinh-nhac-lich"}
+        >
+          <i className="bi bi-bell me-2" aria-hidden />
+          Cấu hình nhắc lịch
+        </NavDropdown.Item>
+      )}
+      {(isAdmin || isThuNgan) && (
+        <>
+          <NavDropdown.Item
+            as={Link}
+            href="/phieu-chi"
+            active={pathname.startsWith("/phieu-chi")}
+          >
+            <i className="bi bi-cash-coin me-2" aria-hidden />
+            Phiếu chi
+          </NavDropdown.Item>
+          <NavDropdown.Item
+            as={Link}
+            href="/bao-cao"
+            active={pathname === "/bao-cao"}
+          >
+            <i className="bi bi-graph-up-arrow me-2" aria-hidden />
+            Báo cáo
+          </NavDropdown.Item>
+        </>
+      )}
+      {isAdmin && (
+        <>
+          <NavDropdown.Divider />
+          <NavDropdown.Header className="small fw-bold text-uppercase text-muted py-2">
+            Danh mục &amp; nhân sự
+          </NavDropdown.Header>
+          <NavDropdown.Item
+            as={Link}
+            href="/loai-dich-vu"
+            active={pathname.startsWith("/loai-dich-vu")}
+          >
+            <i className="bi bi-tags me-2" aria-hidden />
+            Loại dịch vụ
+          </NavDropdown.Item>
+          <NavDropdown.Item
+            as={Link}
+            href="/dich-vu"
+            active={pathname.startsWith("/dich-vu")}
+          >
+            <i className="bi bi-hospital me-2" aria-hidden />
+            Dịch vụ
+          </NavDropdown.Item>
+          <NavDropdown.Item
+            as={Link}
+            href="/thuoc"
+            active={pathname.startsWith("/thuoc")}
+          >
+            <i className="bi bi-capsule me-2" aria-hidden />
+            Thuốc
+          </NavDropdown.Item>
+          <NavDropdown.Item
+            as={Link}
+            href="/chuyen-khoa"
+            active={pathname.startsWith("/chuyen-khoa")}
+          >
+            <i className="bi bi-bookmarks me-2" aria-hidden />
+            Chuyên khoa
+          </NavDropdown.Item>
+          <NavDropdown.Item
+            as={Link}
+            href="/bac-si"
+            active={pathname.startsWith("/bac-si")}
+          >
+            <i className="bi bi-person-badge me-2" aria-hidden />
+            Bác sĩ
+          </NavDropdown.Item>
+          <NavDropdown.Divider />
+          <NavDropdown.Header className="small fw-bold text-uppercase text-muted py-2">
+            Hệ thống
+          </NavDropdown.Header>
+          <NavDropdown.Item
+            as={Link}
+            href="/nhat-ky-he-thong"
+            active={pathname === "/nhat-ky-he-thong"}
+          >
+            <i className="bi bi-journal-text me-2" aria-hidden />
+            Nhật ký hệ thống
+          </NavDropdown.Item>
+          <NavDropdown.Item
+            as={Link}
+            href="/nguoi-dung"
+            active={pathname === "/nguoi-dung"}
+          >
+            <i className="bi bi-person-gear me-2" aria-hidden />
+            Tài khoản người dùng
+          </NavDropdown.Item>
+        </>
+      )}
+    </NavDropdown>
   );
 }
 
@@ -162,16 +310,6 @@ export function NavBar() {
                 >
                   Lịch bác sĩ
                 </NavLinkItem>
-                {(user.cacVaiTro.includes("QUAN_TRI") ||
-                  user.cacVaiTro.includes("LE_TAN")) && (
-                  <NavLinkItem
-                    href="/cau-hinh-nhac-lich"
-                    active={pathname === "/cau-hinh-nhac-lich"}
-                    icon="bi-bell"
-                  >
-                    Nhắc lịch
-                  </NavLinkItem>
-                )}
                 <NavLinkItem
                   href="/hoa-don"
                   active={pathname.startsWith("/hoa-don")}
@@ -186,78 +324,10 @@ export function NavBar() {
                 >
                   Chat
                 </NavLinkItem>
-                {(user.cacVaiTro.includes("QUAN_TRI") ||
-                  user.cacVaiTro.includes("THU_NGAN")) && (
-                  <>
-                    <NavLinkItem
-                      href="/phieu-chi"
-                      active={pathname.startsWith("/phieu-chi")}
-                      icon="bi-cash-coin"
-                    >
-                      Phiếu chi
-                    </NavLinkItem>
-                    <NavLinkItem
-                      href="/bao-cao"
-                      active={pathname === "/bao-cao"}
-                      icon="bi-graph-up-arrow"
-                    >
-                      Báo cáo
-                    </NavLinkItem>
-                  </>
-                )}
-                {user.cacVaiTro.includes("QUAN_TRI") && (
-                  <>
-                    <NavLinkItem
-                      href="/loai-dich-vu"
-                      active={pathname.startsWith("/loai-dich-vu")}
-                      icon="bi-tags"
-                    >
-                      Loại dịch vụ
-                    </NavLinkItem>
-                    <NavLinkItem
-                      href="/dich-vu"
-                      active={pathname.startsWith("/dich-vu")}
-                      icon="bi-hospital"
-                    >
-                      Dịch vụ
-                    </NavLinkItem>
-                    <NavLinkItem
-                      href="/thuoc"
-                      active={pathname.startsWith("/thuoc")}
-                      icon="bi-capsule"
-                    >
-                      Thuốc
-                    </NavLinkItem>
-                    <NavLinkItem
-                      href="/chuyen-khoa"
-                      active={pathname.startsWith("/chuyen-khoa")}
-                      icon="bi-bookmarks"
-                    >
-                      Chuyên khoa
-                    </NavLinkItem>
-                    <NavLinkItem
-                      href="/bac-si"
-                      active={pathname.startsWith("/bac-si")}
-                      icon="bi-person-badge"
-                    >
-                      Bác sĩ
-                    </NavLinkItem>
-                    <NavLinkItem
-                      href="/nhat-ky-he-thong"
-                      active={pathname === "/nhat-ky-he-thong"}
-                      icon="bi-journal-text"
-                    >
-                      Nhật ký
-                    </NavLinkItem>
-                    <NavLinkItem
-                      href="/nguoi-dung"
-                      active={pathname === "/nguoi-dung"}
-                      icon="bi-person-gear"
-                    >
-                      Tài khoản
-                    </NavLinkItem>
-                  </>
-                )}
+                <QuanLyDropdown
+                  pathname={pathname}
+                  userRoles={user.cacVaiTro}
+                />
               </>
             )}
           </Nav>

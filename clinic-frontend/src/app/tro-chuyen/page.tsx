@@ -36,6 +36,7 @@ const EMOJI_NHANH: string[] = [
   "😀", "😃", "😄", "😁", "😅", "🤣", "🥰", "😘", "🤔", "😮", "👍", "👎", "🙏", "👏", "🎉", "✨", "❤️", "💙", "✅", "❌", "📌", "📎", "💊", "🏥", "☕", "🙋", "💪",
 ];
 
+/** 6 reaction nhanh — đồng bộ `EMOJI_PHAN_UNG_HOP_LE` backend */
 const EMOJI_PHAN_UNG_NHANH: string[] = [
   "👍",
   "❤️",
@@ -43,16 +44,6 @@ const EMOJI_PHAN_UNG_NHANH: string[] = [
   "😮",
   "😢",
   "🙏",
-  "👏",
-  "✅",
-  "❌",
-  "🎉",
-  "💪",
-  "💙",
-  "🔥",
-  "🙌",
-  "💯",
-  "✨",
 ];
 
 function gomPhanUngTheoEmoji(
@@ -72,7 +63,38 @@ function gomPhanUngTheoEmoji(
     .sort((a, b) => b.count - a.count);
 }
 
-function ChatDmReactionsBar({
+function ChatDmReactionPopover({
+  connected,
+  onPick,
+}: {
+  connected: boolean;
+  onPick: (emoji: string) => void;
+}) {
+  return (
+    <div
+      className="chat-dm-app__reaction-popover"
+      role="group"
+      aria-label="Chọn phản ứng"
+    >
+      <div className="chat-dm-app__reaction-popover-inner">
+        {EMOJI_PHAN_UNG_NHANH.map((em) => (
+          <button
+            key={em}
+            type="button"
+            className="chat-dm-app__reaction-popover-btn"
+            disabled={!connected}
+            title="Phản ứng"
+            onClick={() => onPick(em)}
+          >
+            <span className="chat-dm-app__reaction-popover-emoji">{em}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ChatDmReactionChips({
   phanUng,
   myId,
   connected,
@@ -88,48 +110,28 @@ function ChatDmReactionsBar({
     [phanUng, myId],
   );
 
+  if (chips.length === 0) return null;
+
   return (
     <div className="chat-dm-app__reactions-zone">
-      {chips.length > 0 ? (
-        <div className="chat-dm-app__reactions-chips" aria-label="Phản ứng">
-          {chips.map(({ emoji, count, mine }) => (
-            <button
-              key={emoji}
-              type="button"
-              className={`chat-dm-app__reaction-chip${mine ? " chat-dm-app__reaction-chip--mine" : ""}`}
-              disabled={!connected}
-              title={mine ? "Bấm để bỏ phản ứng" : "Phản ứng"}
-              onClick={() => onPick(emoji)}
-            >
-              <span className="chat-dm-app__reaction-emoji" aria-hidden>
-                {emoji}
-              </span>
-              {count > 1 ? (
-                <span className="chat-dm-app__reaction-count">{count}</span>
-              ) : null}
-            </button>
-          ))}
-        </div>
-      ) : null}
-      <div
-        className="chat-dm-app__reactions-hover-picker"
-        role="toolbar"
-        aria-label="Chọn phản ứng (di chuột vào tin nhắn để hiện trên máy tính)"
-      >
-        <div className="chat-dm-app__reaction-quick-strip">
-          {EMOJI_PHAN_UNG_NHANH.map((em) => (
-            <button
-              key={em}
-              type="button"
-              className="chat-dm-app__reaction-quick-btn"
-              disabled={!connected}
-              title="Gửi phản ứng"
-              onClick={() => onPick(em)}
-            >
-              {em}
-            </button>
-          ))}
-        </div>
+      <div className="chat-dm-app__reactions-chips" aria-label="Phản ứng">
+        {chips.map(({ emoji, count, mine }) => (
+          <button
+            key={emoji}
+            type="button"
+            className={`chat-dm-app__reaction-chip${mine ? " chat-dm-app__reaction-chip--mine" : ""}`}
+            disabled={!connected}
+            title={mine ? "Bấm để bỏ phản ứng" : "Phản ứng"}
+            onClick={() => onPick(emoji)}
+          >
+            <span className="chat-dm-app__reaction-emoji" aria-hidden>
+              {emoji}
+            </span>
+            {count > 1 ? (
+              <span className="chat-dm-app__reaction-count">{count}</span>
+            ) : null}
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -677,15 +679,23 @@ export default function ChatPage() {
                             {m.tenNguoiGui || "—"}
                           </span>
                         )}
-                        <div
-                          className={`chat-dm-app__bubble ${mine ? "chat-dm-app__bubble--mine" : ""}`}
-                        >
-                          {m.dinhKemDuongDan ? (
-                            <ChatDmFileBlock m={m} mine={mine} />
-                          ) : null}
-                          {showCaptionDm(m) ? (
-                            <div className="chat-dm-app__bubble-text">{m.noiDung}</div>
-                          ) : null}
+                        <div className="chat-dm-app__bubble-block">
+                          <ChatDmReactionPopover
+                            connected={connected}
+                            onPick={(emoji) => sendReaction(m.id, emoji)}
+                          />
+                          <div
+                            className={`chat-dm-app__bubble ${mine ? "chat-dm-app__bubble--mine" : ""}`}
+                          >
+                            {m.dinhKemDuongDan ? (
+                              <ChatDmFileBlock m={m} mine={mine} />
+                            ) : null}
+                            {showCaptionDm(m) ? (
+                              <div className="chat-dm-app__bubble-text">
+                                {m.noiDung}
+                              </div>
+                            ) : null}
+                          </div>
                         </div>
                         <span className="chat-dm-app__bubble-time">
                           {m.taoLuc
@@ -697,7 +707,7 @@ export default function ChatPage() {
                               })
                             : ""}
                         </span>
-                        <ChatDmReactionsBar
+                        <ChatDmReactionChips
                           phanUng={m.phanUng}
                           myId={user.maNguoiDung}
                           connected={connected}

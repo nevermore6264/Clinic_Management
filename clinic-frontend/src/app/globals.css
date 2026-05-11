@@ -3128,6 +3128,130 @@ html.app-ready body {
   max-width: 100%;
 }
 
+.chat-dm-app__bubble-block {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
+}
+
+/* Popover reaction kiểu Facebook: thanh tròn phía trên bong bóng khi hover */
+.chat-dm-app__reaction-popover-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.05rem;
+  padding: 0.2rem 0.45rem;
+  background: #fff;
+  border-radius: 999px;
+  box-shadow:
+    0 2px 12px rgba(15, 23, 42, 0.12),
+    0 8px 28px rgba(15, 23, 42, 0.08),
+    0 0 0 1px rgba(15, 23, 42, 0.06);
+}
+
+.chat-dm-app__reaction-popover-inner::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  margin-left: -5px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #fff;
+  filter: drop-shadow(0 1px 0 rgba(15, 23, 42, 0.06));
+}
+
+.chat-dm-app__row--mine .chat-dm-app__reaction-popover-inner::after {
+  left: auto;
+  right: 0.85rem;
+  margin-left: 0;
+}
+
+.chat-dm-app__reaction-popover-btn {
+  border: 0;
+  background: transparent;
+  line-height: 1;
+  padding: 0.2rem 0.28rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.14s ease, background 0.12s ease;
+}
+
+.chat-dm-app__reaction-popover-emoji {
+  display: block;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.chat-dm-app__reaction-popover-btn:hover:not(:disabled) {
+  transform: scale(1.22);
+  background: rgba(13, 148, 136, 0.08);
+}
+
+.chat-dm-app__reaction-popover-btn:active:not(:disabled) {
+  transform: scale(1.08);
+}
+
+.chat-dm-app__reaction-popover-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .chat-dm-app__reaction-popover {
+    position: absolute;
+    z-index: 8;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(6px) scale(0.94);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 0.14s ease,
+      transform 0.16s cubic-bezier(0.34, 1.2, 0.64, 1),
+      visibility 0.14s ease;
+  }
+
+  .chat-dm-app__row--mine .chat-dm-app__reaction-popover {
+    left: auto;
+    right: 0;
+    transform: translateX(0) translateY(6px) scale(0.94);
+  }
+
+  .chat-dm-app__row:hover .chat-dm-app__reaction-popover,
+  .chat-dm-app__row:focus-within .chat-dm-app__reaction-popover {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  .chat-dm-app__row--mine:hover .chat-dm-app__reaction-popover,
+  .chat-dm-app__row--mine:focus-within .chat-dm-app__reaction-popover {
+    transform: translateX(0) translateY(0) scale(1);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .chat-dm-app__reaction-popover {
+    position: static;
+    margin-bottom: 0.35rem;
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .chat-dm-app__reaction-popover-inner::after {
+    display: none;
+  }
+}
+
 .chat-dm-app__reactions-zone {
   margin-top: 0.15rem;
   width: 100%;
@@ -3143,82 +3267,6 @@ html.app-ready body {
 
 .chat-dm-app__row--mine .chat-dm-app__reactions-chips {
   justify-content: flex-end;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .chat-dm-app__reactions-hover-picker {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    pointer-events: none;
-    margin-top: 0;
-    padding: 0 0.2rem;
-    border-radius: 0.55rem;
-    background: rgba(255, 255, 255, 0.92);
-    border: 1px solid transparent;
-    transition:
-      max-height 0.2s ease,
-      opacity 0.15s ease,
-      margin-top 0.15s ease,
-      border-color 0.15s ease;
-  }
-
-  .chat-dm-app__row:hover .chat-dm-app__reactions-hover-picker,
-  .chat-dm-app__row:focus-within .chat-dm-app__reactions-hover-picker {
-    max-height: 5rem;
-    opacity: 1;
-    margin-top: 0.25rem;
-    padding-top: 0.2rem;
-    padding-bottom: 0.2rem;
-    pointer-events: auto;
-    border-color: #e2e8f0;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
-  }
-}
-
-@media (hover: none), (pointer: coarse) {
-  .chat-dm-app__reactions-hover-picker {
-    margin-top: 0.2rem;
-    padding: 0.15rem 0.2rem;
-    opacity: 1;
-    max-height: none;
-    overflow: visible;
-    border-radius: 0.55rem;
-    border: 1px solid #e2e8f0;
-    background: rgba(255, 255, 255, 0.95);
-  }
-}
-
-.chat-dm-app__reaction-quick-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.12rem;
-  max-width: min(100%, 18rem);
-}
-
-.chat-dm-app__row--mine .chat-dm-app__reaction-quick-strip {
-  justify-content: flex-end;
-}
-
-.chat-dm-app__reaction-quick-btn {
-  border: 0;
-  background: rgba(241, 245, 249, 0.95);
-  border-radius: 0.4rem;
-  font-size: 1.05rem;
-  line-height: 1;
-  padding: 0.22rem 0.28rem;
-  cursor: pointer;
-  transition: background 0.1s ease, transform 0.1s ease;
-}
-
-.chat-dm-app__reaction-quick-btn:hover:not(:disabled) {
-  background: #e2e8f0;
-  transform: scale(1.06);
-}
-
-.chat-dm-app__reaction-quick-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
 }
 
 .chat-dm-app__reaction-chip {

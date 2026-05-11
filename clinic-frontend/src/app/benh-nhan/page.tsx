@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Table,
@@ -119,7 +119,6 @@ function BenhNhanPageInner() {
   const [visitHistory, setVisitHistory] = useState<LichHen[]>([]);
   const [showConfirmAnHoSo, setShowConfirmAnHoSo] = useState(false);
   const [showConfirmHienThiLai, setShowConfirmHienThiLai] = useState(false);
-  const daTuMoHoSoBenhNhan = useRef<number | null>(null);
   const [patientSelfProfile, setPatientSelfProfile] = useState<BenhNhan | null>(
     null,
   );
@@ -275,17 +274,6 @@ function BenhNhanPageInner() {
     filterGioiTinh,
     filterNhomMau,
   ]);
-
-  useEffect(() => {
-    if (!user || !laChiTaiKhoanBenhNhan(user) || user.maBenhNhan == null) {
-      daTuMoHoSoBenhNhan.current = null;
-      return;
-    }
-    const ma = user.maBenhNhan;
-    if (daTuMoHoSoBenhNhan.current === ma) return;
-    daTuMoHoSoBenhNhan.current = ma;
-    openEditModal(ma);
-  }, [user, openEditModal]);
 
   const clearFilters = () => {
     setFilterTen("");

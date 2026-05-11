@@ -10,6 +10,7 @@ import { dashboardApi, type DashboardStats } from "@/lib/api";
 import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
 import { PageHeader } from "@/components/PageHeader";
 import { LoadingState } from "@/components/LoadingState";
+import { DashboardRevenueCharts } from "@/components/dashboard/DashboardRevenueCharts";
 
 function StatCard({
   label,
@@ -28,7 +29,7 @@ function StatCard({
 }) {
   return (
     <Card
-      className="stat-card card--static h-100"
+      className="stat-card card--static h-100 stagger-item"
       style={
         {
           "--stat-accent": accent,
@@ -177,13 +178,6 @@ export default function DashboardPage() {
     );
   }
 
-  const maxRevenue = stats?.doanhThu7NgayGanNhat?.length
-    ? Math.max(
-        ...stats.doanhThu7NgayGanNhat.map((r) => Number(r.tongDoanhThu) || 0),
-        1,
-      )
-    : 1;
-
   const roles = user.cacVaiTro;
   const isAdmin = roles.includes("QUAN_TRI");
   const isLeTan = roles.includes("LE_TAN");
@@ -199,81 +193,53 @@ export default function DashboardPage() {
 
       {stats && (
         <>
-          <Row className="g-3 mb-4 stagger-children">
-            <Col sm={6} xl={3}>
-              <StatCard
-                label="Tổng bệnh nhân"
-                value={stats.tongBenhNhan}
-                icon="bi-people-fill"
-                accent="var(--clinic-teal)"
-                iconBg="rgba(13, 148, 136, 0.15)"
-                iconFg="var(--clinic-teal-dark)"
-              />
-            </Col>
-            <Col sm={6} xl={3}>
-              <StatCard
-                label="Lượt khám hôm nay"
-                value={stats.lichHenHomNay}
-                icon="bi-calendar2-check"
-                accent="#059669"
-                iconBg="rgba(5, 150, 105, 0.12)"
-                iconFg="#047857"
-              />
-            </Col>
-            <Col sm={6} xl={3}>
-              <StatCard
-                label="Doanh thu hôm nay"
-                value={`${(stats.doanhThuHomNay || 0).toLocaleString("vi-VN")}đ`}
-                icon="bi-currency-exchange"
-                accent="var(--clinic-info)"
-                iconBg="rgba(2, 132, 199, 0.12)"
-                iconFg="#0369a1"
-              />
-            </Col>
-            <Col sm={6} xl={3}>
-              <StatCard
-                label="Doanh thu tuần"
-                value={`${(stats.doanhThuTuanNay || 0).toLocaleString("vi-VN")}đ`}
-                icon="bi-graph-up"
-                accent="var(--clinic-accent)"
-                iconBg="var(--clinic-accent-soft)"
-                iconFg="#c2410c"
-              />
-            </Col>
-          </Row>
+          <div className="dashboard-kpi-grid mb-4 stagger-children">
+            <StatCard
+              label="Tổng bệnh nhân"
+              value={stats.tongBenhNhan}
+              icon="bi-people-fill"
+              accent="var(--clinic-teal)"
+              iconBg="rgba(13, 148, 136, 0.15)"
+              iconFg="var(--clinic-teal-dark)"
+            />
+            <StatCard
+              label="Lịch hẹn hôm nay"
+              value={stats.lichHenHomNay}
+              icon="bi-calendar2-check"
+              accent="#059669"
+              iconBg="rgba(5, 150, 105, 0.12)"
+              iconFg="#047857"
+            />
+            <StatCard
+              label="Lịch hẹn tuần này"
+              value={stats.lichHenTuanNay}
+              icon="bi-calendar-week"
+              accent="#7c3aed"
+              iconBg="rgba(124, 58, 237, 0.12)"
+              iconFg="#5b21b6"
+            />
+            <StatCard
+              label="Doanh thu hôm nay"
+              value={`${(stats.doanhThuHomNay || 0).toLocaleString("vi-VN")}đ`}
+              icon="bi-currency-exchange"
+              accent="var(--clinic-info)"
+              iconBg="rgba(2, 132, 199, 0.12)"
+              iconFg="#0369a1"
+            />
+            <StatCard
+              label="Doanh thu tuần"
+              value={`${(stats.doanhThuTuanNay || 0).toLocaleString("vi-VN")}đ`}
+              icon="bi-graph-up"
+              accent="var(--clinic-accent)"
+              iconBg="var(--clinic-accent-soft)"
+              iconFg="#c2410c"
+            />
+          </div>
 
-          {stats.doanhThu7NgayGanNhat?.length > 0 && (
-            <Card className="mb-4 card--static border-0 shadow-sm">
-              <Card.Header className="d-flex align-items-center gap-2">
-                <i className="bi bi-bar-chart-line-fill text-primary" />
-                Doanh thu 7 ngày gần nhất
-              </Card.Header>
-              <Card.Body>
-                <div
-                  className="d-flex align-items-end gap-1 px-1"
-                  style={{ height: 140 }}
-                >
-                  {stats.doanhThu7NgayGanNhat.map((r, i) => (
-                    <div
-                      key={r.ngay}
-                      className="flex-grow-1 chart-bar"
-                      style={{
-                        height: `${Math.max(12, ((r.tongDoanhThu || 0) / maxRevenue) * 100)}%`,
-                        minWidth: 20,
-                        animationDelay: `${i * 0.05}s`,
-                      }}
-                      title={`${r.ngay}: ${(r.tongDoanhThu || 0).toLocaleString("vi-VN")}đ`}
-                    />
-                  ))}
-                </div>
-                <div className="d-flex justify-content-between mt-2 small text-muted px-1">
-                  {stats.doanhThu7NgayGanNhat.map((r) => (
-                    <span key={r.ngay}>{r.ngay?.slice(5)}</span>
-                  ))}
-                </div>
-              </Card.Body>
-            </Card>
-          )}
+          <DashboardRevenueCharts
+            series={stats.doanhThu7NgayGanNhat ?? []}
+            doanhThuTuanNay={Number(stats.doanhThuTuanNay) || 0}
+          />
         </>
       )}
 

@@ -1126,7 +1126,6 @@ html.app-ready body {
   color: var(--clinic-navy);
 }
 
-/* Dropdown "Quản lý" — gom module cấu hình & báo cáo */
 .navbar-clinic .nav-quan-ly-dropdown .dropdown-toggle {
   color: var(--clinic-navy-mid) !important;
   padding: 0.45rem 0.65rem !important;
@@ -2349,6 +2348,178 @@ html.app-ready body {
   }
 }
 
+.dashboard-kpi-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 576px) {
+  .dashboard-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .dashboard-kpi-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.dashboard-chart-card .card-header {
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06) !important;
+}
+
+.dashboard-report-strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .dashboard-report-strip {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.dashboard-report-strip__item {
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.dashboard-report-strip__label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--clinic-muted);
+  margin-bottom: 0.2rem;
+}
+
+.dashboard-report-strip__value {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--clinic-navy);
+}
+
+.dashboard-chart-wrap {
+  position: relative;
+  min-height: 160px;
+}
+
+.dashboard-line-svg {
+  width: 100%;
+  height: 160px;
+  display: block;
+}
+
+.dashboard-line-dot {
+  cursor: crosshair;
+}
+
+.dashboard-chart-tooltip {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  z-index: 2;
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.92);
+  color: #fff;
+  font-size: 0.78rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.2);
+}
+
+.dashboard-chart-tooltip strong {
+  font-size: 0.72rem;
+  font-weight: 800;
+  opacity: 0.85;
+}
+
+.dashboard-bar-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  min-height: 120px;
+  padding: 0 0.15rem;
+}
+
+.dashboard-bar-cell {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 120px;
+  cursor: default;
+}
+
+.dashboard-bar-pillar {
+  width: 100%;
+  max-width: 36px;
+  margin-top: auto;
+  border-radius: 8px 8px 4px 4px;
+  background: linear-gradient(180deg, #93c5fd 0%, #3b82f6 55%, #1d4ed8 100%);
+  animation: barGrow 0.5s ease-out both;
+  transform-origin: bottom;
+  transition:
+    filter 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.dashboard-bar-cell:hover .dashboard-bar-pillar {
+  filter: brightness(1.08);
+}
+
+.dashboard-bar-meta {
+  margin-top: 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--clinic-muted);
+  white-space: nowrap;
+}
+
+.dashboard-lich-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  min-height: 72px;
+}
+
+.dashboard-lich-cell {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 72px;
+}
+
+.dashboard-lich-pillar {
+  width: 100%;
+  max-width: 28px;
+  margin-top: auto;
+  border-radius: 6px 6px 2px 2px;
+  background: linear-gradient(180deg, #5eead4 0%, #14b8a6 55%, #0d9488 100%);
+  animation: barGrow 0.45s ease-out both;
+  transform-origin: bottom;
+}
+
+.dashboard-lich-val {
+  font-size: 0.62rem;
+  font-weight: 800;
+  color: var(--clinic-muted);
+  margin-top: 0.2rem;
+}
+
 .modal-content {
   border-radius: var(--clinic-radius) !important;
   border: 1px solid var(--clinic-border);
@@ -3209,7 +3380,6 @@ html.app-ready body {
   z-index: 1;
 }
 
-/* —— Trang chủ kiểu website phòng khám / bệnh viện —— */
 .landing-bg--clinic {
   background:
     radial-gradient(
@@ -3571,7 +3741,6 @@ html.app-ready body {
   --hospital-shell-pad: clamp(0.85rem, 4vw, 1.5rem);
 }
 
-/* Cho phép khối “truy cập nhanh” chồng lên hero; tránh scroll ngang */
 .landing-bg.landing-hospital {
   overflow-x: hidden;
   overflow-y: visible;
@@ -3591,7 +3760,6 @@ html.app-ready body {
   box-sizing: border-box;
 }
 
-/* Cấp cứu — full width */
 .landing-urgent-strip {
   position: relative;
   z-index: 2;
@@ -3666,7 +3834,6 @@ html.app-ready body {
   }
 }
 
-/* Rail thông tin */
 .landing-info-rail {
   position: relative;
   z-index: 2;
@@ -3725,7 +3892,6 @@ html.app-ready body {
   }
 }
 
-/* Header site */
 .landing-site-header {
   position: sticky;
   top: 0;
@@ -3919,7 +4085,6 @@ html.app-ready body {
   }
 }
 
-/* Nav phụ cuộn ngang — tablet / mobile */
 @media (max-width: 991.98px) {
   .landing-site-header__nav {
     display: flex;
@@ -3943,7 +4108,6 @@ html.app-ready body {
   }
 }
 
-/* Hero dải xanh */
 .landing-hero-institutional {
   position: relative;
   z-index: 1;
@@ -4119,7 +4283,6 @@ html.app-ready body {
   background: #f8fafc;
 }
 
-/* Ô truy cập nhanh — chồng nhẹ lên hero (cần overflow-y: visible trên .landing-bg) */
 .landing-quick-tiles-section {
   position: relative;
   z-index: 2;
@@ -4211,7 +4374,6 @@ html.app-ready body {
   font-size: clamp(1.65rem, 3.5vw, 2.35rem);
 }
 
-/* —— Landing đa dạng (tham khảo UI BV/PK VN) —— */
 
 .landing-announcement-section {
   padding: 1rem 0 0;
@@ -4510,7 +4672,6 @@ html.app-ready body {
   margin-top: 0.15rem;
 }
 
-/* Cam kết vận hành — giống dải uy tín trên web PK/BV VN */
 .landing-trust-strip {
   padding: 1.75rem 0;
   background: linear-gradient(
@@ -4586,7 +4747,6 @@ html.app-ready body {
   color: var(--clinic-muted);
 }
 
-/* Galeri cơ sở */
 .landing-section--facility {
   padding-top: 3rem;
   padding-bottom: 3rem;
@@ -4636,7 +4796,6 @@ html.app-ready body {
   text-align: center;
 }
 
-/* Liên hệ + thẻ bản đồ */
 .landing-contact-layout {
   display: grid;
   grid-template-columns: 1fr;
@@ -4785,7 +4944,6 @@ html.app-ready body {
   border: 0;
 }
 
-/* Form đặt lịch ngắn */
 .landing-section--booking-mini {
   padding-top: 3rem;
   padding-bottom: 3rem;
@@ -4833,7 +4991,6 @@ html.app-ready body {
   }
 }
 
-/* Thanh CTA cố định — mobile */
 .landing-float-cta {
   position: fixed;
   z-index: 1040;
@@ -5081,7 +5238,6 @@ html.app-ready body {
   flex-shrink: 0;
 }
 
-/* Tin nổi bật — ảnh full cover */
 .landing-news-card__featured-media {
   position: relative;
   width: 100%;
@@ -5106,7 +5262,6 @@ html.app-ready body {
   }
 }
 
-/* Tin nhỏ — ảnh thumbnail bên trái */
 .landing-news-card--thumb {
   display: flex;
   flex-direction: row;
@@ -5248,7 +5403,6 @@ html.app-ready body {
   text-decoration: underline;
 }
 
-/* Giảm padding section trên mobile */
 @media (max-width: 575.98px) {
   .landing-section--hospital {
     padding: 2.75rem 0;
@@ -6487,7 +6641,6 @@ html.app-ready body {
   gap: 0.75rem;
 }
 
-/* Nút CTA cuối trang — bản health premium (gradient + glass) */
 .landing-final-cta__btn {
   display: inline-flex;
   align-items: center;
@@ -7492,7 +7645,6 @@ html.app-ready body {
   }
 }
 
-/* Thẻ trắng + viền trái màu — không nền loang, không glow */
 .clinic-toast.toast {
   --toast-accent: #2563eb;
   position: relative;

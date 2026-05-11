@@ -67,7 +67,6 @@ export default function HomePage() {
         }),
       );
     } catch {
-      /* quota / private mode */
     }
     router.push("/dang-nhap?next=/lich-hen");
   };
@@ -76,7 +75,6 @@ export default function HomePage() {
     <div className="landing-bg landing-bg--clinic landing-hospital">
       <div className="landing-bg__mesh" aria-hidden />
 
-      {/* Hàng 1 — kiểu BV: cấp cứu nổi bật, full chiều ngang */}
       <div className="landing-urgent-strip">
         <div className="landing-hospital-shell landing-urgent-strip__inner">
           <div className="landing-urgent-strip__left">
@@ -97,7 +95,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Hàng 2 — thông tin tiện ích */}
       <div className="landing-info-rail">
         <div className="landing-hospital-shell landing-info-rail__inner">
           <span className="landing-info-rail__item">
@@ -119,7 +116,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Header trang — logo + menu + hotline + đặt lịch */}
       <header className="landing-site-header">
         <div className="landing-hospital-shell landing-site-header__inner">
           <div className="landing-site-header__brand">
@@ -191,7 +187,6 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Hero — dải xanh bệnh viện + lưới nội dung */}
       <section className="landing-hero-institutional">
         <div className="landing-hero-institutional__pattern" aria-hidden />
         <div className="landing-hospital-shell">
@@ -307,7 +302,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Hàng ô shortcut — rất giống web BV */}
       <section
         className="landing-quick-tiles-section"
         aria-label="Truy cập nhanh"
@@ -374,7 +368,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Thông báo — kiểu banner BV */}
       <section
         id="thong-bao"
         className="landing-announcement-section landing-section"
@@ -406,7 +399,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Chuyên khoa — thanh icon như nhiều web BV */}
       <section
         id="chuyen-khoa-landing"
         className="landing-specialty-section landing-section landing-section--muted"
@@ -516,7 +508,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Con số — dải full width kiểu BV */}
       <section className="landing-stats-ribbon" aria-label="Thống kê hoạt động">
         <div className="landing-stats-ribbon__inner landing-hospital-shell landing-reveal">
           <div className="landing-stats-ribbon__item">
@@ -555,7 +546,6 @@ export default function HomePage() {
         </p>
       </section>
 
-      {/* BHYT — thanh xanh lá đặc trưng web y tế */}
       <section className="landing-bhyt-strip" aria-label="Thanh toán và BHYT">
         <div className="landing-hospital-shell landing-bhyt-strip__grid landing-reveal">
           <div className="landing-bhyt-strip__copy">
@@ -687,7 +677,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Đội ngũ — teaser kiểu “Ban chuyên môn” */}
       <section
         id="doi-ngu"
         className="landing-section landing-section--team landing-section--hospital"
@@ -814,7 +803,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Tin hoạt động — layout đa dạng kiểu tin BV */}
       <section
         id="tin-tuc"
         className="landing-section landing-section--muted landing-section--news"

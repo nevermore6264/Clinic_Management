@@ -14,7 +14,6 @@ function cungMaLoaiDichVu(a: unknown, b: unknown): boolean {
   return na === nb;
 }
 
-/** Kiểm tra form thêm/sửa dịch vụ (tiếng Việt, trùng tên trong cùng loại). */
 export function validateDichVuForm(
   f: Partial<DichVu>,
   danhSachHienTai: DichVu[],

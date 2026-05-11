@@ -1,5 +1,3 @@
-/** Khớp với sessionStorage do form landing ghi — key cố định để reuse. */
-
 export const LANDING_BOOKING_DRAFT_KEY = "landingBookingDraft";
 
 export type LandingBookingDraft = {

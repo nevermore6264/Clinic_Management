@@ -636,6 +636,20 @@ html.app-ready body {
   filter: brightness(1.04);
   box-shadow: 0 6px 14px rgba(220, 38, 38, 0.32);
 }
+.btn-action-delete:disabled,
+.btn-action-delete.disabled,
+.service-type-page .btn-service-delete:disabled,
+.btn-thuoc-action-delete.btn-danger:disabled {
+  opacity: 0.42 !important;
+  filter: grayscale(0.12);
+  box-shadow: none !important;
+  cursor: not-allowed;
+}
+.btn-action-delete:focus-visible {
+  box-shadow:
+    0 6px 14px rgba(220, 38, 38, 0.28),
+    0 0 0 3px rgba(248, 113, 113, 0.45) !important;
+}
 
 .btn-action-calendar {
   background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%) !important;
@@ -8885,4 +8899,39 @@ html.app-ready body {
 .lich-lam-viec-bs-page .lich-tuan-fd-ca:focus-within {
   border-color: rgba(37, 99, 235, 0.45) !important;
   background-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.lich-lam-viec-bs-page .lich-bs-btn-xoa.btn-action-delete {
+  --bs-btn-padding-x: 0.75rem;
+  --bs-btn-padding-y: 0.28rem;
+  min-width: auto;
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.22);
+  border: none !important;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
+}
+.lich-lam-viec-bs-page .lich-bs-btn-xoa.btn-action-delete:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.32);
+}
+.lich-lam-viec-bs-page .lich-bs-btn-xoa.btn-action-delete:active:not(:disabled) {
+  transform: translateY(0);
+}
+.lich-lam-viec-bs-page .lich-bs-btn-xoa.btn-action-delete .bi {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+@media (max-width: 575.98px) {
+  .lich-lam-viec-bs-page .lich-bs-btn-xoa.btn-action-delete {
+    --bs-btn-padding-x: 0.55rem;
+    min-width: 2.35rem;
+    min-height: 2.35rem;
+    border-radius: 50%;
+    justify-content: center;
+  }
 }

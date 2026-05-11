@@ -491,6 +491,10 @@ export const lichLamViecBacSiApi = {
     api<LichLamViecBacSi[]>(
       `/lich-lam-viec-bac-si/bac-si/${maBacSi}?ngay=${ngay}`,
     ),
+  theoBacSiVaKhoangNgay: (maBacSi: number, tuNgay: string, denNgay: string) =>
+    api<LichLamViecBacSi[]>(
+      `/lich-lam-viec-bac-si/bac-si/${maBacSi}/khoang-ngay?tuNgay=${encodeURIComponent(tuNgay)}&denNgay=${encodeURIComponent(denNgay)}`,
+    ),
   tao: (data: Partial<LichLamViecBacSi>) =>
     api<LichLamViecBacSi>("/lich-lam-viec-bac-si", {
       method: "POST",
@@ -760,6 +764,7 @@ export const chatApi = {
 export const doctorSchedulesApi = {
   ...lichLamViecBacSiApi,
   byDoctor: lichLamViecBacSiApi.theoBacSiVaNgay,
+  byDoctorDateRange: lichLamViecBacSiApi.theoBacSiVaKhoangNgay,
   create: lichLamViecBacSiApi.tao,
   update: lichLamViecBacSiApi.capNhat,
   delete: lichLamViecBacSiApi.xoa,

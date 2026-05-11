@@ -8900,38 +8900,3 @@ html.app-ready body {
   border-color: rgba(37, 99, 235, 0.45) !important;
   background-color: rgba(255, 255, 255, 0.92) !important;
 }
-
-.lich-lam-viec-bs-page .lich-bs-btn-xoa.btn-action-delete {
-  --bs-btn-padding-x: 0.75rem;
-  --bs-btn-padding-y: 0.28rem;
-  min-width: auto;
-  border-radius: 999px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.22);
-  border: none !important;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    filter 0.15s ease;
-}
-.lich-lam-viec-bs-page .lich-bs-btn-xoa.btn-action-delete:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.32);
-}
-.lich-lam-viec-bs-page .lich-bs-btn-xoa.btn-action-delete:active:not(:disabled) {
-  transform: translateY(0);
-}
-.lich-lam-viec-bs-page .lich-bs-btn-xoa.btn-action-delete .bi {
-  font-size: 0.95rem;
-  line-height: 1;
-}
-@media (max-width: 575.98px) {
-  .lich-lam-viec-bs-page .lich-bs-btn-xoa.btn-action-delete {
-    --bs-btn-padding-x: 0.55rem;
-    min-width: 2.35rem;
-    min-height: 2.35rem;
-    border-radius: 50%;
-    justify-content: center;
-  }
-}

@@ -79,6 +79,12 @@ public class LichHenService {
                 throw new AccessDeniedException("Chỉ được đặt lịch cho chính mình.");
             }
         }
+        if (dto.getNgayHen() == null) {
+            throw new RuntimeException("Ngày khám không hợp lệ.");
+        }
+        if (dto.getNgayHen().isBefore(LocalDate.now())) {
+            throw new RuntimeException("Không thể đặt ngày quá khứ.");
+        }
         if (benhNhanTrungGio(dto.getMaBenhNhan(), dto.getNgayHen(), dto.getGioHen(), null)) {
             throw new RuntimeException("Bệnh nhân đã có lịch khác cùng ngày và cùng giờ.");
         }

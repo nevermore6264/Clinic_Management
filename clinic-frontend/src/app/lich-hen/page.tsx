@@ -161,9 +161,6 @@ function AppointmentsPageInner() {
   const [chuyenKhoa, setChuyenKhoa] = useState<ChuyenKhoa[]>([]);
   const [locChuyenKhoaId, setLocChuyenKhoaId] = useState("");
 
-  const [maBenhNhanKhongThemLich, setMaBenhNhanKhongThemLich] = useState<
-    Set<number>
-  >(() => new Set());
   const [locBenhNhan, setLocBenhNhan] = useState("");
   const [locBacSi, setLocBacSi] = useState("");
   const [locDichVu, setLocDichVu] = useState("");
@@ -176,7 +173,7 @@ function AppointmentsPageInner() {
     setPatientId(maBenhNhanParam ? String(Number(maBenhNhanParam)) : "");
     setDoctorId("");
     setServiceId("");
-    setAppointmentDate(new Date().toISOString().slice(0, 10));
+    setAppointmentDate(isoDateLocal(new Date()));
     setAppointmentTime("");
     setNote("");
     setModalError("");
@@ -321,44 +318,14 @@ function AppointmentsPageInner() {
       })
       .catch(() => {});
 
-    const tu = new Date();
-    tu.setDate(tu.getDate() - 14);
-    const den = new Date();
-    den.setFullYear(den.getFullYear() + 1);
-    const tuStr = tu.toISOString().slice(0, 10);
-    const denStr = den.toISOString().slice(0, 10);
-    const fetchBlocked = chiTaiKhoanBn && user.maBenhNhan
-      ? appointmentsApi.byPatient(user.maBenhNhan)
-      : appointmentsApi.list(tuStr, denStr, 0, 5000).then((r) => r.content ?? []);
-
-    Promise.resolve(fetchBlocked)
-      .then((rows) => {
-        if (cancelled) return;
-        const arr = Array.isArray(rows) ? rows : [];
-        const blocked = new Set<number>();
-        for (const a of arr) {
-          const ma = a.maBenhNhan;
-          const tt = a.trangThai ?? "";
-          if (ma != null && TRANG_THAI_CO_LICH_DANG_XU_LY.has(tt)) {
-            blocked.add(ma);
-          }
-        }
-        setMaBenhNhanKhongThemLich(blocked);
-      })
-      .catch(() => {
-        if (!cancelled) setMaBenhNhanKhongThemLich(new Set());
-      });
-
     return () => {
       cancelled = true;
     };
   }, [showDatLich, user, chiTaiKhoanBn]);
 
   const benhNhanDuocChon = useMemo(() => {
-    return patients.filter(
-      (p) => p.id != null && !maBenhNhanKhongThemLich.has(p.id),
-    );
-  }, [patients, maBenhNhanKhongThemLich]);
+    return patients.filter((p) => p.id != null);
+  }, [patients]);
 
   const benhNhanSauLoc = useMemo(() => {
     const q = locBenhNhan.trim().toLowerCase();
@@ -392,17 +359,6 @@ function AppointmentsPageInner() {
       return ten.includes(q) || gia.includes(q);
     });
   }, [services, locDichVu]);
-
-  useEffect(() => {
-    if (!showDatLich) return;
-    const id = Number(patientId);
-    if (patientId && !Number.isNaN(id) && maBenhNhanKhongThemLich.has(id)) {
-      setModalError(
-        "Bệnh nhân này đã có lịch đang xử lý — hoàn thành hoặc hủy lịch cũ trước khi đặt thêm.",
-      );
-      setPatientId("");
-    }
-  }, [showDatLich, patientId, maBenhNhanKhongThemLich]);
 
   const chonBenhNhanLabel = useMemo(() => {
     if (!patientId) return "— Chọn bệnh nhân —";
@@ -582,16 +538,29 @@ function AppointmentsPageInner() {
       setModalError("Vui lòng chọn ngày khám.");
       return;
     }
+    const todayLocal = isoDateLocal(new Date());
+    if (appointmentDate < todayLocal) {
+      setModalError("Không thể đặt lịch cho ngày quá khứ.");
+      return;
+    }
     if (!appointmentTime) {
       setModalError("Vui lòng chọn giờ khám.");
       return;
     }
     const pid = Number(patientId);
-    if (!Number.isNaN(pid) && maBenhNhanKhongThemLich.has(pid)) {
-      setModalError(
-        "Bệnh nhân này đã có lịch đang xử lý — không thể đặt thêm.",
+    if (chiTaiKhoanBn && !Number.isNaN(pid)) {
+      const isTrung = list.some(
+        (a) =>
+          a.maBenhNhan === pid &&
+          a.ngayHen === appointmentDate &&
+          normalizeTime(a.gioHen) === appointmentTime,
       );
-      return;
+      if (isTrung) {
+        setModalError(
+          "Bạn đã có lịch ở thời gian này. Vui lòng chọn thời gian khác.",
+        );
+        return;
+      }
     }
     const slotDaChon = slotsDaChon.find((s) => s.gio === appointmentTime);
     if (slotDaChon && slotDaChon.tong >= slotDaChon.sucChua) {
@@ -877,28 +846,35 @@ function AppointmentsPageInner() {
                       </Form.Select>
                     </Form.Group>
                   </details>
-                  <Form.Group className="mb-0">
-                    <Form.Label className="d-block">Hiển thị</Form.Label>
-                    <ButtonGroup aria-label="Chế độ xem lịch khám">
-                      <Button
+                  <div className="patient-portal-lichen__view-field">
+                    <span
+                      className="patient-portal-lichen__view-caption"
+                      id="patient-lich-view-mode-label"
+                    >
+                      Cách xem
+                    </span>
+                    <div
+                      className="patient-portal-lichen__view-rail"
+                      role="group"
+                      aria-labelledby="patient-lich-view-mode-label"
+                    >
+                      <button
                         type="button"
-                        variant={
-                          viewMode === "bang" ? "primary" : "outline-primary"
-                        }
-                        size="sm"
-                        className="d-inline-flex align-items-center gap-1"
+                        className={`patient-portal-lichen__view-tab${
+                          viewMode === "bang" ? " is-active" : ""
+                        }`}
+                        aria-pressed={viewMode === "bang"}
                         onClick={() => setViewMode("bang")}
                       >
                         <i className="bi bi-list-ul" aria-hidden />
                         Danh sách
-                      </Button>
-                      <Button
+                      </button>
+                      <button
                         type="button"
-                        variant={
-                          viewMode === "lich" ? "primary" : "outline-primary"
-                        }
-                        size="sm"
-                        className="d-inline-flex align-items-center gap-1"
+                        className={`patient-portal-lichen__view-tab${
+                          viewMode === "lich" ? " is-active" : ""
+                        }`}
+                        aria-pressed={viewMode === "lich"}
                         onClick={() => {
                           setViewMode("lich");
                           const b = monthBoundsFromYm(from.slice(0, 7));
@@ -908,9 +884,9 @@ function AppointmentsPageInner() {
                       >
                         <i className="bi bi-calendar3" aria-hidden />
                         Lịch tháng
-                      </Button>
-                    </ButtonGroup>
-                  </Form.Group>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </>
@@ -1284,11 +1260,17 @@ function AppointmentsPageInner() {
         backdrop={submitting ? "static" : true}
         keyboard={!submitting}
       >
-        <Modal.Header closeButton={!submitting}>
-          <Modal.Title as="h5">Đặt lịch khám</Modal.Title>
+        <Modal.Header
+          closeButton={!submitting}
+          className="lich-hen-dat-lich__header border-0"
+        >
+          <Modal.Title as="h5" className="lich-hen-dat-lich__title">
+            <i className="bi bi-calendar-check me-2" aria-hidden />
+            Đặt lịch khám
+          </Modal.Title>
         </Modal.Header>
         <Form noValidate onSubmit={handleDatLichSubmit}>
-          <Modal.Body className="pt-2">
+          <Modal.Body className="lich-hen-dat-lich__body pt-2">
             {modalError && (
               <Alert
                 variant="danger"
@@ -1299,7 +1281,8 @@ function AppointmentsPageInner() {
                 {modalError}
               </Alert>
             )}
-            {chiTaiKhoanBn ? (
+            <div className="lich-hen-dat-lich__grid">
+              {chiTaiKhoanBn ? (
               <Form.Group className="mb-3">
                 <Form.Label id="label-dat-bn">Bệnh nhân</Form.Label>
                 <div className="form-control-plaintext py-1" aria-labelledby="label-dat-bn">
@@ -1369,6 +1352,7 @@ function AppointmentsPageInner() {
               <Form.Label className="required">Ngày khám</Form.Label>
               <Form.Control
                 type="date"
+                min={todayStr}
                 value={appointmentDate}
                 onChange={(e) => {
                   setAppointmentDate(e.target.value);
@@ -1377,7 +1361,7 @@ function AppointmentsPageInner() {
                 }}
               />
               <Form.Text className="text-muted">
-                Chọn ngày trước — chỉ hiển thị bác sĩ có lịch trực (cố định hoặc ngoại lệ) trong ngày đó.
+                Chọn ngày từ hôm nay — hệ thống chỉ hiển thị bác sĩ có lịch trực (cố định hoặc ngoại lệ) trong ngày đó.
               </Form.Text>
             </Form.Group>
             <Form.Group className="mb-3">
@@ -1573,7 +1557,7 @@ function AppointmentsPageInner() {
                 </Dropdown.Menu>
               </Dropdown>
             </Form.Group>
-            <Form.Group className="mb-0 mt-3">
+            <Form.Group className="mb-0 mt-3 lich-hen-dat-lich__span-2">
               <Form.Label>Ghi chú</Form.Label>
               <Form.Control
                 as="textarea"
@@ -1583,6 +1567,7 @@ function AppointmentsPageInner() {
                 placeholder="Tuỳ chọn"
               />
             </Form.Group>
+            </div>
           </Modal.Body>
           <Modal.Footer className="clinic-modal-footer bac-si-modal-footer clinic-modal-footer-actions border-top">
             <Button

@@ -27,6 +27,11 @@ public interface LichHenRepository extends JpaRepository<LichHen, Long> {
 
     List<LichHen> findByBacSiIdAndNgayHenAndTrangThaiNotIn(Long maBacSi, LocalDate ngay, Collection<LichHen.TrangThaiLichHen> trangThai);
 
+    List<LichHen> findByNgayHenAndGioHenLessThanEqualAndTrangThaiIn(
+            LocalDate ngayHen,
+            LocalTime gioHen,
+            Collection<LichHen.TrangThaiLichHen> trangThai);
+
     long countByNgayHenAndTrangThai(LocalDate ngayHen, LichHen.TrangThaiLichHen trangThai);
 
     long countByNgayHenAndTrangThaiIn(LocalDate ngayHen, Collection<LichHen.TrangThaiLichHen> trangThai);

@@ -8868,3 +8868,21 @@ html.app-ready body {
   border-radius: 12px;
   overflow: hidden;
 }
+
+.lich-lam-viec-bs-page .lich-tuan-fd-day {
+  transition:
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+.lich-lam-viec-bs-page .lich-tuan-fd-day:hover {
+  box-shadow: var(--clinic-shadow);
+}
+.lich-lam-viec-bs-page .lich-tuan-fd-ca {
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+.lich-lam-viec-bs-page .lich-tuan-fd-ca:focus-within {
+  border-color: rgba(37, 99, 235, 0.45) !important;
+  background-color: rgba(255, 255, 255, 0.92) !important;
+}

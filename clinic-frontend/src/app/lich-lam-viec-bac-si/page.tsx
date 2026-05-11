@@ -44,6 +44,48 @@ const TEN_THU: Record<number, string> = {
 
 const THU_TRONG_TUAN: number[] = [1, 2, 3, 4, 5, 6, 7];
 
+function LichTabCardHeader({
+  icon,
+  tone = "primary",
+  title,
+  subtitle,
+  trailing,
+}: {
+  icon: string;
+  tone?: "primary" | "success";
+  title: string;
+  subtitle: ReactNode;
+  trailing?: ReactNode;
+}) {
+  const toneClass =
+    tone === "success"
+      ? "bg-success-subtle text-success-emphasis"
+      : "bg-primary-subtle text-primary-emphasis";
+  return (
+    <Card.Header className="bg-white border-bottom py-3">
+      <div className="d-flex flex-column flex-xl-row gap-3 gap-xl-4 justify-content-xl-between align-items-xl-end">
+        <div className="d-flex align-items-start gap-2 min-w-0 flex-grow-1">
+          <span
+            className={`rounded-2 p-2 d-inline-flex flex-shrink-0 align-items-center justify-content-center ${toneClass}`}
+            style={{ width: 40, height: 40 }}
+          >
+            <i className={`bi ${icon} fs-5`} aria-hidden />
+          </span>
+          <div className="min-w-0 pt-xl-1">
+            <span className="fw-semibold d-block text-body">{title}</span>
+            <div className="small text-muted lh-sm mt-1">{subtitle}</div>
+          </div>
+        </div>
+        {trailing != null ? (
+          <div className="d-flex flex-wrap gap-2 align-items-end flex-shrink-0">
+            {trailing}
+          </div>
+        ) : null}
+      </div>
+    </Card.Header>
+  );
+}
+
 function NhanNguonLich({ s }: { s: LichLamViecBacSi }) {
   if (s.nguonBanGhi === "CO_DINH") {
     return (
@@ -315,14 +357,31 @@ export default function LichLamViecBacSisPage() {
 
   const handleDelete = (s: LichLamViecBacSi) => {
     if (s.id == null) return;
-    moHopXacNhan({
-      tieuDe: "Xóa dòng lịch",
-      noiDung: (
+    const noiDungXoa =
+      s.nguonBanGhi === "CO_DINH" ? (
+        <>
+          Bạn sắp xóa <strong>một ca trong lịch cố định theo tuần</strong> (dòng có
+          tag Tuần). Hệ thống sẽ gỡ khỏi mẫu tuần — <strong>tất cả các ngày</strong>{" "}
+          cùng thứ trong tuần sẽ không còn ca đó, không chỉ riêng{" "}
+          <span className="text-muted">{formatNgay(date)}</span>. Thao tác{" "}
+          <strong>không thể hoàn tác</strong>.
+        </>
+      ) : s.nguonBanGhi === "NGOAI_LE" ? (
+        <>
+          Bạn sắp xóa <strong>ca ngoại lệ</strong> chỉ áp dụng cho{" "}
+          <span className="text-muted">{formatNgay(date)}</span>.{" "}
+          <strong>Không</strong> thay đổi ca cố định theo tuần. Thao tác không thể
+          hoàn tác.
+        </>
+      ) : (
         <>
           Bạn có chắc muốn xóa dòng lịch này không? Thao tác này không thể hoàn
           tác.
         </>
-      ),
+      );
+    moHopXacNhan({
+      tieuDe: "Xóa dòng lịch",
+      noiDung: noiDungXoa,
       icon: "bi-trash3",
       nhanXacNhan: "Xóa",
       bienTheXacNhan: "danger",
@@ -571,7 +630,9 @@ export default function LichLamViecBacSisPage() {
             setTab((k as "co-dinh" | "ngoai-le" | "lich-dat") || "co-dinh")
           }
           id="lich-lam-viec-tabs"
-          className="mb-3"
+          fill
+          justify
+          className="mb-4 lich-lam-viec-bs-tabs"
         >
           <Tab
             eventKey="co-dinh"
@@ -583,260 +644,316 @@ export default function LichLamViecBacSisPage() {
             }
           >
             <Card className="card--static border-0 shadow-sm overflow-hidden">
-              <Card.Header className="bg-white border-bottom py-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div className="d-flex align-items-center gap-2">
-                  <span className="rounded-2 bg-primary-subtle text-primary p-2 d-inline-flex">
-                    <i className="bi bi-calendar-week" aria-hidden />
-                  </span>
-                  <div>
-                    <span className="fw-semibold d-block">Ca cố định theo tuần</span>
-                    <span className="small text-muted">
-                      Mặc định: T2–T7 · 07:30–11:30 và 13:00–17:00
-                    </span>
-                  </div>
-                </div>
-                {canEditSchedules ? (
-                  <div className="d-flex flex-wrap gap-2">
+              <LichTabCardHeader
+                icon="bi-calendar-week"
+                title="Ca cố định theo tuần"
+                subtitle={
+                  <>
+                    Mẫu lặp lại mỗi tuần · Gợi ý mặc định: T2–T7, 07:30–11:30 và
+                    13:00–17:00. Ca theo một ngày — tab{" "}
                     <Button
-                      variant={showAddCoDinh ? "outline-secondary" : "primary"}
-                      className="d-inline-flex align-items-center gap-2"
-                      onClick={() => setShowAddCoDinh(!showAddCoDinh)}
+                      type="button"
+                      variant="link"
+                      className="p-0 align-baseline"
+                      onClick={() => setTab("ngoai-le")}
                     >
-                      <i className="bi bi-plus-lg" aria-hidden />
-                      {showAddCoDinh ? "Đóng form" : "Thêm ca"}
+                      Ca ngoại lệ
                     </Button>
-                    <Button
-                      variant="outline-primary"
-                      className="d-inline-flex align-items-center gap-2"
-                      onClick={handleGieoMacDinh}
-                      disabled={dangGieo}
-                    >
-                      {dangGieo ? (
-                        <Spinner animation="border" size="sm" />
-                      ) : (
-                        <i className="bi bi-magic" aria-hidden />
-                      )}
-                      Áp giờ hành chính mặc định
-                    </Button>
-                  </div>
-                ) : null}
-              </Card.Header>
+                    .
+                  </>
+                }
+              />
 
               {showAddCoDinh && canEditSchedules ? (
-                <div className="p-3 border-bottom bg-body-secondary bg-opacity-50">
-                  <Row className="g-3 align-items-end">
-                    <Col sm={4} md={3}>
-                      <Form.Label className="small">Thứ trong tuần</Form.Label>
-                      <Form.Select
-                        value={newCoDinh.thuTrongTuan}
-                        onChange={(e) =>
-                          setNewCoDinh({
-                            ...newCoDinh,
-                            thuTrongTuan: Number(e.target.value),
-                          })
-                        }
+                <div className="border-bottom bg-body-secondary bg-opacity-50 px-3 px-lg-4 py-4">
+                  <div
+                    className="rounded-3 border bg-white shadow-sm p-3 p-md-4 mx-auto"
+                    style={{ maxWidth: 920 }}
+                  >
+                    <div className="d-flex align-items-start gap-3 pb-3 mb-3 border-bottom">
+                      <span className="rounded-2 bg-primary text-white p-2 d-inline-flex flex-shrink-0">
+                        <i className="bi bi-plus-lg" aria-hidden />
+                      </span>
+                      <div className="flex-grow-1 min-w-0">
+                        <div className="fw-semibold text-body">Thêm ca cố định</div>
+                        <div className="small text-muted">
+                          Chọn thứ và khung giờ. Ca sẽ lặp lại mỗi tuần.
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline-secondary"
+                        size="sm"
+                        className="flex-shrink-0"
+                        onClick={() => setShowAddCoDinh(false)}
                       >
-                        {THU_TRONG_TUAN.map((t) => (
-                          <option key={t} value={t}>
-                            {TEN_THU[t]}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Col>
-                    <Col sm={4} md={3}>
-                      <Form.Label className="small">Bắt đầu</Form.Label>
-                      <Form.Control
-                        type="time"
-                        value={newCoDinh.khungGioBatDau}
-                        onChange={(e) =>
-                          setNewCoDinh({
-                            ...newCoDinh,
-                            khungGioBatDau: e.target.value,
-                          })
-                        }
-                      />
-                    </Col>
-                    <Col sm={4} md={3}>
-                      <Form.Label className="small">Kết thúc</Form.Label>
-                      <Form.Control
-                        type="time"
-                        value={newCoDinh.khungGioKetThuc}
-                        onChange={(e) =>
-                          setNewCoDinh({
-                            ...newCoDinh,
-                            khungGioKetThuc: e.target.value,
-                          })
-                        }
-                      />
-                    </Col>
-                    <Col sm="auto">
-                      <Button variant="primary" className="px-4" onClick={handleAddCoDinh}>
-                        <i className="bi bi-check2 me-2" aria-hidden />
-                        Lưu ca
+                        <i className="bi bi-x-lg me-1" aria-hidden />
+                        Đóng
                       </Button>
-                    </Col>
-                  </Row>
-                </div>
-              ) : null}
-
-              <div className="table-responsive">
-                <Table hover className="mb-0 align-middle">
-                  <thead className="table-light">
-                    <tr className="small text-uppercase text-muted">
-                      <th className="border-0 ps-4" style={{ width: 140 }}>
-                        Thứ
-                      </th>
-                      <th className="border-0">Các ca trong ngày</th>
-                      {canEditSchedules ? (
-                        <th className="border-0 text-end pe-4" style={{ width: "1%" }}>
-                          Thao tác
-                        </th>
-                      ) : null}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {THU_TRONG_TUAN.map((thu) => {
-                      const dsCa = coDinhTheoThu[thu] ?? [];
-                      return (
-                        <tr key={thu}>
-                          <td className="ps-4 fw-semibold text-body">{TEN_THU[thu]}</td>
-                          <td>
-                            {dsCa.length === 0 ? (
-                              <span className="text-muted fst-italic">Nghỉ</span>
-                            ) : (
-                              <div className="d-flex flex-wrap gap-2">
-                                {dsCa.map((c) => (
-                                  <span
-                                    key={c.id}
-                                    className="badge rounded-pill bg-primary-subtle text-primary-emphasis border border-primary-subtle fw-normal font-monospace"
-                                  >
-                                    {chuanGio(c.khungGioBatDau)} – {chuanGio(c.khungGioKetThuc)}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </td>
-                          {canEditSchedules ? (
-                            <td className="text-end pe-4 text-nowrap">
-                              <Button
-                                size="sm"
-                                variant="outline-primary"
-                                className="me-2"
-                                onClick={() => {
-                                  setNewCoDinh({
-                                    thuTrongTuan: thu,
-                                    khungGioBatDau: "07:30",
-                                    khungGioKetThuc: "11:30",
-                                  });
-                                  setShowAddCoDinh(true);
-                                }}
-                                title={`Thêm ca cho ${TEN_THU[thu]}`}
-                              >
-                                <i className="bi bi-plus-lg" aria-hidden />
-                              </Button>
-                            </td>
-                          ) : null}
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </Table>
-              </div>
-
-              {canEditSchedules && coDinhList.length > 0 ? (
-                <div className="border-top">
-                  <div className="px-4 pt-3 pb-1 small text-muted fw-semibold text-uppercase">
-                    Quản lý chi tiết
-                  </div>
-                  <div className="table-responsive">
-                    <Table hover size="sm" className="mb-0 align-middle">
-                      <thead className="table-light">
-                        <tr className="small text-uppercase text-muted">
-                          <th className="border-0 ps-4">Thứ</th>
-                          <th className="border-0">Bắt đầu</th>
-                          <th className="border-0">Kết thúc</th>
-                          <th className="border-0 text-end pe-4" style={{ width: "1%" }}>
-                            Thao tác
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {coDinhList.map((c) => (
-                          <tr key={c.id}>
-                            <td className="ps-4">
-                              <Form.Select
-                                size="sm"
-                                value={c.thuTrongTuan === 0 ? 7 : c.thuTrongTuan}
-                                onChange={(e) =>
-                                  handleCapNhatCoDinh(c, {
-                                    thuTrongTuan: Number(e.target.value),
-                                  })
-                                }
-                                style={{ minWidth: 110 }}
-                              >
-                                {THU_TRONG_TUAN.map((t) => (
-                                  <option key={t} value={t}>
-                                    {TEN_THU[t]}
-                                  </option>
-                                ))}
-                              </Form.Select>
-                            </td>
-                            <td>
-                              <Form.Control
-                                size="sm"
-                                type="time"
-                                value={chuanGio(c.khungGioBatDau)}
-                                onChange={(e) =>
-                                  handleCapNhatCoDinh(c, {
-                                    khungGioBatDau: e.target.value,
-                                  })
-                                }
-                                style={{ maxWidth: 130 }}
-                              />
-                            </td>
-                            <td>
-                              <Form.Control
-                                size="sm"
-                                type="time"
-                                value={chuanGio(c.khungGioKetThuc)}
-                                onChange={(e) =>
-                                  handleCapNhatCoDinh(c, {
-                                    khungGioKetThuc: e.target.value,
-                                  })
-                                }
-                                style={{ maxWidth: 130 }}
-                              />
-                            </td>
-                            <td className="text-end pe-4">
-                              <Button
-                                size="sm"
-                                variant="outline-danger"
-                                onClick={() => handleDeleteCoDinh(c.id)}
-                              >
-                                <i className="bi bi-trash3" aria-hidden />
-                              </Button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
+                    </div>
+                    <Row className="g-3 align-items-end">
+                      <Col sm={6} md={4} lg={3}>
+                        <Form.Label className="small text-uppercase text-muted fw-semibold">
+                          Thứ
+                        </Form.Label>
+                        <Form.Select
+                          value={newCoDinh.thuTrongTuan}
+                          onChange={(e) =>
+                            setNewCoDinh({
+                              ...newCoDinh,
+                              thuTrongTuan: Number(e.target.value),
+                            })
+                          }
+                          className="border-secondary-subtle"
+                        >
+                          {THU_TRONG_TUAN.map((t) => (
+                            <option key={t} value={t}>
+                              {TEN_THU[t]}
+                            </option>
+                          ))}
+                        </Form.Select>
+                      </Col>
+                      <Col xs={6} md={4} lg={2}>
+                        <Form.Label className="small text-uppercase text-muted fw-semibold">
+                          Bắt đầu
+                        </Form.Label>
+                        <Form.Control
+                          type="time"
+                          value={newCoDinh.khungGioBatDau}
+                          onChange={(e) =>
+                            setNewCoDinh({
+                              ...newCoDinh,
+                              khungGioBatDau: e.target.value,
+                            })
+                          }
+                          className="border-secondary-subtle"
+                        />
+                      </Col>
+                      <Col xs={6} md={4} lg={2}>
+                        <Form.Label className="small text-uppercase text-muted fw-semibold">
+                          Kết thúc
+                        </Form.Label>
+                        <Form.Control
+                          type="time"
+                          value={newCoDinh.khungGioKetThuc}
+                          onChange={(e) =>
+                            setNewCoDinh({
+                              ...newCoDinh,
+                              khungGioKetThuc: e.target.value,
+                            })
+                          }
+                          className="border-secondary-subtle"
+                        />
+                      </Col>
+                      <Col sm="auto" className="ms-lg-auto">
+                        <Button variant="primary" className="px-4" onClick={handleAddCoDinh}>
+                          <i className="bi bi-check2 me-2" aria-hidden />
+                          Lưu ca
+                        </Button>
+                      </Col>
+                    </Row>
                   </div>
                 </div>
               ) : null}
 
-              {!coDinhTai && coDinhList.length === 0 ? (
+              {coDinhTai ? (
+                <Card.Body className="text-center py-5 border-top">
+                  <Spinner animation="border" className="text-primary" role="status" />
+                  <div className="small text-muted mt-2">Đang tải lịch cố định…</div>
+                </Card.Body>
+              ) : coDinhList.length === 0 ? (
                 <Card.Body className="text-center text-muted py-5 border-top">
                   <i className="bi bi-calendar-x display-6 d-block mb-2 opacity-25" aria-hidden />
-                  Bác sĩ này chưa có ca cố định nào. Bấm{" "}
-                  <strong>“Áp giờ hành chính mặc định”</strong> để khởi tạo nhanh, hoặc thêm thủ
-                  công.
+                  <p className="mb-0 mx-auto" style={{ maxWidth: "26rem" }}>
+                    Bác sĩ này chưa có ca cố định nào. Khởi tạo nhanh theo giờ hành chính hoặc thêm
+                    từng ca thủ công.
+                  </p>
+                  {canEditSchedules ? (
+                    <div className="d-flex flex-wrap justify-content-center gap-2 mt-4">
+                      <Button
+                        variant="outline-primary"
+                        className="d-inline-flex align-items-center gap-2"
+                        onClick={handleGieoMacDinh}
+                        disabled={dangGieo}
+                      >
+                        {dangGieo ? (
+                          <Spinner animation="border" size="sm" />
+                        ) : (
+                          <i className="bi bi-magic" aria-hidden />
+                        )}
+                        Áp giờ hành chính mặc định
+                      </Button>
+                      <Button
+                        variant="primary"
+                        className="d-inline-flex align-items-center gap-2"
+                        onClick={() => setShowAddCoDinh(true)}
+                      >
+                        <i className="bi bi-plus-lg" aria-hidden />
+                        Thêm ca thủ công
+                      </Button>
+                    </div>
+                  ) : null}
                 </Card.Body>
-              ) : null}
-              {coDinhTai ? (
-                <Card.Body className="text-center py-4 border-top">
-                  <Spinner animation="border" size="sm" className="text-primary" />
-                </Card.Body>
-              ) : null}
+              ) : (
+                <div className="lich-tuan-fd border-top px-3 px-lg-4 py-4 bg-body-secondary bg-opacity-35">
+                  <div className="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+                    <div>
+                      <div className="fw-semibold text-body">Tuần làm việc</div>
+                      <div className="small text-muted">
+                        Mỗi ô là một thứ; chỉnh ca trực tiếp trong ô tương ứng.
+                      </div>
+                    </div>
+                  </div>
+                  <Row className="g-3">
+                    {THU_TRONG_TUAN.map((thu) => {
+                      const dsCa = coDinhTheoThu[thu] ?? [];
+                      const dauTuan = thu >= 1 && thu <= 5;
+                      return (
+                        <Col key={thu} xs={12} md={6} xxl={4}>
+                          <div
+                            className={`lich-tuan-fd-day rounded-3 bg-white shadow-sm h-100 overflow-hidden border ${
+                              dauTuan ? "border-secondary-subtle" : "border-warning-subtle border-2"
+                            }`}
+                          >
+                            <div
+                              className={`px-3 py-2 d-flex justify-content-between align-items-center border-bottom ${
+                                dauTuan
+                                  ? "bg-primary-subtle bg-opacity-50"
+                                  : "bg-warning-subtle bg-opacity-50"
+                              }`}
+                            >
+                              <div className="d-flex align-items-center gap-2 min-w-0">
+                                <span
+                                  className={`rounded-pill small fw-semibold px-2 py-0 flex-shrink-0 ${
+                                    dauTuan
+                                      ? "bg-primary text-white"
+                                      : "bg-warning text-dark"
+                                  }`}
+                                >
+                                  {thu <= 6 ? `T${thu + 1}` : "CN"}
+                                </span>
+                                <span className="fw-semibold text-body text-truncate">
+                                  {TEN_THU[thu]}
+                                </span>
+                              </div>
+                              {canEditSchedules ? (
+                                <Button
+                                  variant={dauTuan ? "primary" : "outline-dark"}
+                                  size="sm"
+                                  className="rounded-pill px-2 px-sm-3 flex-shrink-0"
+                                  onClick={() => {
+                                    setNewCoDinh({
+                                      thuTrongTuan: thu,
+                                      khungGioBatDau: "07:30",
+                                      khungGioKetThuc: "11:30",
+                                    });
+                                    setShowAddCoDinh(true);
+                                  }}
+                                  title={`Thêm ca ${TEN_THU[thu]}`}
+                                >
+                                  <i className="bi bi-plus-lg me-sm-1" aria-hidden />
+                                  <span className="d-none d-sm-inline">Thêm ca</span>
+                                </Button>
+                              ) : null}
+                            </div>
+                            <div className="p-3">
+                              {dsCa.length === 0 ? (
+                                <div className="text-center text-muted small py-4 rounded-3 border border-2 border-dashed bg-body-secondary bg-opacity-50">
+                                  <i className="bi bi-moon d-block fs-4 mb-2 opacity-50" aria-hidden />
+                                  Nghỉ
+                                </div>
+                              ) : (
+                                <div className="vstack gap-3">
+                                  {dsCa.map((c) => (
+                                    <div
+                                      key={c.id}
+                                      className="lich-tuan-fd-ca rounded-3 border bg-body-tertiary bg-opacity-40 p-3"
+                                    >
+                                      {canEditSchedules ? (
+                                        <Row className="g-2 g-sm-3 align-items-end">
+                                          <Col xs={12} sm={5}>
+                                            <Form.Label className="small text-uppercase text-muted mb-1">
+                                              Đổi thứ
+                                            </Form.Label>
+                                            <Form.Select
+                                              size="sm"
+                                              value={c.thuTrongTuan === 0 ? 7 : c.thuTrongTuan}
+                                              onChange={(e) =>
+                                                handleCapNhatCoDinh(c, {
+                                                  thuTrongTuan: Number(e.target.value),
+                                                })
+                                              }
+                                              className="border-secondary-subtle"
+                                            >
+                                              {THU_TRONG_TUAN.map((t) => (
+                                                <option key={t} value={t}>
+                                                  {TEN_THU[t]}
+                                                </option>
+                                              ))}
+                                            </Form.Select>
+                                          </Col>
+                                          <Col xs={6} sm={3}>
+                                            <Form.Label className="small text-uppercase text-muted mb-1">
+                                              Bắt đầu
+                                            </Form.Label>
+                                            <Form.Control
+                                              size="sm"
+                                              type="time"
+                                              value={chuanGio(c.khungGioBatDau)}
+                                              onChange={(e) =>
+                                                handleCapNhatCoDinh(c, {
+                                                  khungGioBatDau: e.target.value,
+                                                })
+                                              }
+                                              className="border-secondary-subtle font-monospace"
+                                            />
+                                          </Col>
+                                          <Col xs={6} sm={3}>
+                                            <Form.Label className="small text-uppercase text-muted mb-1">
+                                              Kết thúc
+                                            </Form.Label>
+                                            <Form.Control
+                                              size="sm"
+                                              type="time"
+                                              value={chuanGio(c.khungGioKetThuc)}
+                                              onChange={(e) =>
+                                                handleCapNhatCoDinh(c, {
+                                                  khungGioKetThuc: e.target.value,
+                                                })
+                                              }
+                                              className="border-secondary-subtle font-monospace"
+                                            />
+                                          </Col>
+                                          <Col xs={12} sm="auto" className="ms-sm-auto d-flex justify-content-end">
+                                            <Button
+                                              size="sm"
+                                              variant="outline-danger"
+                                              className="mt-1 mt-sm-0"
+                                              onClick={() => handleDeleteCoDinh(c.id)}
+                                              title="Xóa ca"
+                                            >
+                                              <i className="bi bi-trash3 me-1" aria-hidden />
+                                              Xóa
+                                            </Button>
+                                          </Col>
+                                        </Row>
+                                      ) : (
+                                        <div className="font-monospace fs-6 fw-semibold text-body">
+                                          {chuanGio(c.khungGioBatDau)} – {chuanGio(c.khungGioKetThuc)}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </Col>
+                      );
+                    })}
+                  </Row>
+                </div>
+              )}
             </Card>
           </Tab>
 
@@ -849,200 +966,222 @@ export default function LichLamViecBacSisPage() {
               </span>
             }
           >
-            <Card className="mb-4 card--static border-0 shadow-sm">
-              <Card.Body className="p-4">
-                <Row className="g-3 align-items-end">
-                  <Col md={6} lg={4}>
-                    <Form.Label className="fw-semibold small text-uppercase text-muted">
-                      Ngày
-                    </Form.Label>
-                    <Form.Control
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      className="border-secondary-subtle"
-                    />
-                  </Col>
-                  {canEditSchedules ? (
-                    <Col lg={8} className="d-flex flex-wrap gap-2 justify-content-lg-end pt-lg-4">
-                      <Button
-                        variant={showAdd ? "outline-secondary" : "primary"}
-                        className="d-inline-flex align-items-center gap-2"
-                        onClick={() => {
+            <Card className="card--static border-0 shadow-sm overflow-hidden">
+              <LichTabCardHeader
+                icon="bi-calendar-event"
+                title="Ca ngoại lệ"
+                subtitle={
+                  <>
+                    Bảng dưới là lịch <strong>hiệu lực trong ngày</strong> (ca Tuần
+                    từ mẫu + ca Ngoại lệ chỉ cho ngày chọn; phân biệt ở cột Loại).{" "}
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="p-0 align-baseline"
+                      onClick={() => setTab("co-dinh")}
+                    >
+                      Sửa mẫu tuần
+                    </Button>
+                    .
+                  </>
+                }
+                trailing={
+                  <>
+                    <div>
+                      <Form.Label className="fw-semibold small text-uppercase text-muted mb-1 d-block">
+                        Ngày
+                      </Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className="border-secondary-subtle"
+                        style={{ minWidth: "11.5rem" }}
+                      />
+                    </div>
+                    {canEditSchedules ? (
+                      <>
+                        <Button
+                          variant={showAdd ? "outline-secondary" : "primary"}
+                          className="d-inline-flex align-items-center gap-2"
+                          onClick={() => {
+                            setLoiNgoaiLe("");
+                            setShowAdd(!showAdd);
+                          }}
+                        >
+                          <i className="bi bi-plus-lg" aria-hidden />
+                          {showAdd ? "Đóng form" : "Thêm ca ngoại lệ"}
+                        </Button>
+                        <Button
+                          variant="outline-warning"
+                          className="d-inline-flex align-items-center gap-2"
+                          onClick={handleNghiCaNgay}
+                        >
+                          <i className="bi bi-moon" aria-hidden />
+                          Nghỉ cả ngày
+                        </Button>
+                      </>
+                    ) : null}
+                  </>
+                }
+              />
+
+              {showAdd && canEditSchedules ? (
+                <div className="p-3 border-bottom bg-body-secondary bg-opacity-50">
+                  <div className="fw-semibold small text-muted mb-2">
+                    <i className="bi bi-clock-history me-2" aria-hidden />
+                    Thêm ca ngoại lệ · {formatNgay(date)}
+                  </div>
+                  <div className="small text-muted mb-3">
+                    <i className="bi bi-info-circle me-2" aria-hidden />
+                    Giờ hành chính {TEN_THU[thuTrongTuanHomNay] ?? "—"}:{" "}
+                    {gioHanhChinhHomNay.length === 0 ? (
+                      <em>Nghỉ (không có ca cố định)</em>
+                    ) : (
+                      gioHanhChinhHomNay.map((g, i) => (
+                        <span key={`${g.batDau}-${g.ketThuc}`}>
+                          {i > 0 ? ", " : ""}
+                          <span className="font-monospace">
+                            {g.batDau}–{g.ketThuc}
+                          </span>
+                        </span>
+                      ))
+                    )}
+                    . Ca ngoại lệ phải nằm <strong>ngoài</strong> các khung này.
+                  </div>
+                  {loiNgoaiLe ? (
+                    <Alert
+                      variant="danger"
+                      className="py-2 small mb-3"
+                      dismissible
+                      onClose={() => setLoiNgoaiLe("")}
+                    >
+                      {loiNgoaiLe}
+                    </Alert>
+                  ) : null}
+                  <Row className="g-3 align-items-end">
+                    <Col sm={4} md={3}>
+                      <Form.Label className="small">Bắt đầu</Form.Label>
+                      <Form.Control
+                        type="time"
+                        value={newSlot.khungGioBatDau}
+                        onChange={(e) => {
                           setLoiNgoaiLe("");
-                          setShowAdd(!showAdd);
+                          setNewSlot({ ...newSlot, khungGioBatDau: e.target.value });
                         }}
-                      >
-                        <i className="bi bi-plus-lg" aria-hidden />
-                        {showAdd ? "Đóng form" : "Thêm ca ngoại lệ"}
-                      </Button>
-                      <Button
-                        variant="outline-warning"
-                        className="d-inline-flex align-items-center gap-2"
-                        onClick={handleNghiCaNgay}
-                      >
-                        <i className="bi bi-moon" aria-hidden />
-                        Nghỉ cả ngày
+                        isInvalid={Boolean(loiNgoaiLe)}
+                      />
+                    </Col>
+                    <Col sm={4} md={3}>
+                      <Form.Label className="small">Kết thúc</Form.Label>
+                      <Form.Control
+                        type="time"
+                        value={newSlot.khungGioKetThuc}
+                        onChange={(e) => {
+                          setLoiNgoaiLe("");
+                          setNewSlot({ ...newSlot, khungGioKetThuc: e.target.value });
+                        }}
+                        isInvalid={Boolean(loiNgoaiLe)}
+                      />
+                    </Col>
+                    <Col sm="auto">
+                      <Button variant="primary" className="px-4" onClick={handleAddSlot}>
+                        <i className="bi bi-check2 me-2" aria-hidden />
+                        Lưu ca
                       </Button>
                     </Col>
-                  ) : null}
-                </Row>
+                  </Row>
+                </div>
+              ) : null}
 
-                {showAdd && canEditSchedules ? (
-                  <div className="mt-4 p-3 rounded-3 border bg-body-secondary bg-opacity-50">
-                    <div className="fw-semibold small mb-2 text-muted">
-                      <i className="bi bi-clock-history me-2" aria-hidden />
-                      Thêm ca ngoại lệ cho ngày {formatNgay(date)}
-                    </div>
-                    <div className="small text-muted mb-3">
-                      <i className="bi bi-info-circle me-2" aria-hidden />
-                      Giờ hành chính {TEN_THU[thuTrongTuanHomNay] ?? "—"}:{" "}
-                      {gioHanhChinhHomNay.length === 0 ? (
-                        <em>Nghỉ (không có ca cố định)</em>
-                      ) : (
-                        gioHanhChinhHomNay.map((g, i) => (
-                          <span key={`${g.batDau}-${g.ketThuc}`}>
-                            {i > 0 ? ", " : ""}
-                            <span className="font-monospace">
-                              {g.batDau}–{g.ketThuc}
-                            </span>
-                          </span>
-                        ))
-                      )}
-                      . Ca ngoại lệ phải nằm <strong>ngoài</strong> các khung này.
-                    </div>
-                    {loiNgoaiLe ? (
-                      <Alert
-                        variant="danger"
-                        className="py-2 small mb-3"
-                        dismissible
-                        onClose={() => setLoiNgoaiLe("")}
-                      >
-                        {loiNgoaiLe}
-                      </Alert>
-                    ) : null}
-                    <Row className="g-3 align-items-end">
-                      <Col sm={4} md={3}>
-                        <Form.Label className="small">Bắt đầu</Form.Label>
-                        <Form.Control
-                          type="time"
-                          value={newSlot.khungGioBatDau}
-                          onChange={(e) => {
-                            setLoiNgoaiLe("");
-                            setNewSlot({ ...newSlot, khungGioBatDau: e.target.value });
-                          }}
-                          isInvalid={Boolean(loiNgoaiLe)}
-                        />
-                      </Col>
-                      <Col sm={4} md={3}>
-                        <Form.Label className="small">Kết thúc</Form.Label>
-                        <Form.Control
-                          type="time"
-                          value={newSlot.khungGioKetThuc}
-                          onChange={(e) => {
-                            setLoiNgoaiLe("");
-                            setNewSlot({ ...newSlot, khungGioKetThuc: e.target.value });
-                          }}
-                          isInvalid={Boolean(loiNgoaiLe)}
-                        />
-                      </Col>
-                      <Col sm="auto">
-                        <Button variant="primary" className="px-4" onClick={handleAddSlot}>
-                          <i className="bi bi-check2 me-2" aria-hidden />
-                          Lưu
-                        </Button>
-                      </Col>
-                    </Row>
-                  </div>
-                ) : null}
-              </Card.Body>
-            </Card>
-
-            <Card className="card--static border-0 shadow-sm overflow-hidden">
-              <Card.Header className="bg-white border-bottom py-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div className="d-flex align-items-center gap-2">
-                  <span className="rounded-2 bg-primary-subtle text-primary p-2 d-inline-flex">
-                    <i className="bi bi-calendar-week" aria-hidden />
-                  </span>
+              <div className="border-top">
+                <div className="px-4 pt-3 pb-2 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
                   <div>
-                    <span className="fw-semibold d-block">Ca trong ngày</span>
-                    <span className="small text-muted">
+                    <div className="small text-muted text-uppercase fw-semibold mb-1">
+                      Theo ngày đã chọn
+                    </div>
+                    <span className="fw-semibold text-body">Ca trong ngày</span>
+                    <span className="text-muted small ms-0 ms-sm-2 d-block d-sm-inline">
                       {tenBacSiChon ? `${tenBacSiChon} · ` : ""}
                       {formatNgay(date)}
                     </span>
                   </div>
+                  {bangTai ? (
+                    <Spinner animation="border" size="sm" className="text-primary" />
+                  ) : null}
                 </div>
-                {bangTai ? (
-                  <Spinner animation="border" size="sm" className="text-primary" />
-                ) : null}
-              </Card.Header>
-                  <div className="table-responsive">
-                    <Table hover className="mb-0 align-middle">
-                      <thead className="table-light">
-                        <tr className="small text-uppercase text-muted">
-                          <th className="border-0 ps-4">Loại</th>
-                          <th className="border-0">Bắt đầu</th>
-                          <th className="border-0">Kết thúc</th>
+                <div className="table-responsive">
+                  <Table hover className="mb-0 align-middle">
+                    <thead className="table-light">
+                      <tr className="small text-uppercase text-muted">
+                        <th className="border-0 ps-4">Loại</th>
+                        <th className="border-0">Bắt đầu</th>
+                        <th className="border-0">Kết thúc</th>
+                        {canEditSchedules ? (
+                          <th className="border-0 text-end pe-4" style={{ width: "1%" }}>
+                            Thao tác
+                          </th>
+                        ) : null}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {schedules.map((s) => (
+                        <tr key={`${s.nguonBanGhi ?? "x"}-${s.id}`}>
+                          <td className="ps-4">
+                            <NhanNguonLich s={s} />
+                          </td>
+                          {s.nghiCaNgay ? (
+                            <td colSpan={2} className="text-warning-emphasis">
+                              <i className="bi bi-slash-circle me-2" aria-hidden />
+                              Không trực cả ngày
+                            </td>
+                          ) : (
+                            <>
+                              <td className="font-monospace">
+                                {chuanGio(s.khungGioBatDau)}
+                              </td>
+                              <td className="font-monospace">
+                                {chuanGio(s.khungGioKetThuc)}
+                              </td>
+                            </>
+                          )}
                           {canEditSchedules ? (
-                            <th className="border-0 text-end pe-4" style={{ width: "1%" }}>
-                              Thao tác
-                            </th>
+                            <td className="text-end pe-4">
+                              <Button
+                                size="sm"
+                                variant="outline-danger"
+                                className="btn-action-delete"
+                                onClick={() => handleDelete(s)}
+                                disabled={
+                                  s.nguonBanGhi === "CO_DINH" &&
+                                  !user?.cacVaiTro.includes("QUAN_TRI")
+                                }
+                                title={
+                                  s.nguonBanGhi === "CO_DINH" &&
+                                  !user?.cacVaiTro.includes("QUAN_TRI")
+                                    ? "Chỉ quản trị viên xóa lịch tuần cố định"
+                                    : undefined
+                                }
+                              >
+                                <i className="bi bi-trash3" aria-hidden />
+                              </Button>
+                            </td>
                           ) : null}
                         </tr>
-                      </thead>
-                      <tbody>
-                        {schedules.map((s) => (
-                          <tr key={`${s.nguonBanGhi ?? "x"}-${s.id}`}>
-                            <td className="ps-4">
-                              <NhanNguonLich s={s} />
-                            </td>
-                            {s.nghiCaNgay ? (
-                              <td colSpan={2} className="text-warning-emphasis">
-                                <i className="bi bi-slash-circle me-2" aria-hidden />
-                                Không trực cả ngày
-                              </td>
-                            ) : (
-                              <>
-                                <td className="font-monospace">{s.khungGioBatDau ?? "—"}</td>
-                                <td className="font-monospace">{s.khungGioKetThuc ?? "—"}</td>
-                              </>
-                            )}
-                            {canEditSchedules ? (
-                              <td className="text-end pe-4">
-                                <Button
-                                  size="sm"
-                                  variant="outline-danger"
-                                  className="btn-action-delete"
-                                  onClick={() => handleDelete(s)}
-                                  disabled={
-                                    s.nguonBanGhi === "CO_DINH" &&
-                                    !user?.cacVaiTro.includes("QUAN_TRI")
-                                  }
-                                  title={
-                                    s.nguonBanGhi === "CO_DINH" &&
-                                    !user?.cacVaiTro.includes("QUAN_TRI")
-                                      ? "Chỉ quản trị viên xóa lịch tuần cố định"
-                                      : undefined
-                                  }
-                                >
-                                  <i className="bi bi-trash3" aria-hidden />
-                                </Button>
-                              </td>
-                            ) : null}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  </div>
-              {!bangTai && schedules.length === 0 ? (
-                <Card.Body className="text-center text-muted py-5 border-top">
-                  <i
-                    className="bi bi-inbox display-6 d-block mb-2 opacity-25"
-                    aria-hidden
-                  />
-                  Không có ca cho ngày này.
-                </Card.Body>
-              ) : null}
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+                {!bangTai && schedules.length === 0 ? (
+                  <Card.Body className="text-center text-muted py-5 border-top">
+                    <i
+                      className="bi bi-inbox display-6 d-block mb-2 opacity-25"
+                      aria-hidden
+                    />
+                    Không có ca cho ngày này.
+                  </Card.Body>
+                ) : null}
+              </div>
             </Card>
           </Tab>
 
@@ -1065,48 +1204,67 @@ export default function LichLamViecBacSisPage() {
               </span>
             }
           >
-            <Card className="mb-4 card--static border-0 shadow-sm">
-              <Card.Body className="p-4">
-                <Row className="g-3 align-items-end">
-                  <Col md={6} lg={4}>
-                    <Form.Label className="fw-semibold small text-uppercase text-muted">
-                      Ngày
-                    </Form.Label>
-                    <Form.Control
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      className="border-secondary-subtle"
-                    />
-                  </Col>
-                  <Col md={6} lg={8} className="text-md-end">
-                    <div className="small text-muted">Tổng lịch hẹn trong ngày</div>
-                    <div className="fw-semibold fs-5">
-                      {appointments.length} lượt
-                    </div>
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
-
             <Card className="card--static border-0 shadow-sm overflow-hidden">
-              <Card.Header className="bg-white border-bottom py-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-                <div className="d-flex align-items-center gap-2">
-                  <span className="rounded-2 bg-success-subtle text-success p-2 d-inline-flex">
-                    <i className="bi bi-journal-check" aria-hidden />
-                  </span>
+              <LichTabCardHeader
+                tone="success"
+                icon="bi-journal-check"
+                title="Lịch đã đặt"
+                subtitle={
+                  <>
+                    Lịch hẹn bệnh nhân theo ngày (chỉ xem). Ca trực — tab{" "}
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="p-0 align-baseline"
+                      onClick={() => setTab("ngoai-le")}
+                    >
+                      Ca ngoại lệ
+                    </Button>
+                    .
+                  </>
+                }
+                trailing={
+                  <>
+                    <div>
+                      <Form.Label className="fw-semibold small text-uppercase text-muted mb-1 d-block">
+                        Ngày
+                      </Form.Label>
+                      <Form.Control
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className="border-secondary-subtle"
+                        style={{ minWidth: "11.5rem" }}
+                      />
+                    </div>
+                    <div className="text-lg-end">
+                      <div className="small text-muted text-uppercase fw-semibold">
+                        Tổng trong ngày
+                      </div>
+                      <div className="fw-semibold fs-5 text-body">
+                        {appointments.length} lượt
+                      </div>
+                    </div>
+                  </>
+                }
+              />
+
+              <div className="border-top">
+                <div className="px-4 pt-3 pb-2 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
                   <div>
-                    <span className="fw-semibold d-block">Lịch đã đặt</span>
-                    <span className="small text-muted">
+                    <div className="small text-muted text-uppercase fw-semibold mb-1">
+                      Danh sách
+                    </div>
+                    <span className="fw-semibold text-body">Lịch hẹn</span>
+                    <span className="text-muted small ms-0 ms-sm-2 d-block d-sm-inline">
                       {tenBacSiChon ? `${tenBacSiChon} · ` : ""}
                       {formatNgay(date)}
                     </span>
                   </div>
+                  {bangTai ? (
+                    <Spinner animation="border" size="sm" className="text-primary" />
+                  ) : null}
                 </div>
-                {bangTai ? (
-                  <Spinner animation="border" size="sm" className="text-primary" />
-                ) : null}
-              </Card.Header>
               <div className="table-responsive">
                 <Table hover className="mb-0 align-middle">
                   <thead className="table-light">
@@ -1159,6 +1317,7 @@ export default function LichLamViecBacSisPage() {
                   Chưa có lịch đặt cho ngày này.
                 </Card.Body>
               ) : null}
+              </div>
             </Card>
           </Tab>
         </Tabs>

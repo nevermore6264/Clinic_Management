@@ -476,147 +476,282 @@ function BenhNhanPageInner() {
       )}
 
       {chiTaiKhoanBnLienKet && (
-        <Card className="mb-3 card--static border-0 shadow-sm">
-          <Card.Body className="p-4">
+        <section
+          className="patient-portal-profile mb-3"
+          aria-label="Hồ sơ bệnh nhân của tôi"
+        >
+          <Card className="patient-portal-profile__shell card--static border-0 shadow-sm">
             {patientSelfProfileLoading && (
-              <div className="text-center text-muted py-4">
-                <span
-                  className="spinner-border spinner-border-sm me-2"
-                  role="status"
-                  aria-hidden
-                />
-                Đang tải hồ sơ…
+              <div className="patient-portal-profile__loading">
+                <div className="placeholder-glow d-flex gap-3 align-items-center">
+                  <span
+                    className="placeholder col-2"
+                    style={{ maxWidth: "4.25rem", aspectRatio: "1" }}
+                  />
+                  <div className="flex-grow-1">
+                    <span className="placeholder col-7 mb-2 d-block" />
+                    <span className="placeholder col-4 d-block" />
+                  </div>
+                </div>
+                <p className="text-muted small mb-0 mt-3 d-flex align-items-center gap-2">
+                  <span
+                    className="spinner-border spinner-border-sm"
+                    role="status"
+                    aria-hidden
+                  />
+                  Đang tải hồ sơ…
+                </p>
               </div>
             )}
             {!patientSelfProfileLoading && patientSelfProfileError && (
-              <Alert variant="danger" className="mb-0">
-                {patientSelfProfileError}
-              </Alert>
+              <Card.Body className="p-4">
+                <Alert variant="danger" className="mb-0">
+                  {patientSelfProfileError}
+                </Alert>
+              </Card.Body>
             )}
             {!patientSelfProfileLoading &&
               !patientSelfProfileError &&
               patientSelfProfile && (
                 <>
-                  <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
-                    <div className="min-w-0">
-                      <h5 className="mb-1 text-break">
-                        {patientSelfProfile.hoTen || "—"}
-                      </h5>
-                      <div className="text-muted small">
-                        {patientSelfProfile.hoatDong === false ? (
-                          <span className="badge bg-secondary">
-                            Hồ sơ đã ẩn
-                          </span>
-                        ) : (
-                          <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">
-                            Đang hoạt động
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      variant="primary"
-                      className="d-inline-flex align-items-center gap-2 flex-shrink-0"
-                      type="button"
-                      onClick={() =>
-                        user.maBenhNhan != null &&
-                        openEditModal(user.maBenhNhan)
-                      }
-                    >
-                      <i className="bi bi-pencil" aria-hidden />
-                      Chỉnh sửa hồ sơ
-                    </Button>
-                  </div>
-                  <Row className="g-3">
-                    <Col sm={6} lg={4}>
-                      <div className="text-muted small mb-1">Ngày sinh</div>
-                      <div>{patientSelfProfile.ngaySinh || "—"}</div>
-                    </Col>
-                    <Col sm={6} lg={4}>
-                      <div className="text-muted small mb-1">Giới tính</div>
-                      <div>
-                        <TagGioiTinh ma={patientSelfProfile.gioiTinh} />
-                      </div>
-                    </Col>
-                    <Col sm={6} lg={4}>
-                      <div className="text-muted small mb-1">Nhóm máu</div>
-                      <div>
-                        <TagNhomMau nhom={patientSelfProfile.nhomMau} />
-                      </div>
-                    </Col>
-                    <Col sm={6} lg={4}>
-                      <div className="text-muted small mb-1">Số điện thoại</div>
-                      <div>{patientSelfProfile.soDienThoai || "—"}</div>
-                    </Col>
-                    <Col sm={6} lg={4}>
-                      <div className="text-muted small mb-1">Email</div>
-                      <div className="text-break">
-                        {patientSelfProfile.thuDienTu || "—"}
-                      </div>
-                    </Col>
-                    <Col sm={6} lg={4}>
-                      <div className="text-muted small mb-1">Nghề nghiệp</div>
-                      <div>{patientSelfProfile.ngheNghiep || "—"}</div>
-                    </Col>
-                    <Col xs={12}>
-                      <div className="text-muted small mb-1">Địa chỉ</div>
-                      <div>{patientSelfProfile.diaChi || "—"}</div>
-                    </Col>
-                    {patientSelfProfile.soCccd && (
-                      <Col sm={6} lg={4}>
-                        <div className="text-muted small mb-1">CCCD / CMND</div>
-                        <div>{patientSelfProfile.soCccd}</div>
-                      </Col>
-                    )}
-                    {patientSelfProfile.tienSuBenh && (
-                      <Col xs={12}>
-                        <div className="text-muted small mb-1">
-                          Tiền sử bệnh
+                  {(() => {
+                    const bnId =
+                      patientSelfProfile.id ?? user.maBenhNhan ?? 0;
+                    const bnQs = encodeURIComponent(String(bnId));
+                    const hrefLichCuaToi = `/lich-hen?maBenhNhan=${bnQs}`;
+                    const hrefDatLich = `/lich-hen?datLich=1&maBenhNhan=${bnQs}`;
+                    const hrefHoaDon = `/hoa-don?maBenhNhan=${bnQs}`;
+                    return (
+                      <>
+                        <div className="patient-portal-profile__hero">
+                          <div className="patient-portal-profile__hero-row">
+                            <ChatGeneratedAvatar
+                              userId={bnId}
+                              hoTen={patientSelfProfile.hoTen}
+                              tenDangNhap={user.tenDangNhap}
+                              className="patient-portal-profile__avatar"
+                            />
+                            <div className="patient-portal-profile__hero-main">
+                              <p className="patient-portal-profile__eyebrow">
+                                Hồ sơ bệnh nhân
+                              </p>
+                              <h2
+                                id="patient-portal-profile-title"
+                                className="patient-portal-profile__name"
+                              >
+                                {patientSelfProfile.hoTen || "—"}
+                              </h2>
+                              <div className="d-flex flex-wrap align-items-center gap-2 mt-2">
+                                {patientSelfProfile.hoatDong === false ? (
+                                  <span className="badge bg-secondary">
+                                    Hồ sơ đã ẩn
+                                  </span>
+                                ) : (
+                                  <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+                                    Đang hoạt động
+                                  </span>
+                                )}
+                                {patientSelfProfile.id != null ? (
+                                  <span className="patient-portal-profile__pid text-muted small">
+                                    Mã hồ sơ #{patientSelfProfile.id}
+                                  </span>
+                                ) : null}
+                              </div>
+                            </div>
+                            <Button
+                              variant="primary"
+                              className="d-inline-flex align-items-center gap-2 flex-shrink-0 rounded-pill px-3"
+                              type="button"
+                              onClick={() =>
+                                user.maBenhNhan != null &&
+                                openEditModal(user.maBenhNhan)
+                              }
+                            >
+                              <i className="bi bi-pencil" aria-hidden />
+                              Chỉnh sửa hồ sơ
+                            </Button>
+                          </div>
+                          <div className="patient-portal-profile__actions">
+                            <Link
+                              href={hrefDatLich}
+                              className="btn btn-sm btn-primary d-inline-flex align-items-center gap-2"
+                            >
+                              <i className="bi bi-calendar-plus" aria-hidden />
+                              Đặt lịch nhanh
+                            </Link>
+                            <Link
+                              href={hrefLichCuaToi}
+                              className="btn btn-sm btn-light border d-inline-flex align-items-center gap-2"
+                            >
+                              <i className="bi bi-calendar3" aria-hidden />
+                              Lịch của tôi
+                            </Link>
+                            <Link
+                              href={hrefHoaDon}
+                              className="btn btn-sm btn-light border d-inline-flex align-items-center gap-2"
+                            >
+                              <i className="bi bi-receipt" aria-hidden />
+                              Hóa đơn
+                            </Link>
+                          </div>
                         </div>
-                        <div className="text-break">
-                          {patientSelfProfile.tienSuBenh}
-                        </div>
-                      </Col>
-                    )}
-                    {patientSelfProfile.diUng && (
-                      <Col xs={12}>
-                        <div className="text-muted small mb-1">Dị ứng</div>
-                        <div className="text-break">
-                          {patientSelfProfile.diUng}
-                        </div>
-                      </Col>
-                    )}
-                    {(patientSelfProfile.nguoiLienHe ||
-                      patientSelfProfile.soDienThoaiLienHe) && (
-                      <Col xs={12}>
-                        <div className="text-muted small mb-1">
-                          Người liên hệ khẩn cấp
-                        </div>
-                        <div>
-                          {patientSelfProfile.nguoiLienHe || "—"}
-                          {patientSelfProfile.soDienThoaiLienHe ? (
-                            <span className="text-muted">
-                              {" "}
-                              · {patientSelfProfile.soDienThoaiLienHe}
-                            </span>
-                          ) : null}
-                        </div>
-                      </Col>
-                    )}
-                  </Row>
-                  <div className="mt-3 pt-3 border-top">
-                    <Link
-                      href={`/lich-hen?maBenhNhan=${patientSelfProfile.id ?? user.maBenhNhan}`}
-                      className="btn btn-sm btn-outline-primary"
-                    >
-                      <i className="bi bi-calendar3 me-1" aria-hidden />
-                      Lịch hẹn của tôi
-                    </Link>
-                  </div>
+                        <Card.Body className="p-0">
+                          <div className="patient-portal-profile__section bg-white">
+                            <h3 className="patient-portal-profile__section-title">
+                              <i className="bi bi-person-vcard" aria-hidden />
+                              Thông tin cá nhân
+                            </h3>
+                            <Row className="g-3 g-lg-4">
+                              <Col sm={6} lg={4}>
+                                <div className="patient-portal-profile__field-label">
+                                  Ngày sinh
+                                </div>
+                                <div className="patient-portal-profile__field-value">
+                                  {patientSelfProfile.ngaySinh || "—"}
+                                </div>
+                              </Col>
+                              <Col sm={6} lg={4}>
+                                <div className="patient-portal-profile__field-label">
+                                  Giới tính
+                                </div>
+                                <div className="patient-portal-profile__field-value">
+                                  <TagGioiTinh ma={patientSelfProfile.gioiTinh} />
+                                </div>
+                              </Col>
+                              <Col sm={6} lg={4}>
+                                <div className="patient-portal-profile__field-label">
+                                  Nhóm máu
+                                </div>
+                                <div className="patient-portal-profile__field-value">
+                                  <TagNhomMau nhom={patientSelfProfile.nhomMau} />
+                                </div>
+                              </Col>
+                              <Col sm={6} lg={4}>
+                                <div className="patient-portal-profile__field-label">
+                                  Số điện thoại
+                                </div>
+                                <div className="patient-portal-profile__field-value">
+                                  {patientSelfProfile.soDienThoai || "—"}
+                                </div>
+                              </Col>
+                              <Col sm={6} lg={4}>
+                                <div className="patient-portal-profile__field-label">
+                                  Email
+                                </div>
+                                <div className="patient-portal-profile__field-value text-break">
+                                  {patientSelfProfile.thuDienTu || "—"}
+                                </div>
+                              </Col>
+                              <Col sm={6} lg={4}>
+                                <div className="patient-portal-profile__field-label">
+                                  Nghề nghiệp
+                                </div>
+                                <div className="patient-portal-profile__field-value">
+                                  {patientSelfProfile.ngheNghiep || "—"}
+                                </div>
+                              </Col>
+                              <Col xs={12}>
+                                <div className="patient-portal-profile__field-label">
+                                  Địa chỉ
+                                </div>
+                                <div className="patient-portal-profile__field-value">
+                                  {patientSelfProfile.diaChi || "—"}
+                                </div>
+                              </Col>
+                              {patientSelfProfile.soCccd ? (
+                                <Col sm={6} lg={4}>
+                                  <div className="patient-portal-profile__field-label">
+                                    CCCD / CMND
+                                  </div>
+                                  <div className="patient-portal-profile__field-value">
+                                    {patientSelfProfile.soCccd}
+                                  </div>
+                                </Col>
+                              ) : null}
+                            </Row>
+                          </div>
+                          <div className="patient-portal-profile__section patient-portal-profile__section--muted">
+                            <h3 className="patient-portal-profile__section-title">
+                              <i className="bi bi-heart-pulse" aria-hidden />
+                              Sức khỏe và an toàn
+                            </h3>
+                            <Row className="g-3">
+                              {patientSelfProfile.tienSuBenh ? (
+                                <Col xs={12}>
+                                  <div className="patient-portal-profile__field-label">
+                                    Tiền sử bệnh
+                                  </div>
+                                  <div className="patient-portal-profile__note-box text-break">
+                                    {patientSelfProfile.tienSuBenh}
+                                  </div>
+                                </Col>
+                              ) : null}
+                              {patientSelfProfile.diUng ? (
+                                <Col xs={12}>
+                                  <div className="patient-portal-profile__field-label">
+                                    Dị ứng
+                                  </div>
+                                  <div className="patient-portal-profile__note-box text-break">
+                                    {patientSelfProfile.diUng}
+                                  </div>
+                                </Col>
+                              ) : null}
+                              {patientSelfProfile.nguoiLienHe ||
+                              patientSelfProfile.soDienThoaiLienHe ? (
+                                <Col xs={12}>
+                                  <div className="patient-portal-profile__field-label">
+                                    Người liên hệ khẩn cấp
+                                  </div>
+                                  <div className="patient-portal-profile__emergency">
+                                    <span
+                                      className="patient-portal-profile__emergency-icon"
+                                      aria-hidden
+                                    >
+                                      <i className="bi bi-telephone-fill" />
+                                    </span>
+                                    <div className="min-w-0">
+                                      <div className="fw-semibold text-break">
+                                        {patientSelfProfile.nguoiLienHe || "—"}
+                                      </div>
+                                      {patientSelfProfile.soDienThoaiLienHe ? (
+                                        <a
+                                          className="small text-decoration-none"
+                                          href={`tel:${patientSelfProfile.soDienThoaiLienHe.replace(/\s+/g, "")}`}
+                                        >
+                                          {
+                                            patientSelfProfile.soDienThoaiLienHe
+                                          }
+                                        </a>
+                                      ) : (
+                                        <span className="text-muted small">
+                                          Chưa có số điện thoại
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </Col>
+                              ) : null}
+                            </Row>
+                          </div>
+                          <div className="patient-portal-profile__footer-links text-muted">
+                            <Link href={hrefLichCuaToi}>
+                              <i className="bi bi-calendar3 me-1" aria-hidden />
+                              Xem tất cả lịch hẹn
+                            </Link>
+                            <span aria-hidden>·</span>
+                            <Link href={hrefHoaDon}>
+                              <i className="bi bi-receipt me-1" aria-hidden />
+                              Hóa đơn đã phát hành
+                            </Link>
+                          </div>
+                        </Card.Body>
+                      </>
+                    );
+                  })()}
                 </>
               )}
-          </Card.Body>
-        </Card>
+          </Card>
+        </section>
       )}
 
       {!chiTaiKhoanBn && (

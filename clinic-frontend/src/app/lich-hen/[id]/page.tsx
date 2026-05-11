@@ -40,14 +40,12 @@ export default function AppointmentDetailPage() {
   const [statusLog, setStatusLog] = useState<LichSuTrangThaiLichHen[]>([]);
   const [error, setError] = useState("");
 
-  /** Hồ sơ khám / đơn thuốc — bác sĩ, quản trị, lễ tân */
   const canEditMedical =
     !!user &&
     (user.cacVaiTro.includes("BAC_SI") ||
       user.cacVaiTro.includes("QUAN_TRI") ||
       user.cacVaiTro.includes("LE_TAN"));
 
-  /** Đổi trạng thái lịch (gồm Hủy / Vắng) — chỉ nhân viên; tài khoản chỉ bệnh nhân không có */
   const canUpdateAppointmentStatus =
     !!user &&
     laNhanVien(user) &&

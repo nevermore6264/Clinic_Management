@@ -519,7 +519,6 @@ html.app-ready body {
 .bac-si-modal-footer {
   gap: 0.65rem !important;
 }
-/* Nút Hủy modal (Đặt lịch khám, bác sĩ, …): secondary dạng outline, không “khối xám” cạnh primary */
 .btn-bac-si-modal-cancel.btn-secondary,
 .btn-bac-si-modal-cancel.btn-outline-secondary,
 .btn-bac-si-modal-cancel {
@@ -2498,7 +2497,6 @@ html.app-ready body {
   padding: 1rem 1.5rem;
 }
 
-/* Patient self-service profile (/benh-nhan, role bệnh nhân) */
 .patient-portal-profile__shell {
   border-radius: 16px;
   overflow: hidden;
@@ -2551,6 +2549,11 @@ html.app-ready body {
   font-weight: 700;
   border-radius: 1rem;
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
+}
+.patient-portal-profile__avatar.chat-dm-app__avatar--initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .patient-portal-profile__actions {
   display: flex;

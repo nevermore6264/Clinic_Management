@@ -1117,7 +1117,7 @@ export default function LichLamViecBacSisPage() {
                                   <Button
                                     variant={dangMoFormChoNgayNay ? "outline-secondary" : "primary"}
                                     size="sm"
-                                    className="rounded-pill px-2 px-sm-3"
+                                    className="rounded-pill px-2 px-sm-3 lich-bs-btn-ngoai-le-them"
                                     onClick={() => {
                                       setDate(dayIso);
                                       setLoiNgoaiLe("");
@@ -1134,7 +1134,7 @@ export default function LichLamViecBacSisPage() {
                                   <Button
                                     variant="outline-warning"
                                     size="sm"
-                                    className="rounded-pill px-2 px-sm-3"
+                                    className="rounded-pill px-2 px-sm-3 lich-bs-btn-ngoai-le-nghi"
                                     onClick={() => handleNghiCaNgay(dayIso)}
                                     title={`Nghỉ cả ngày ${formatNgay(dayIso)}`}
                                   >
@@ -1176,7 +1176,7 @@ export default function LichLamViecBacSisPage() {
                                       type="button"
                                       variant="outline-secondary"
                                       size="sm"
-                                      className="flex-shrink-0"
+                                      className="flex-shrink-0 rounded-pill px-3 lich-bs-btn-ngoai-le-dong"
                                       onClick={() => {
                                         setLoiNgoaiLe("");
                                         setShowAdd(false);

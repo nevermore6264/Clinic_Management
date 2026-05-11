@@ -436,13 +436,41 @@ html.app-ready body {
 }
 
 .modal-dialog.bac-si-modal-tao-moi {
-  max-width: min(1140px, calc(100vw - 2rem));
+  max-width: min(1520px, calc(100vw - 2rem));
 }
 .modal-dialog.bac-si-modal-tao-moi .modal-body {
   padding: 1.35rem 1.75rem;
 }
 .modal-dialog.bac-si-modal-tao-moi .modal-header {
   padding: 1.1rem 1.75rem;
+}
+.bac-si-modal-tao-moi .ql-editor {
+  min-height: 180px;
+}
+.bac-si-page .bac-si-rich-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.35;
+  min-height: calc(1.35em * 2);
+  color: #475569;
+}
+.bac-si-page .bac-si-rich-preview--clickable {
+  cursor: pointer;
+}
+.bac-si-page .bac-si-rich-preview--clickable:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+.bac-si-page .bac-si-rich-full {
+  line-height: 1.5;
+  color: #334155;
+}
+.bac-si-page .bac-si-rich-full p:last-child {
+  margin-bottom: 0;
 }
 
 .bac-si-page .btn-bacsi-chuyen-khoa {

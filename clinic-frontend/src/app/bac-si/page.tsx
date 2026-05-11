@@ -10,6 +10,8 @@ import {
   Dropdown,
   Form,
   Modal,
+  Row,
+  Col,
   Table,
 } from "react-bootstrap";
 import Link from "next/link";
@@ -79,6 +81,16 @@ function sanitizeDoctorHtml(input?: string): string {
   }).trim();
 }
 
+function htmlToPlainPreview(input?: string): string {
+  if (!input) return "";
+  const safeHtml = sanitizeDoctorHtml(input);
+  return safeHtml
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function RichTextInput({
   value,
   onChange,
@@ -124,6 +136,7 @@ export default function QuanLyBacSiPage() {
   const [taoThanhTichDatDuoc, setTaoThanhTichDatDuoc] = useState("");
 
   const [dangSua, setDangSua] = useState<BacSi | null>(null);
+  const [xemChiTietNoiDung, setXemChiTietNoiDung] = useState<BacSi | null>(null);
   const [maCkSua, setMaCkSua] = useState("");
   const [bangCapSua, setBangCapSua] = useState("");
   const [hoTenSua, setHoTenSua] = useState("");
@@ -494,41 +507,38 @@ export default function QuanLyBacSiPage() {
                 <td className="text-muted small" style={{ maxWidth: "16rem" }}>
                   {b.gioiThieu ? (
                     <div
-                      className="small"
-                      style={{ maxHeight: "4.5rem", overflow: "auto" }}
-                      dangerouslySetInnerHTML={{
-                        __html: sanitizeDoctorHtml(b.gioiThieu),
-                      }}
-                    />
-                  ) : (
-                    "—"
-                  )}
+                      role="button"
+                      className="bac-si-rich-preview bac-si-rich-preview--clickable"
+                      title={htmlToPlainPreview(b.gioiThieu)}
+                      onClick={() => setXemChiTietNoiDung(b)}
+                    >
+                      {htmlToPlainPreview(b.gioiThieu)}
+                    </div>
+                  ) : "—"}
                 </td>
                 <td className="text-muted small" style={{ maxWidth: "16rem" }}>
                   {b.quaTrinhCongTac ? (
                     <div
-                      className="small"
-                      style={{ maxHeight: "4.5rem", overflow: "auto" }}
-                      dangerouslySetInnerHTML={{
-                        __html: sanitizeDoctorHtml(b.quaTrinhCongTac),
-                      }}
-                    />
-                  ) : (
-                    "—"
-                  )}
+                      role="button"
+                      className="bac-si-rich-preview bac-si-rich-preview--clickable"
+                      title={htmlToPlainPreview(b.quaTrinhCongTac)}
+                      onClick={() => setXemChiTietNoiDung(b)}
+                    >
+                      {htmlToPlainPreview(b.quaTrinhCongTac)}
+                    </div>
+                  ) : "—"}
                 </td>
                 <td className="text-muted small" style={{ maxWidth: "16rem" }}>
                   {b.thanhTichDatDuoc ? (
                     <div
-                      className="small"
-                      style={{ maxHeight: "4.5rem", overflow: "auto" }}
-                      dangerouslySetInnerHTML={{
-                        __html: sanitizeDoctorHtml(b.thanhTichDatDuoc),
-                      }}
-                    />
-                  ) : (
-                    "—"
-                  )}
+                      role="button"
+                      className="bac-si-rich-preview bac-si-rich-preview--clickable"
+                      title={htmlToPlainPreview(b.thanhTichDatDuoc)}
+                      onClick={() => setXemChiTietNoiDung(b)}
+                    >
+                      {htmlToPlainPreview(b.thanhTichDatDuoc)}
+                    </div>
+                  ) : "—"}
                 </td>
                 <td className="text-center">
                   {b.hoatDong ? (
@@ -563,6 +573,84 @@ export default function QuanLyBacSiPage() {
           </tbody>
         </Table>
       </Card>
+
+      <Modal
+        show={Boolean(xemChiTietNoiDung)}
+        onHide={() => setXemChiTietNoiDung(null)}
+        centered
+        size="xl"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            Nội dung hồ sơ — {xemChiTietNoiDung?.hoTen ?? xemChiTietNoiDung?.tenDangNhap}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Row className="g-3">
+            <Col md={4}>
+              <Card className="h-100">
+                <Card.Header className="fw-semibold">Giới thiệu</Card.Header>
+                <Card.Body>
+                  {xemChiTietNoiDung?.gioiThieu ? (
+                    <div
+                      className="bac-si-rich-full"
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeDoctorHtml(xemChiTietNoiDung.gioiThieu),
+                      }}
+                    />
+                  ) : (
+                    <span className="text-muted">—</span>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={4}>
+              <Card className="h-100">
+                <Card.Header className="fw-semibold">Quá trình công tác</Card.Header>
+                <Card.Body>
+                  {xemChiTietNoiDung?.quaTrinhCongTac ? (
+                    <div
+                      className="bac-si-rich-full"
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeDoctorHtml(xemChiTietNoiDung.quaTrinhCongTac),
+                      }}
+                    />
+                  ) : (
+                    <span className="text-muted">—</span>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={4}>
+              <Card className="h-100">
+                <Card.Header className="fw-semibold">Thành tích đạt được</Card.Header>
+                <Card.Body>
+                  {xemChiTietNoiDung?.thanhTichDatDuoc ? (
+                    <div
+                      className="bac-si-rich-full"
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeDoctorHtml(xemChiTietNoiDung.thanhTichDatDuoc),
+                      }}
+                    />
+                  ) : (
+                    <span className="text-muted">—</span>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Modal.Body>
+        <Modal.Footer className="clinic-modal-footer-actions">
+          <Button
+            type="button"
+            className="btn-modal-dismiss"
+            onClick={() => setXemChiTietNoiDung(null)}
+          >
+            <i className="bi bi-x-lg me-2" aria-hidden />
+            Đóng
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       <Modal
         show={showTaoMoi}
@@ -687,30 +775,38 @@ export default function QuanLyBacSiPage() {
                 placeholder="Ví dụ: Bác sĩ đa khoa"
               />
             </Form.Group>
-            <Form.Group className="mt-3">
-              <Form.Label>Giới thiệu</Form.Label>
-              <RichTextInput
-                value={taoGioiThieu}
-                onChange={setTaoGioiThieu}
-                placeholder="Nhập giới thiệu bác sĩ..."
-              />
-            </Form.Group>
-            <Form.Group className="mt-3">
-              <Form.Label>Quá trình công tác</Form.Label>
-              <RichTextInput
-                value={taoQuaTrinhCongTac}
-                onChange={setTaoQuaTrinhCongTac}
-                placeholder="Nhập quá trình công tác..."
-              />
-            </Form.Group>
-            <Form.Group className="mt-3">
-              <Form.Label>Thành tích đạt được</Form.Label>
-              <RichTextInput
-                value={taoThanhTichDatDuoc}
-                onChange={setTaoThanhTichDatDuoc}
-                placeholder="Nhập thành tích đạt được..."
-              />
-            </Form.Group>
+            <Row className="g-3 mt-1">
+              <Col lg={4}>
+                <Form.Group>
+                  <Form.Label>Giới thiệu</Form.Label>
+                  <RichTextInput
+                    value={taoGioiThieu}
+                    onChange={setTaoGioiThieu}
+                    placeholder="Nhập giới thiệu bác sĩ..."
+                  />
+                </Form.Group>
+              </Col>
+              <Col lg={4}>
+                <Form.Group>
+                  <Form.Label>Quá trình công tác</Form.Label>
+                  <RichTextInput
+                    value={taoQuaTrinhCongTac}
+                    onChange={setTaoQuaTrinhCongTac}
+                    placeholder="Nhập quá trình công tác..."
+                  />
+                </Form.Group>
+              </Col>
+              <Col lg={4}>
+                <Form.Group>
+                  <Form.Label>Thành tích đạt được</Form.Label>
+                  <RichTextInput
+                    value={taoThanhTichDatDuoc}
+                    onChange={setTaoThanhTichDatDuoc}
+                    placeholder="Nhập thành tích đạt được..."
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
           </Modal.Body>
           <Modal.Footer className="clinic-modal-footer bac-si-modal-footer clinic-modal-footer-actions">
             <Button
@@ -787,7 +883,13 @@ export default function QuanLyBacSiPage() {
         </Form>
       </Modal>
 
-      <Modal show={Boolean(dangSua)} onHide={dongSua} centered>
+      <Modal
+        show={Boolean(dangSua)}
+        onHide={dongSua}
+        centered
+        size="xl"
+        dialogClassName="bac-si-modal-tao-moi"
+      >
         <Form noValidate onSubmit={luuSua}>
           <Modal.Header closeButton>
             <Modal.Title>
@@ -827,30 +929,38 @@ export default function QuanLyBacSiPage() {
                 onChange={(e) => setBangCapSua(e.target.value)}
               />
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Giới thiệu</Form.Label>
-              <RichTextInput
-                value={gioiThieuSua}
-                onChange={setGioiThieuSua}
-                placeholder="Nhập giới thiệu bác sĩ..."
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Quá trình công tác</Form.Label>
-              <RichTextInput
-                value={quaTrinhCongTacSua}
-                onChange={setQuaTrinhCongTacSua}
-                placeholder="Nhập quá trình công tác..."
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Thành tích đạt được</Form.Label>
-              <RichTextInput
-                value={thanhTichDatDuocSua}
-                onChange={setThanhTichDatDuocSua}
-                placeholder="Nhập thành tích đạt được..."
-              />
-            </Form.Group>
+            <Row className="g-3">
+              <Col lg={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Giới thiệu</Form.Label>
+                  <RichTextInput
+                    value={gioiThieuSua}
+                    onChange={setGioiThieuSua}
+                    placeholder="Nhập giới thiệu bác sĩ..."
+                  />
+                </Form.Group>
+              </Col>
+              <Col lg={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Quá trình công tác</Form.Label>
+                  <RichTextInput
+                    value={quaTrinhCongTacSua}
+                    onChange={setQuaTrinhCongTacSua}
+                    placeholder="Nhập quá trình công tác..."
+                  />
+                </Form.Group>
+              </Col>
+              <Col lg={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Thành tích đạt được</Form.Label>
+                  <RichTextInput
+                    value={thanhTichDatDuocSua}
+                    onChange={setThanhTichDatDuocSua}
+                    placeholder="Nhập thành tích đạt được..."
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
             <Form.Check
               type="switch"
               id="bs-hoat-dong"

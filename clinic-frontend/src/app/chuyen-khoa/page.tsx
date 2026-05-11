@@ -294,9 +294,9 @@ export default function ChuyenKhoaPage() {
                         Lưu
                       </Button>
                       <Button
+                        type="button"
                         size="sm"
-                        variant="secondary"
-                        className="me-2"
+                        className="btn-modal-dismiss me-2"
                         onClick={resetInlineEdit}
                       >
                         <i className="bi bi-x-lg me-1" aria-hidden />

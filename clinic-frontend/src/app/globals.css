@@ -519,23 +519,55 @@ html.app-ready body {
 .bac-si-modal-footer {
   gap: 0.65rem !important;
 }
-.btn-bac-si-modal-cancel.btn-secondary {
-  background-color: #5a6268 !important;
-  border-color: #5a6268 !important;
-  color: #fff !important;
+/* Nút Hủy modal (Đặt lịch khám, bác sĩ, …): secondary dạng outline, không “khối xám” cạnh primary */
+.btn-bac-si-modal-cancel.btn-secondary,
+.btn-bac-si-modal-cancel.btn-outline-secondary,
+.btn-bac-si-modal-cancel {
+  background-color: #fff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #475569 !important;
   font-weight: 600;
-  border-radius: 8px;
-  border: none !important;
-  box-shadow: none;
+  border-radius: var(--clinic-radius-sm, 10px) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
+
 .btn-bac-si-modal-cancel.btn-secondary:hover,
-.btn-bac-si-modal-cancel.btn-secondary:focus-visible {
-  background-color: #4e555b !important;
-  border-color: #4e555b !important;
-  color: #fff !important;
+.btn-bac-si-modal-cancel.btn-secondary:focus-visible,
+.btn-bac-si-modal-cancel.btn-outline-secondary:hover,
+.btn-bac-si-modal-cancel.btn-outline-secondary:focus-visible,
+.btn-bac-si-modal-cancel:hover,
+.btn-bac-si-modal-cancel:focus-visible {
+  background-color: #f8fafc !important;
+  border-color: #94a3b8 !important;
+  color: #334155 !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
 }
-.btn-bac-si-modal-cancel.btn-secondary:active {
-  background-color: #484f54 !important;
+
+.btn-bac-si-modal-cancel.btn-secondary:active,
+.btn-bac-si-modal-cancel.btn-outline-secondary:active,
+.btn-bac-si-modal-cancel:active {
+  background-color: #f1f5f9 !important;
+  border-color: #64748b !important;
+  color: #1e293b !important;
+}
+
+.btn-bac-si-modal-cancel.btn-secondary:focus-visible,
+.btn-bac-si-modal-cancel.btn-outline-secondary:focus-visible,
+.btn-bac-si-modal-cancel:focus-visible {
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.05),
+    0 0 0 0.2rem rgba(100, 116, 139, 0.22) !important;
+}
+
+.btn-bac-si-modal-cancel.btn-secondary:disabled,
+.btn-bac-si-modal-cancel.btn-outline-secondary:disabled,
+.btn-bac-si-modal-cancel:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background-color: #f8fafc !important;
+  color: #94a3b8 !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: none !important;
 }
 .btn-bac-si-modal-primary.btn-primary {
   background-color: #2d68e2 !important;
@@ -2886,11 +2918,18 @@ html.app-ready body {
 }
 
 .chat-dm-app__row {
+  position: relative;
+  z-index: 0;
   display: flex;
   justify-content: flex-start;
   align-items: flex-end;
   gap: 0.5rem;
   margin-bottom: 1rem;
+}
+
+.chat-dm-app__row:hover,
+.chat-dm-app__row:focus-within {
+  z-index: 5;
 }
 
 .chat-dm-app__row--mine {
@@ -3135,7 +3174,6 @@ html.app-ready body {
   vertical-align: top;
 }
 
-/* Popover reaction kiểu Facebook: thanh tròn phía trên bong bóng khi hover */
 .chat-dm-app__reaction-popover-inner {
   position: relative;
   display: flex;
@@ -3205,7 +3243,7 @@ html.app-ready body {
   .chat-dm-app__reaction-popover {
     position: absolute;
     z-index: 8;
-    bottom: calc(100% + 10px);
+    bottom: calc(100% - 14px);
     left: 50%;
     transform: translateX(-50%) translateY(6px) scale(0.94);
     opacity: 0;

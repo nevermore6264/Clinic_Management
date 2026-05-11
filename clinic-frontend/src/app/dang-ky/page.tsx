@@ -3,7 +3,14 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Card, Form, Button, Alert, InputGroup, Spinner } from "react-bootstrap";
+import {
+  Card,
+  Form,
+  Button,
+  Alert,
+  InputGroup,
+  Spinner,
+} from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
 import { getLandingPublic } from "@/lib/landingPublicContent";
 import { LANDING_BOOKING_DRAFT_KEY } from "@/lib/landingBookingDraft";
@@ -37,9 +44,7 @@ function readBookingDraftNoConsume(): {
 function clearBookingDraft() {
   try {
     sessionStorage.removeItem(LANDING_BOOKING_DRAFT_KEY);
-  } catch {
-    /* ignore */
-  }
+  } catch {}
 }
 
 function RegisterPageInner() {
@@ -161,8 +166,8 @@ function RegisterPageInner() {
             </div>
             <h1 className="login-brand__title">{lp.clinicName}</h1>
             <p className="login-brand__lead">
-              Tạo tài khoản để đặt lịch khám trực tuyến, xem hồ sơ và hóa đơn của
-              bạn sau khi đăng nhập.
+              Tạo tài khoản để đặt lịch khám trực tuyến, xem hồ sơ và hóa đơn
+              của bạn sau khi đăng nhập.
             </p>
             <ul className="login-brand__features">
               <li>

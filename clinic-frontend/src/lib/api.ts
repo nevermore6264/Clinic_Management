@@ -31,9 +31,9 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
 
   const method = (requestOptions.method || "GET").toUpperCase();
   const res = await fetch(`${API_BASE}${path}`, { ...requestOptions, headers });
+  const raw = await res.text();
   if (!res.ok) {
-    const text = await res.text();
-    const message = text || `HTTP ${res.status}`;
+    const message = raw || `HTTP ${res.status}`;
     if (notifyError && typeof window !== "undefined") {
       notify.error(message);
     }
@@ -46,8 +46,13 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
   ) {
     notify.success(notifySuccessMessage || notifyMessageByMethod[method]);
   }
-  if (res.status === 204) return undefined as T;
-  return res.json();
+  if (res.status === 204 || res.status === 205) return undefined as T;
+  if (!raw.trim()) return undefined as T;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    throw new Error("Phản hồi từ máy chủ không phải JSON hợp lệ.");
+  }
 }
 
 export const authApi = {

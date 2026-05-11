@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/ho-so-kham")
@@ -23,8 +24,9 @@ public class HoSoKhamController {
     }
 
     @GetMapping(value = "/lich-hen/{maLichHen}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public HoSoKhamDto theoLichHen(@PathVariable Long maLichHen) {
-        return hoSoKhamService.layTheoMaLichHen(maLichHen);
+    public ResponseEntity<HoSoKhamDto> theoLichHen(@PathVariable Long maLichHen) {
+        HoSoKhamDto dto = hoSoKhamService.layTheoMaLichHen(maLichHen);
+        return ResponseEntity.of(Optional.ofNullable(dto));
     }
 
     @PostMapping("/lich-hen/{maLichHen}")

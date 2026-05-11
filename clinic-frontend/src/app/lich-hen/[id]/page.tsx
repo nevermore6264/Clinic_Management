@@ -20,6 +20,7 @@ import {
   lichHenChoPhepLapHoaDon,
   metaTrangThaiLichHen as metaTrangThai,
 } from "@/lib/lichHenStatus";
+import { laChiTaiKhoanBenhNhan, laNhanVien } from "@/lib/roles";
 
 function newRow(maThuoc: number): ChiTietDonThuoc {
   return { maThuoc, soLuong: 1, lieuDung: "" };
@@ -39,10 +40,21 @@ export default function AppointmentDetailPage() {
   const [statusLog, setStatusLog] = useState<LichSuTrangThaiLichHen[]>([]);
   const [error, setError] = useState("");
 
-  const canEdit =
-    user?.cacVaiTro.includes("BAC_SI") ||
-    user?.cacVaiTro.includes("QUAN_TRI") ||
-    user?.cacVaiTro.includes("LE_TAN");
+  /** Hồ sơ khám / đơn thuốc — bác sĩ, quản trị, lễ tân */
+  const canEditMedical =
+    !!user &&
+    (user.cacVaiTro.includes("BAC_SI") ||
+      user.cacVaiTro.includes("QUAN_TRI") ||
+      user.cacVaiTro.includes("LE_TAN"));
+
+  /** Đổi trạng thái lịch (gồm Hủy / Vắng) — chỉ nhân viên; tài khoản chỉ bệnh nhân không có */
+  const canUpdateAppointmentStatus =
+    !!user &&
+    laNhanVien(user) &&
+    (user.cacVaiTro.includes("BAC_SI") ||
+      user.cacVaiTro.includes("QUAN_TRI") ||
+      user.cacVaiTro.includes("LE_TAN") ||
+      user.cacVaiTro.includes("THU_NGAN"));
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -84,7 +96,7 @@ export default function AppointmentDetailPage() {
   }, [user, id]);
 
   useEffect(() => {
-    if (!user || !canEdit) return;
+    if (!user || !canEditMedical) return;
     thuocApi
       .dangHoatDong()
       .then((list) => {
@@ -95,10 +107,10 @@ export default function AppointmentDetailPage() {
         });
       })
       .catch(() => {});
-  }, [user, canEdit]);
+  }, [user, canEditMedical]);
 
   const updateStatus = async (status: string) => {
-    if (!canEdit) {
+    if (!canUpdateAppointmentStatus) {
       setError("Bạn không có quyền cập nhật trạng thái lịch hẹn.");
       return;
     }
@@ -193,7 +205,7 @@ export default function AppointmentDetailPage() {
               <strong>Ghi chú:</strong> {app.ghiChu}
             </p>
           )}
-          {canEdit ? (
+          {canUpdateAppointmentStatus ? (
             <>
               <div className="lich-hen-flow-label mb-2 fw-semibold text-secondary">
                 Cập nhật trạng thái
@@ -218,15 +230,22 @@ export default function AppointmentDetailPage() {
               </div>
             </>
           ) : (
-            <div className="small text-muted d-flex flex-wrap align-items-center gap-2">
-              <span className="fw-semibold text-body">Trạng thái hiện tại:</span>
-              <span
-                className={`lich-hen-status-tag lich-hen-status-tag--${tagMeta.slug}`}
-              >
-                <i className={`bi ${tagMeta.icon}`} aria-hidden />
-                {tagMeta.label}
-              </span>
-              <span> (chỉ xem, không thể thay đổi)</span>
+            <div className="small text-muted">
+              <div className="d-flex flex-wrap align-items-center gap-2">
+                <span className="fw-semibold text-body">Trạng thái hiện tại:</span>
+                <span
+                  className={`lich-hen-status-tag lich-hen-status-tag--${tagMeta.slug}`}
+                >
+                  <i className={`bi ${tagMeta.icon}`} aria-hidden />
+                  {tagMeta.label}
+                </span>
+                <span> (chỉ xem, không thể thay đổi)</span>
+              </div>
+              {user && laChiTaiKhoanBenhNhan(user) ? (
+                <p className="mb-0 mt-2 text-secondary">
+                  Để hủy hoặc đổi lịch, vui lòng liên hệ phòng khám.
+                </p>
+              ) : null}
             </div>
           )}
         </Card.Body>
@@ -272,7 +291,7 @@ export default function AppointmentDetailPage() {
         </Card>
       )}
 
-      {canEdit ? (
+      {canEditMedical ? (
         <Card>
           <Card.Header>Kết quả khám / Chẩn đoán / Đơn thuốc</Card.Header>
           <Card.Body>

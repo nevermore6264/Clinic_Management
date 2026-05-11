@@ -256,6 +256,9 @@ export default function DashboardPage() {
   const bnQuery = user.maBenhNhan
     ? `?maBenhNhan=${encodeURIComponent(String(user.maBenhNhan))}`
     : "";
+  const lichHenDatLichNhanhHref = user.maBenhNhan
+    ? `/lich-hen?datLich=1&maBenhNhan=${encodeURIComponent(String(user.maBenhNhan))}`
+    : "/lich-hen?datLich=1";
 
   if (laChiTaiKhoanBenhNhan(user)) {
     return (
@@ -265,6 +268,24 @@ export default function DashboardPage() {
           eyebrow="Cổng bệnh nhân"
           title={`Xin chào, ${user.hoTen || user.tenDangNhap}`}
           lede="Tài khoản bệnh nhân — xem hồ sơ, lịch khám và hóa đơn của bạn tại đây."
+          actions={
+            <div className="d-flex flex-wrap gap-2 align-items-center">
+              <Link
+                href={lichHenDatLichNhanhHref}
+                className="btn btn-primary d-inline-flex align-items-center gap-2 rounded-pill px-4 shadow-sm"
+              >
+                <i className="bi bi-calendar-plus-lg" aria-hidden />
+                Đặt lịch nhanh
+              </Link>
+              <Link
+                href={`/lich-hen${bnQuery}`}
+                className="btn btn-sm btn-light border dashboard-hero-chip"
+              >
+                <i className="bi bi-calendar3 me-1" aria-hidden />
+                Lịch của tôi
+              </Link>
+            </div>
+          }
         />
         <DashboardSectionHead
           title="Truy cập nhanh"
@@ -279,10 +300,10 @@ export default function DashboardPage() {
             tone={0}
           />
           <QuickLinkCard
-            href={`/lich-hen${bnQuery}`}
-            title="Lịch khám"
-            desc="Đặt lịch hoặc xem các lượt khám của bạn."
-            icon="bi-calendar-heart"
+            href={lichHenDatLichNhanhHref}
+            title="Đặt lịch khám"
+            desc="Mở form đặt lịch ngay — nhanh nhất từ bảng điều khiển."
+            icon="bi-calendar-plus"
             tone={1}
           />
           <QuickLinkCard
@@ -318,6 +339,13 @@ export default function DashboardPage() {
         lede={`${todayLong} · Theo dõi luồng khám, lịch và tài chính trong ngày.`}
         actions={
           <div className="d-flex flex-wrap gap-2">
+            <Link
+              href="/lich-hen?datLich=1"
+              className="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 rounded-pill px-3 shadow-sm"
+            >
+              <i className="bi bi-calendar-plus-lg" aria-hidden />
+              Đặt lịch nhanh
+            </Link>
             <Link
               href={hrefLichHenTheoNgay(todayISO, todayISO)}
               className="btn btn-sm btn-light border dashboard-hero-chip"
@@ -417,10 +445,10 @@ export default function DashboardPage() {
           tone={0}
         />
         <QuickLinkCard
-          href="/lich-hen"
-          title="Lịch khám"
-          desc="Đặt lịch, theo dõi trạng thái và hồ sơ khám."
-          icon="bi-calendar-heart"
+          href="/lich-hen?datLich=1"
+          title="Đặt & quản lý lịch"
+          desc="Mở form đặt lịch ngay hoặc xem danh sách — từ bảng điều khiển."
+          icon="bi-calendar-plus"
           tone={1}
         />
         <QuickLinkCard

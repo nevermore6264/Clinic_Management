@@ -36,7 +36,6 @@ const EMOJI_NHANH: string[] = [
   "😀", "😃", "😄", "😁", "😅", "🤣", "🥰", "😘", "🤔", "😮", "👍", "👎", "🙏", "👏", "🎉", "✨", "❤️", "💙", "✅", "❌", "📌", "📎", "💊", "🏥", "☕", "🙋", "💪",
 ];
 
-/** 6 reaction nhanh — đồng bộ `EMOJI_PHAN_UNG_HOP_LE` backend */
 const EMOJI_PHAN_UNG_NHANH: string[] = [
   "👍",
   "❤️",

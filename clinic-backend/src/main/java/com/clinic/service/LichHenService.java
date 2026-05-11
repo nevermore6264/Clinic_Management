@@ -97,6 +97,9 @@ public class LichHenService {
 
     @Transactional
     public LichHenDto capNhatTrangThai(Long ma, LichHen.TrangThaiLichHen trangThai) {
+        if (!quyenTruyCapHoSoBenhNhan.laNhanVien()) {
+            throw new AccessDeniedException("Chỉ nhân viên phòng khám mới được cập nhật trạng thái lịch hẹn (hủy, tiếp nhận, …).");
+        }
         LichHen lh = lichHenRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy lịch hẹn: " + ma));
         LichHen.TrangThaiLichHen cu = lh.getTrangThai();
         if (cu == trangThai) {

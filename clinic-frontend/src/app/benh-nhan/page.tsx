@@ -847,8 +847,9 @@ function BenhNhanPageInner() {
           </Modal.Body>
           <Modal.Footer className="patient-create-modal__footer clinic-modal-footer-actions">
             <Button
-              variant="light"
-              className="border"
+              variant="outline-secondary"
+              type="button"
+              className="btn-bac-si-modal-cancel"
               onClick={() => setShowCreate(false)}
               disabled={submitting}
             >
@@ -993,9 +994,9 @@ function BenhNhanPageInner() {
           <Modal.Footer className="patient-create-modal__footer clinic-modal-footer-actions d-flex flex-wrap gap-2 justify-content-between">
             <div className="d-flex flex-wrap gap-2">
               <Button
-                variant="light"
-                className="border"
+                variant="outline-secondary"
                 type="button"
+                className="btn-bac-si-modal-cancel"
                 onClick={closeEditModal}
                 disabled={editSubmitting}
               >
@@ -1071,12 +1072,13 @@ function BenhNhanPageInner() {
         </Modal.Body>
         <Modal.Footer className="border-top clinic-modal-footer-actions">
           <Button
-            variant="light"
-            className="border"
+            variant="outline-secondary"
             type="button"
+            className="btn-bac-si-modal-cancel"
             disabled={editSubmitting}
             onClick={() => setShowConfirmAnHoSo(false)}
           >
+            <i className="bi bi-x-lg me-2" aria-hidden />
             Hủy
           </Button>
           <Button
@@ -1124,12 +1126,13 @@ function BenhNhanPageInner() {
         </Modal.Body>
         <Modal.Footer className="border-top clinic-modal-footer-actions">
           <Button
-            variant="light"
-            className="border"
+            variant="outline-secondary"
             type="button"
+            className="btn-bac-si-modal-cancel"
             disabled={editSubmitting}
             onClick={() => setShowConfirmHienThiLai(false)}
           >
+            <i className="bi bi-x-lg me-2" aria-hidden />
             Hủy
           </Button>
           <Button

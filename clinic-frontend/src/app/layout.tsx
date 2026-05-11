@@ -11,10 +11,12 @@ const sans = Plus_Jakarta_Sans({
   weight: ["400", "500", "600", "700", "800"],
 });
 
+const clinicTitle =
+  process.env.NEXT_PUBLIC_CLINIC_NAME ?? "Phòng khám MEDLATEC";
+
 export const metadata: Metadata = {
-  title: "MEDLATEC Clinic — Phòng khám đa khoa & đặt lịch khám",
-  description:
-    "Đặt lịch khám trực tuyến, khám đa khoa, xét nghiệm và chăm sóc sức khỏe gia đình tại MEDLATEC Clinic.",
+  title: `${clinicTitle} — Phòng khám đa khoa & đặt lịch khám`,
+  description: `Đặt lịch khám trực tuyến, khám đa khoa, xét nghiệm và chăm sóc sức khỏe gia đình tại ${clinicTitle}.`,
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [

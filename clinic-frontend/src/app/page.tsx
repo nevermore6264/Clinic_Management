@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 import { LoadingState } from "@/components/LoadingState";
+import { buildMapIframeSrc, getLandingPublic } from "@/lib/landingPublicContent";
+import { LANDING_BOOKING_DRAFT_KEY } from "@/lib/landingBookingDraft";
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -28,7 +31,43 @@ export default function HomePage() {
 
   if (user) return null;
 
+  const lp = getLandingPublic();
+  const mapIframeSrc = buildMapIframeSrc(lp);
+  const [bookName, setBookName] = useState("");
+  const [bookPhone, setBookPhone] = useState("");
+  const [bookNeed, setBookNeed] = useState("");
+  const [bookErr, setBookErr] = useState<string | null>(null);
+
   const goLogin = () => router.push("/dang-nhap");
+
+  const submitLandingBooking = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setBookErr(null);
+    const name = bookName.trim();
+    const phoneDigits = bookPhone.replace(/\D/g, "");
+    if (name.length < 2) {
+      setBookErr("Vui lòng nhập họ tên (ít nhất 2 ký tự).");
+      return;
+    }
+    if (phoneDigits.length < 9 || phoneDigits.length > 11) {
+      setBookErr("Vui lòng nhập số điện thoại hợp lệ (Việt Nam).");
+      return;
+    }
+    try {
+      sessionStorage.setItem(
+        LANDING_BOOKING_DRAFT_KEY,
+        JSON.stringify({
+          name,
+          phone: phoneDigits,
+          need: bookNeed.trim(),
+          ts: Date.now(),
+        }),
+      );
+    } catch {
+      /* quota / private mode */
+    }
+    router.push("/dang-nhap?next=/lich-hen");
+  };
 
   return (
     <div className="landing-bg landing-bg--clinic landing-hospital">
@@ -41,8 +80,8 @@ export default function HomePage() {
             <i className="bi bi-life-preserver" aria-hidden />
             <span>
               <strong>Cấp cứu / Hỗ trợ 24/7</strong>
-              <a href="tel:1900565656" className="landing-urgent-strip__tel">
-                1900 56 56 56
+              <a href={`tel:${lp.phoneTel}`} className="landing-urgent-strip__tel">
+                {lp.phoneDisplay}
               </a>
             </span>
           </div>
@@ -62,7 +101,7 @@ export default function HomePage() {
           <span className="landing-info-rail__dot" aria-hidden />
           <span className="landing-info-rail__item">
             <i className="bi bi-geo-alt" aria-hidden />
-            <strong>Đà Nẵng</strong>, Việt Nam
+            <strong>{lp.cityLabel}</strong>, Việt Nam
           </span>
           <span
             className="landing-info-rail__dot landing-info-rail__dot--hide-sm"
@@ -83,7 +122,7 @@ export default function HomePage() {
             </span>
             <div>
               <span className="landing-site-header__title">
-                MEDLATEC Clinic
+                {lp.clinicName}
               </span>
               <span className="landing-site-header__tagline">
                 Phòng khám đa khoa
@@ -102,17 +141,29 @@ export default function HomePage() {
             <a href="#tin-tuc">Tin hoạt động</a>
             <a href="#danh-gia">Bệnh nhân</a>
             <a href="#hoi-dap">Hỏi đáp</a>
+            <a href="#dat-lich-nhanh">Đặt lịch nhanh</a>
             <a href="#lien-he">Liên hệ</a>
           </nav>
 
           <div className="landing-site-header__cta">
-            <a href="tel:1900565656" className="landing-site-header__phone">
+            <a href={`tel:${lp.phoneTel}`} className="landing-site-header__phone">
               <i className="bi bi-telephone-outbound" aria-hidden />
               <span>
                 <small>Hotline</small>
-                <strong>1900 56 56 56</strong>
+                <strong>{lp.phoneDisplay}</strong>
               </span>
             </a>
+            {lp.zaloUrl ? (
+              <a
+                href={lp.zaloUrl}
+                className="btn btn-hospital-ghost landing-site-header__zalo"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <i className="bi bi-chat-dots-fill me-1" aria-hidden />
+                Zalo
+              </a>
+            ) : null}
             <button
               type="button"
               className="btn btn-hospital-primary"
@@ -489,6 +540,9 @@ export default function HomePage() {
             </span>
           </div>
         </div>
+        <p className="landing-stats-ribbon__note landing-hospital-shell">
+          * Số liệu minh họa cho giao diện — thay bằng thống kê thật khi vận hành.
+        </p>
       </section>
 
       {/* BHYT — thanh xanh lá đặc trưng web y tế */}
@@ -644,27 +698,24 @@ export default function HomePage() {
                 role: "Trưởng khoa Nội",
                 exp: "18 năm khám lâm sàng",
                 imageSrc:
-                  "https://images.pexels.com/photos/5215024/pexels-photo-5215024.jpeg?auto=compress&cs=tinysrgb&w=640&h=640&fit=crop",
-                imageAlt:
-                  "Chân dung bác sĩ nam — ảnh minh họa stock (người mẫu châu Á)",
+                  "data:image/jpeg;base64,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",
+                imageAlt: "Chân dung bác sĩ nam ",
               },
               {
                 name: "BS.CKII Lê Thu",
                 role: "Chuyên khoa Tim mạch",
                 exp: "Siêu âm tim — HA",
                 imageSrc:
-                  "https://images.pexels.com/photos/3825581/pexels-photo-3825581.jpeg?auto=compress&cs=tinysrgb&w=640&h=640&fit=crop",
-                imageAlt:
-                  "Chân dung bác sĩ nữ — ảnh minh họa stock (người mẫu châu Á)",
+                  "data:image/jpeg;base64,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",
+                imageAlt: "Chân dung bác sĩ nữ ",
               },
               {
                 name: "BS.CKI Phạm Hoàng Anh",
                 role: "Nhi — tiêm chủng",
                 exp: "Tư vấn dinh dưỡng trẻ em",
                 imageSrc:
-                  "https://images.pexels.com/photos/7904457/pexels-photo-7904457.jpeg?auto=compress&cs=tinysrgb&w=640&h=640&fit=crop",
-                imageAlt:
-                  "Chân dung bác sĩ — ảnh minh họa stock (người mẫu châu Á)",
+                  "data:image/jpeg;base64,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",
+                imageAlt: "Chân dung bác sĩ ",
               },
             ].map((d) => (
               <article
@@ -942,6 +993,101 @@ export default function HomePage() {
       </section>
 
       <section
+        id="dat-lich-nhanh"
+        className="landing-section landing-section--booking-mini landing-section--hospital"
+      >
+        <div className="landing-hospital-shell">
+          <div className="landing-section__head landing-section__head--center mb-4">
+            <p className="landing-section__eyebrow">Đặt lịch</p>
+            <h2 className="landing-section__title">Gửi yêu cầu đặt lịch nhanh</h2>
+            <p className="landing-section__desc mb-0">
+              Điền thông tin — bạn sẽ được chuyển tới đăng nhập để hoàn tất trên
+              hệ thống đặt lịch (hoặc liên hệ hotline / Zalo).
+            </p>
+          </div>
+          <form
+            className="landing-booking-mini landing-reveal"
+            onSubmit={submitLandingBooking}
+            noValidate
+          >
+            <div className="landing-booking-mini__grid">
+              <div>
+                <label className="form-label small fw-bold" htmlFor="bk-name">
+                  Họ và tên
+                </label>
+                <input
+                  id="bk-name"
+                  name="name"
+                  type="text"
+                  className="form-control"
+                  autoComplete="name"
+                  value={bookName}
+                  onChange={(e) => setBookName(e.target.value)}
+                  placeholder="Nguyễn Văn A"
+                />
+              </div>
+              <div>
+                <label className="form-label small fw-bold" htmlFor="bk-phone">
+                  Điện thoại
+                </label>
+                <input
+                  id="bk-phone"
+                  name="phone"
+                  type="tel"
+                  className="form-control"
+                  autoComplete="tel"
+                  inputMode="tel"
+                  value={bookPhone}
+                  onChange={(e) => setBookPhone(e.target.value)}
+                  placeholder={lp.phoneDisplay}
+                />
+              </div>
+              <div className="landing-booking-mini__need">
+                <label className="form-label small fw-bold" htmlFor="bk-need">
+                  Nhu cầu (tuỳ chọn)
+                </label>
+                <input
+                  id="bk-need"
+                  name="need"
+                  type="text"
+                  className="form-control"
+                  value={bookNeed}
+                  onChange={(e) => setBookNeed(e.target.value)}
+                  placeholder="Ví dụ: Khám nội — tái khám"
+                />
+              </div>
+            </div>
+            {bookErr ? (
+              <p className="text-danger small fw-semibold mt-2 mb-0" role="alert">
+                {bookErr}
+              </p>
+            ) : null}
+            <div className="landing-booking-mini__actions">
+              <button type="submit" className="btn btn-hospital-primary btn-lg">
+                <i className="bi bi-calendar2-check me-2" aria-hidden />
+                Tiếp tục đặt lịch
+              </button>
+              {lp.zaloUrl ? (
+                <a
+                  href={lp.zaloUrl}
+                  className="btn btn-outline-secondary btn-lg"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <i className="bi bi-chat-dots-fill me-2" aria-hidden />
+                  Chat Zalo OA
+                </a>
+              ) : null}
+              <a href={`tel:${lp.phoneTel}`} className="btn btn-outline-primary btn-lg">
+                <i className="bi bi-telephone me-2" aria-hidden />
+                Gọi {lp.phoneDisplay}
+              </a>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section
         id="lien-he"
         className="landing-section landing-section--contact-hospital"
       >
@@ -950,21 +1096,28 @@ export default function HomePage() {
             <div className="landing-contact-layout__intro">
               <p className="landing-section__eyebrow">Liên hệ</p>
               <h2 className="landing-section__title landing-contact-grid__title">
-                MEDLATEC Clinic
+                {lp.clinicName}
               </h2>
               <p className="landing-section__desc mb-0">
-                Địa chỉ: Đà Nẵng, Việt Nam
+                Địa chỉ: {lp.addressFull}
                 <br />
-                Email: info@medlatec.com
+                Email:{" "}
+                <a
+                  href={`mailto:${lp.email}`}
+                  className="landing-contact-grid__link"
+                >
+                  {lp.email}
+                </a>
                 <br />
                 Hotline:{" "}
-                <a href="tel:1900565656" className="landing-contact-grid__link">
-                  1900 56 56 56
+                <a href={`tel:${lp.phoneTel}`} className="landing-contact-grid__link">
+                  {lp.phoneDisplay}
                 </a>
               </p>
               <p className="small text-muted fw-semibold mt-3 mb-0">
-                Gợi ý: thay “Đà Nẵng” bằng địa chỉ đầy đủ &amp; nhúng Google
-                Maps iframe khi có.
+                Địa chỉ và bản đồ lấy từ{" "}
+                <code className="small">NEXT_PUBLIC_CLINIC_*</code> — chỉnh trong{" "}
+                <code className="small">.env.local</code>.
               </p>
             </div>
             <div className="landing-contact-card">
@@ -979,30 +1132,53 @@ export default function HomePage() {
                 <li>Cấp cứu / tư vấn: gọi hotline 24/7</li>
               </ul>
             </div>
-            <a
-              href="https://www.google.com/maps/search/?api=1&query=16.0544%2C108.2022"
-              className="landing-contact-map-card landing-reveal"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <div className="landing-contact-map-card__visual" aria-hidden>
-                <span className="landing-contact-map-card__pin">
-                  <i className="bi bi-geo-alt-fill" />
-                </span>
+            <div className="landing-contact-links-card landing-reveal">
+              <h3 className="h6 fw-bold text-uppercase text-muted mb-3">
+                Mở nhanh
+              </h3>
+              <div className="d-flex flex-column gap-2">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lp.addressFull)}`}
+                  className="btn btn-outline-primary w-100"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <i className="bi bi-geo-alt me-2" aria-hidden />
+                  Google Maps (ứng dụng)
+                </a>
+                {lp.zaloUrl ? (
+                  <a
+                    href={lp.zaloUrl}
+                    className="btn btn-outline-secondary w-100"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <i className="bi bi-chat-dots-fill me-2" aria-hidden />
+                    Zalo OA
+                  </a>
+                ) : (
+                  <p className="small text-muted mb-0">
+                    Thêm <code>NEXT_PUBLIC_ZALO_OA_URL</code> để hiện nút Zalo.
+                  </p>
+                )}
               </div>
-              <div className="landing-contact-map-card__body">
-                <strong className="landing-contact-map-card__title">
-                  Chỉ đường
-                </strong>
-                <span className="landing-contact-map-card__sub">
-                  Đà Nẵng — mở Google Maps
-                </span>
-                <span className="landing-contact-map-card__cta">
-                  Xem bản đồ
-                  <i className="bi bi-box-arrow-up-right ms-1" aria-hidden />
-                </span>
-              </div>
-            </a>
+            </div>
+          </div>
+          <div className="landing-contact-map-embed landing-reveal">
+            <div className="landing-contact-map-embed__head">
+              <strong>Bản đồ</strong>
+              <span className="text-muted small fw-semibold ms-2">
+                nhúng theo địa chỉ / embed tuỳ chỉnh
+              </span>
+            </div>
+            <div className="landing-contact-map-embed__frame">
+              <iframe
+                title={`Bản đồ ${lp.clinicName}`}
+                src={mapIframeSrc}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -1049,13 +1225,24 @@ export default function HomePage() {
         role="region"
         aria-label="Gọi hoặc đặt lịch nhanh"
       >
-        <a href="tel:1900565656" className="landing-float-cta__call">
+        <a href={`tel:${lp.phoneTel}`} className="landing-float-cta__call">
           <i className="bi bi-telephone-fill" aria-hidden />
           <span>
             <small>Gọi ngay</small>
-            <strong>1900 56 56 56</strong>
+            <strong>{lp.phoneDisplay}</strong>
           </span>
         </a>
+        {lp.zaloUrl ? (
+          <a
+            href={lp.zaloUrl}
+            className="landing-float-cta__zalo"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Chat Zalo OA"
+          >
+            <i className="bi bi-chat-dots-fill" aria-hidden />
+          </a>
+        ) : null}
         <button
           type="button"
           className="landing-float-cta__book"
@@ -1075,7 +1262,7 @@ export default function HomePage() {
                 </span>
                 <div>
                   <div className="landing-brand__name text-white">
-                    MEDLATEC Clinic
+                    {lp.clinicName}
                   </div>
                   <div className="landing-brand__sub text-white-50">
                     Phòng khám đa khoa
@@ -1099,12 +1286,16 @@ export default function HomePage() {
               <h4>Liên hệ</h4>
               <ul>
                 <li>
-                  <a href="tel:1900565656" className="text-white-50">
-                    Hotline: 1900 56 56 56
+                  <a href={`tel:${lp.phoneTel}`} className="text-white-50">
+                    Hotline: {lp.phoneDisplay}
                   </a>
                 </li>
-                <li>Email: info@medlatec.com</li>
-                <li>Đà Nẵng, Việt Nam</li>
+                <li>
+                  <a href={`mailto:${lp.email}`} className="text-white-50">
+                    Email: {lp.email}
+                  </a>
+                </li>
+                <li className="text-white-50">{lp.addressFull}</li>
               </ul>
             </div>
             <div>
@@ -1115,13 +1306,21 @@ export default function HomePage() {
                     Đăng nhập / Đặt lịch
                   </button>
                 </li>
-                <li>Chính sách bảo mật</li>
-                <li>Điều khoản sử dụng</li>
+                <li>
+                  <Link href="/chinh-sach-bao-mat" className="text-white-50">
+                    Chính sách bảo mật
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dieu-khoan-su-dung" className="text-white-50">
+                    Điều khoản sử dụng
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
           <div className="landing-marketing-footer__bottom">
-            © {new Date().getFullYear()} MEDLATEC Clinic. All rights reserved.
+            © {new Date().getFullYear()} {lp.clinicName}. All rights reserved.
           </div>
         </div>
       </footer>

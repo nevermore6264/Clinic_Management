@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { Suspense, useEffect, useId, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, Form, Button, Alert, InputGroup, Spinner } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
+import { getLandingPublic } from "@/lib/landingPublicContent";
+import { LANDING_BOOKING_DRAFT_KEY } from "@/lib/landingBookingDraft";
 
 function LoginBackgroundDecor() {
   const uid = useId().replace(/:/g, "");
@@ -246,20 +248,41 @@ function LoginBackgroundDecor() {
   );
 }
 
-export default function LoginPage() {
+function LoginPageInner() {
+  const lp = getLandingPublic();
+  const searchParams = useSearchParams();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [landingDraftHint, setLandingDraftHint] = useState(false);
   const { login, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (user) {
-      router.replace("/bang-dieu-khien");
+    try {
+      const raw = sessionStorage.getItem(LANDING_BOOKING_DRAFT_KEY);
+      setLandingDraftHint(!!raw?.trim());
+    } catch {
+      setLandingDraftHint(false);
     }
-  }, [user, router]);
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const rawNext = searchParams.get("next");
+    let dest = "/bang-dieu-khien";
+    if (
+      rawNext &&
+      rawNext.startsWith("/") &&
+      !rawNext.startsWith("//") &&
+      !rawNext.includes(":")
+    ) {
+      dest = rawNext.split(/[?#]/)[0] ?? dest;
+    }
+    router.replace(dest);
+  }, [user, router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -319,7 +342,7 @@ export default function LoginPage() {
             <div className="login-brand__mark">
               <i className="bi bi-heart-pulse-fill" aria-hidden />
             </div>
-            <h1 className="login-brand__title">MEDLATEC Clinic</h1>
+            <h1 className="login-brand__title">{lp.clinicName}</h1>
             <p className="login-brand__lead">
               Hệ thống quản lý phòng khám — lịch khám, hồ sơ và thanh toán trong
               một luồng rõ ràng.
@@ -377,6 +400,20 @@ export default function LoginPage() {
                 >
                   <i className="bi bi-exclamation-triangle-fill flex-shrink-0 mt-1" />
                   <span className="small">{error}</span>
+                </Alert>
+              )}
+
+              {landingDraftHint && (
+                <Alert
+                  variant="info"
+                  className="d-flex align-items-start gap-2 border-0 login-alert mb-3"
+                >
+                  <i className="bi bi-calendar2-heart flex-shrink-0 mt-1" />
+                  <span className="small">
+                    Bạn vừa gửi yêu cầu đặt lịch từ trang chủ. Sau khi đăng nhập,
+                    hệ thống sẽ mở form đặt lịch và điền gợi ý nhu cầu khám (nếu
+                    có).
+                  </span>
                 </Alert>
               )}
 
@@ -459,10 +496,27 @@ export default function LoginPage() {
             </Card.Body>
           </Card>
           <p className="login-footnote text-center mt-4 mb-0 small">
-            © {new Date().getFullYear()} — Hệ thống quản lý phòng khám MEDLATEC
+            © {new Date().getFullYear()} — Hệ thống quản lý — {lp.clinicName}
           </p>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="login-bg d-flex align-items-center justify-content-center min-vh-100">
+          <div className="text-center text-muted small">
+            <Spinner animation="border" variant="primary" className="mb-2" />
+            <div>Đang tải…</div>
+          </div>
+        </div>
+      }
+    >
+      <LoginPageInner />
+    </Suspense>
   );
 }

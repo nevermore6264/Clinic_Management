@@ -4415,6 +4415,20 @@ html.app-ready body {
   }
 }
 
+.landing-stats-ribbon__note {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: 1rem var(--hospital-shell-pad) 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .landing-bhyt-strip {
   background: linear-gradient(180deg, #ecfdf5 0%, #f0fdf4 50%, #fff 100%);
   border-top: 1px solid rgba(16, 185, 129, 0.2);
@@ -4726,6 +4740,99 @@ html.app-ready body {
   color: var(--hospital-blue-mid);
 }
 
+.landing-contact-links-card {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  padding: 1.25rem 1.35rem;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+}
+
+.landing-contact-map-embed {
+  margin-top: 1.75rem;
+}
+
+.landing-contact-map-embed__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.65rem;
+}
+
+.landing-contact-map-embed__head strong {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--clinic-navy);
+}
+
+.landing-contact-map-embed__frame {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.07);
+  background: #e2e8f0;
+  aspect-ratio: 16 / 9;
+  min-height: 220px;
+}
+
+.landing-contact-map-embed__frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Form đặt lịch ngắn */
+.landing-section--booking-mini {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.landing-booking-mini {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1.35rem 1.25rem;
+  border-radius: 20px;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.06);
+}
+
+.landing-booking-mini__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 576px) {
+  .landing-booking-mini__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1.25rem;
+  }
+
+  .landing-booking-mini__need {
+    grid-column: 1 / -1;
+  }
+}
+
+.landing-booking-mini__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 575.98px) {
+  .landing-booking-mini__actions .btn-lg {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* Thanh CTA cố định — mobile */
 .landing-float-cta {
   position: fixed;
@@ -4805,6 +4912,28 @@ html.app-ready body {
 
 .landing-float-cta__book:active {
   transform: scale(0.98);
+}
+
+.landing-float-cta__zalo {
+  flex-shrink: 0;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 118, 110, 0.35);
+  background: linear-gradient(145deg, #ecfdf5 0%, #d1fae5 100%);
+  color: #047857;
+  font-size: 1.35rem;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.landing-float-cta__zalo:hover {
+  color: #065f46;
+  border-color: rgba(4, 120, 87, 0.45);
 }
 
 @media (min-width: 992px) {

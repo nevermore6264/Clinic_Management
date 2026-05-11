@@ -32,6 +32,7 @@ import { LoadingState } from "@/components/LoadingState";
 import { notify } from "@/lib/notify";
 import { LICH_HEN_STATUS_LABEL as STATUS_LABEL } from "@/lib/lichHenStatus";
 import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
+import { consumeLandingBookingDraft } from "@/lib/landingBookingDraft";
 
 const TRANG_THAI_CO_LICH_DANG_XU_LY = new Set([
   "DA_DAT",
@@ -110,6 +111,21 @@ function AppointmentsPageInner() {
     setBacSiCoCaTheoNgay({});
     setSlotsTheoBacSi({});
   }, [maBenhNhanParam]);
+
+  useEffect(() => {
+    const draft = consumeLandingBookingDraft();
+    if (!draft) return;
+    resetDatLichForm();
+    queueMicrotask(() => {
+      if (draft.need.trim()) setNote(draft.need.trim());
+    });
+    setShowDatLich(true);
+    notify.info(
+      "Đã nhập ô « Ghi chú » từ form đặt lịch nhanh trên trang chủ. Chọn bệnh nhân, bác sĩ và giờ trước khi gửi.",
+      "Từ landing",
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- một lần khi mount; có draft thì mở modal
+  }, []);
 
   const chiTaiKhoanBn = useMemo(
     () => !!user && laChiTaiKhoanBenhNhan(user),

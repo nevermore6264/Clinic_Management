@@ -33,7 +33,6 @@ public class TinNhanChatService {
 
     private static final Long PHONG_MAC_DINH = 1L;
 
-    /** Đồng bộ với picker trên frontend (6 loại, kiểu Facebook). */
     private static final Set<String> EMOJI_PHAN_UNG_HOP_LE = Set.of(
             "\uD83D\uDC4D", "\u2764\uFE0F", "\u2764", "\uD83D\uDE02", "\uD83D\uDE2E", "\uD83D\uDE22",
             "\uD83D\uDE4F");

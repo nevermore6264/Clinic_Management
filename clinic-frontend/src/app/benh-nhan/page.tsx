@@ -581,14 +581,14 @@ function BenhNhanPageInner() {
                             </Link>
                             <Link
                               href={hrefLichCuaToi}
-                              className="btn btn-sm btn-light border d-inline-flex align-items-center gap-2"
+                              className="btn btn-sm patient-portal-profile__action-outline d-inline-flex align-items-center gap-2"
                             >
                               <i className="bi bi-calendar3" aria-hidden />
                               Lịch của tôi
                             </Link>
                             <Link
                               href={hrefHoaDon}
-                              className="btn btn-sm btn-light border d-inline-flex align-items-center gap-2"
+                              className="btn btn-sm patient-portal-profile__action-outline d-inline-flex align-items-center gap-2"
                             >
                               <i className="bi bi-receipt" aria-hidden />
                               Hóa đơn
@@ -1127,40 +1127,37 @@ function BenhNhanPageInner() {
               </>
             )}
           </Modal.Body>
-          <Modal.Footer className="patient-create-modal__footer clinic-modal-footer-actions d-flex flex-wrap gap-2 justify-content-between">
-            <div className="d-flex flex-wrap gap-2">
+          <Modal.Footer className="patient-create-modal__footer clinic-modal-footer-actions d-flex flex-wrap gap-2 justify-content-end align-items-center">
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={closeEditModal}
+              disabled={editSubmitting}
+            >
+              <i className="bi bi-x-lg me-2" aria-hidden />
+              Hủy
+            </Button>
+            {editForm.hoatDong === false ? (
               <Button
-                variant="outline-secondary"
                 type="button"
-                className="btn-bac-si-modal-cancel"
-                onClick={closeEditModal}
-                disabled={editSubmitting}
+                variant="outline-success"
+                disabled={editLoading || editSubmitting}
+                onClick={() => setShowConfirmHienThiLai(true)}
               >
-                <i className="bi bi-x-lg me-2" aria-hidden />
-                Hủy
+                <i className="bi bi-eye me-2" aria-hidden />
+                Hiển thị lại hồ sơ
               </Button>
-              {editForm.hoatDong === false ? (
-                <Button
-                  type="button"
-                  variant="outline-success"
-                  disabled={editLoading || editSubmitting}
-                  onClick={() => setShowConfirmHienThiLai(true)}
-                >
-                  <i className="bi bi-eye me-2" aria-hidden />
-                  Hiển thị lại hồ sơ
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  variant="outline-danger"
-                  disabled={editLoading || editSubmitting}
-                  onClick={() => setShowConfirmAnHoSo(true)}
-                >
-                  <i className="bi bi-eye-slash me-2" aria-hidden />
-                  Ẩn hồ sơ
-                </Button>
-              )}
-            </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline-danger"
+                disabled={editLoading || editSubmitting}
+                onClick={() => setShowConfirmAnHoSo(true)}
+              >
+                <i className="bi bi-eye-slash me-2" aria-hidden />
+                Ẩn hồ sơ
+              </Button>
+            )}
             <Button
               type="submit"
               variant="primary"

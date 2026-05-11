@@ -30,6 +30,7 @@ import {
   emptyPatientForm,
 } from "@/components/PatientRecordFormFields";
 import { metaTrangThaiLichHen } from "@/lib/lichHenStatus";
+import { ChatGeneratedAvatar } from "@/components/ChatGeneratedAvatar";
 
 function hienThiGioiTinh(ma?: string) {
   switch (ma) {
@@ -1043,7 +1044,7 @@ function BenhNhanPageInner() {
               ) : (
                 <>
                   <i className="bi bi-check2-circle me-2" aria-hidden />
-                  Lưu thay đổi
+                  Lưu
                 </>
               )}
             </Button>

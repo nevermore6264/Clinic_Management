@@ -57,8 +57,7 @@ function QuanLyDropdown({
     (isAdmin && pathsAdmin.some((p) => pathname.startsWith(p))) ||
     ((isAdmin || isThuNgan) &&
       pathsThuNgan.some((p) => pathname.startsWith(p))) ||
-    ((isAdmin || isLeTan) &&
-      pathsNhacLich.some((p) => pathname === p));
+    ((isAdmin || isLeTan) && pathsNhacLich.some((p) => pathname === p));
 
   if (!isAdmin && !isLeTan && !isThuNgan) return null;
 
@@ -268,7 +267,7 @@ export function NavBar() {
                 <NavLinkItem
                   href={`/lich-hen${bnQuery}`}
                   active={pathname.startsWith("/lich-hen")}
-                  icon="bi-calendar-check"
+                  icon="bi-calendar3"
                 >
                   Lịch của tôi
                 </NavLinkItem>

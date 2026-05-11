@@ -1571,9 +1571,8 @@ function AppointmentsPageInner() {
           </Modal.Body>
           <Modal.Footer className="clinic-modal-footer bac-si-modal-footer clinic-modal-footer-actions border-top">
             <Button
-              variant="outline-secondary"
+              variant="secondary"
               type="button"
-              className="btn-bac-si-modal-cancel"
               disabled={submitting}
               onClick={() => setShowDatLich(false)}
             >

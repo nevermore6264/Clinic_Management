@@ -38,6 +38,7 @@ public class LichHenService {
     private final DichVuRepository dichVuRepository;
     private final LichLamViecCoDinhRepository lichLamViecCoDinhRepository;
     private final LichNgoaiLeRepository lichNgoaiLeRepository;
+    private final LichLamViecBacSiRepository lichLamViecBacSiRepository;
     private final LichSuTrangThaiLichHenRepository lichSuTrangThaiLichHenRepository;
     private final QuyenTruyCapHoSoBenhNhan quyenTruyCapHoSoBenhNhan;
     private static final int SUC_CHUA_MOI_GIO = 10;
@@ -242,9 +243,22 @@ public class LichHenService {
         if (!thuCanKiemTra.contains(thuChuNhatDangSo0)) {
             thuCanKiemTra.add(thuChuNhatDangSo0);
         }
-        return lichLamViecCoDinhRepository.findByBacSiIdAndThuTrongTuanIn(maBacSi, thuCanKiemTra).stream()
+        Set<LocalTime> ketQua = lichLamViecCoDinhRepository.findByBacSiIdAndThuTrongTuanIn(maBacSi, thuCanKiemTra).stream()
                 .flatMap(x -> tachTheoCa1Gio(x.getKhungGioBatDau(), x.getKhungGioKetThuc()).stream())
                 .collect(Collectors.toCollection(HashSet::new));
+
+        // Fallback cho các bác sĩ có "lịch legacy" (đang được quản lý tại /lich-lam-viec-bac-si)
+        // để modal /lich-hen luôn hiển thị khung giờ phù hợp.
+        if (ketQua.isEmpty()) {
+            List<LichLamViecBacSi> legacy = lichLamViecBacSiRepository.findByBacSiIdAndNgayLich(maBacSi, ngay);
+            if (legacy != null && !legacy.isEmpty()) {
+                return legacy.stream()
+                        .flatMap(x -> tachTheoCa1Gio(x.getKhungGioBatDau(), x.getKhungGioKetThuc()).stream())
+                        .collect(Collectors.toCollection(HashSet::new));
+            }
+        }
+
+        return ketQua;
     }
 
     private List<LocalTime> tachTheoCa1Gio(LocalTime batDau, LocalTime ketThuc) {

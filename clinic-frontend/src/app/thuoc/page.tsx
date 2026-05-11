@@ -14,7 +14,7 @@ import {
 } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
-import { thuocApi, type Thuoc, type DonThuocChiTietBangKe } from "@/lib/api";
+import { thuocApi, type Thuoc } from "@/lib/api";
 
 const BUOC_THUOC = [
   {
@@ -136,9 +136,6 @@ export default function ThuocPage() {
   const [thuocCanXoa, setThuocCanXoa] = useState<Thuoc | null>(null);
   const [tuKhoa, setTuKhoa] = useState("");
   const [boLocTrangThai, setBoLocTrangThai] = useState("tat-ca");
-  const [donThuocBangKe, setDonThuocBangKe] = useState<DonThuocChiTietBangKe[]>(
-    [],
-  );
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -151,10 +148,6 @@ export default function ThuocPage() {
       .tatCa()
       .then(setList)
       .catch((e) => setError(e.message));
-    thuocApi
-      .bangKeDonThuoc()
-      .then(setDonThuocBangKe)
-      .catch(() => setDonThuocBangKe([]));
   };
 
   useEffect(() => {
@@ -531,61 +524,15 @@ export default function ThuocPage() {
         </Table>
       </Card>
 
-      <Card className="mt-4 card--static border-0 shadow-sm">
-        <Card.Header className="fw-semibold">
-          Đơn thuốc (chi tiết theo hồ sơ khám)
-        </Card.Header>
-        <Card.Body className="p-0">
-          <div className="table-responsive">
-            <Table responsive hover className="mb-0 align-middle small">
-              <thead className="table-light">
-                <tr>
-                  <th>Ngày khám</th>
-                  <th>Giờ</th>
-                  <th>Bệnh nhân</th>
-                  <th>Tên thuốc</th>
-                  <th className="text-end">Số lượng</th>
-                  <th>Liều dùng</th>
-                  <th className="text-end">Đơn giá</th>
-                  <th className="text-nowrap">Mã lịch</th>
-                </tr>
-              </thead>
-              <tbody>
-                {donThuocBangKe.map((d) => (
-                  <tr key={d.maChiTiet}>
-                    <td>{d.ngayHen ?? "—"}</td>
-                    <td>{d.gioHen != null ? String(d.gioHen).slice(0, 5) : "—"}</td>
-                    <td>{d.tenBenhNhan ?? "—"}</td>
-                    <td className="fw-medium">{d.tenThuoc ?? "—"}</td>
-                    <td className="text-end">{d.soLuong ?? "—"}</td>
-                    <td className="text-muted">{d.lieuDung || "—"}</td>
-                    <td className="text-end">
-                      {d.donGia != null
-                        ? `${Number(d.donGia).toLocaleString("vi-VN")}đ`
-                        : "—"}
-                    </td>
-                    <td>
-                      <Link
-                        href={`/lich-hen/${d.maLichHen}`}
-                        className="text-decoration-none"
-                      >
-                        #{d.maLichHen}
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-                {donThuocBangKe.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="text-center text-muted py-4">
-                      Chưa có dòng đơn thuốc nào (ghi trong hồ sơ khám sau khi khám).
-                    </td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </Table>
-          </div>
-        </Card.Body>
-      </Card>
+      <div className="mt-4 d-flex justify-content-end">
+        <Link
+          href="/don-thuoc"
+          className="btn btn-outline-primary d-inline-flex align-items-center gap-2"
+        >
+          <i className="bi bi-receipt me-1" aria-hidden />
+          Xem đơn thuốc (chi tiết theo hồ sơ khám)
+        </Link>
+      </div>
 
       <Modal show={show} onHide={dongModalThuoc} centered size="xl" scrollable>
         <Modal.Header closeButton>

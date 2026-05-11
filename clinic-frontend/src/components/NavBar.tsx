@@ -45,6 +45,7 @@ function QuanLyDropdown({
     "/loai-dich-vu",
     "/dich-vu",
     "/thuoc",
+    "/don-thuoc",
     "/chuyen-khoa",
     "/bac-si",
     "/nhat-ky-he-thong",
@@ -134,6 +135,14 @@ function QuanLyDropdown({
           >
             <i className="bi bi-capsule me-2" aria-hidden />
             Thuốc
+          </NavDropdown.Item>
+          <NavDropdown.Item
+            as={Link}
+            href="/don-thuoc"
+            active={pathname.startsWith("/don-thuoc")}
+          >
+            <i className="bi bi-receipt me-2" aria-hidden />
+            Đơn thuốc
           </NavDropdown.Item>
           <NavDropdown.Item
             as={Link}

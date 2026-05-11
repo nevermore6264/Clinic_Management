@@ -585,6 +585,26 @@ html.app-ready body {
   box-shadow: 0 4px 12px rgba(45, 104, 226, 0.42);
 }
 
+.thuoc-donthuoc-card {
+  margin-top: 1.25rem;
+}
+.thuoc-donthuoc-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.thuoc-donthuoc-card__header::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+.thuoc-donthuoc-card .table {
+  margin-bottom: 0;
+}
+
 .btn-action-edit,
 .service-type-page .btn-service-edit,
 .btn-thuoc-action-edit.btn-primary {

@@ -2707,6 +2707,274 @@ html.app-ready body {
   border-radius: 12px;
 }
 
+.patient-portal-lichen {
+  margin-inline: auto;
+}
+.patient-portal-lichen__filters {
+  border-radius: 16px !important;
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+}
+.patient-portal-lichen__filters .card-body {
+  padding: 1.1rem 1.25rem 1.25rem;
+}
+@media (min-width: 768px) {
+  .patient-portal-lichen__filters .card-body {
+    padding: 1.35rem 1.5rem 1.5rem;
+  }
+}
+.patient-portal-lichen__lead {
+  line-height: 1.5;
+  margin-bottom: 0.85rem !important;
+}
+.patient-portal-lichen__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+.patient-portal-lichen__presets .btn {
+  font-weight: 600;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  padding: 0.35rem 0.85rem;
+}
+.patient-portal-lichen__filter-grid {
+  display: grid;
+  gap: 0.85rem 1rem;
+  grid-template-columns: 1fr;
+}
+.patient-portal-lichen__filter-view {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+@media (min-width: 576px) {
+  .patient-portal-lichen__filter-grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+  }
+  .patient-portal-lichen__filter-span-2 {
+    grid-column: span 2;
+  }
+}
+@media (min-width: 992px) {
+  .patient-portal-lichen__filter-grid {
+    grid-template-columns: minmax(9rem, 1fr) minmax(9rem, 1fr) minmax(
+        12rem,
+        1.4fr
+      );
+    align-items: end;
+  }
+  .patient-portal-lichen__filter-span-2 {
+    grid-column: span 1;
+  }
+  .patient-portal-lichen__filter-view {
+    grid-column: span 3;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 0.75rem;
+    padding-top: 0.35rem;
+    border-top: 1px solid rgba(15, 23, 42, 0.06);
+    margin-top: 0.25rem;
+  }
+}
+.patient-portal-lichen__filters .form-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgb(100, 116, 139);
+  margin-bottom: 0.35rem;
+}
+.patient-portal-lichen__filters .form-control,
+.patient-portal-lichen__filters .form-select {
+  border-radius: 10px;
+}
+.patient-portal-lichen__advanced summary {
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--bs-primary);
+  list-style: none;
+}
+.patient-portal-lichen__advanced summary::-webkit-details-marker {
+  display: none;
+}
+.patient-portal-lichen__advanced summary::after {
+  content: " ▾";
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+.patient-portal-lichen__advanced[open] summary::after {
+  content: " ▴";
+}
+.patient-portal-lichen__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.patient-portal-appt-card {
+  border-radius: 14px !important;
+  overflow: hidden;
+  transition:
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+.patient-portal-appt-card:hover {
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.1) !important;
+}
+.patient-portal-appt-card .card-body {
+  padding: 1rem 1.15rem;
+}
+@media (min-width: 576px) {
+  .patient-portal-appt-card .card-body {
+    padding: 1.15rem 1.35rem;
+  }
+}
+.patient-portal-appt-card__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+  margin-bottom: 0.65rem;
+}
+.patient-portal-appt-card__when {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.patient-portal-appt-card__date {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: rgb(15, 23, 42);
+  line-height: 1.2;
+}
+.patient-portal-appt-card__time {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgb(59, 130, 246);
+}
+.patient-portal-appt-card__doctor {
+  font-size: 1rem;
+  font-weight: 700;
+  color: rgb(30, 41, 59);
+  margin-bottom: 0.2rem;
+}
+.patient-portal-appt-card__service {
+  font-size: 0.9rem;
+  color: rgb(71, 85, 105);
+  line-height: 1.45;
+}
+.patient-portal-appt-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+}
+.patient-portal-appt-card__actions .btn {
+  font-weight: 600;
+  border-radius: 999px;
+}
+.patient-portal-lichen__cal-shell {
+  border-radius: 16px !important;
+}
+
+.patient-portal-hoadon {
+  max-width: 42rem;
+  margin-inline: auto;
+}
+.patient-portal-hoadon__filters {
+  border-radius: 16px !important;
+  background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+}
+.patient-portal-hoadon__filters .card-body {
+  padding: 1.15rem 1.25rem 1.35rem;
+}
+.patient-portal-hoadon__lead {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1rem !important;
+}
+.patient-portal-hoadon__dates {
+  display: grid;
+  gap: 0.85rem 1rem;
+  grid-template-columns: 1fr;
+  max-width: 22rem;
+}
+@media (min-width: 480px) {
+  .patient-portal-hoadon__dates {
+    grid-template-columns: 1fr 1fr;
+    max-width: none;
+  }
+}
+.patient-portal-hoadon__filters .form-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgb(100, 116, 139);
+  margin-bottom: 0.35rem;
+}
+.patient-portal-hoadon__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.patient-portal-invoice-card {
+  border-radius: 14px !important;
+  transition: box-shadow 0.15s ease;
+}
+.patient-portal-invoice-card:hover {
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.1) !important;
+}
+.patient-portal-invoice-card .card-body {
+  padding: 1.1rem 1.25rem;
+}
+.patient-portal-invoice-card__top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+.patient-portal-invoice-card__id {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(100, 116, 139);
+}
+.patient-portal-invoice-card__amount {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: rgb(15, 23, 42);
+}
+.patient-portal-invoice-card__paid {
+  font-size: 0.875rem;
+  color: rgb(71, 85, 105);
+  margin-top: 0.15rem;
+}
+.patient-portal-invoice-card__meta {
+  font-size: 0.8125rem;
+  color: rgb(100, 116, 139);
+  margin-bottom: 0.65rem;
+}
+.patient-portal-invoice-card__actions .btn {
+  font-weight: 600;
+  border-radius: 999px;
+}
+
 .clinic-modal-footer {
   border-top: 1px solid var(--clinic-border);
   background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
@@ -7107,7 +7375,8 @@ html.app-ready body {
 }
 
 .lich-hen-detail-page .lich-hen-status-tag,
-.patient-create-modal .lich-hen-status-tag {
+.patient-create-modal .lich-hen-status-tag,
+.patient-portal-lichen .lich-hen-status-tag {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -7120,67 +7389,78 @@ html.app-ready body {
   line-height: 1.2;
 }
 .lich-hen-detail-page .lich-hen-status-tag .bi,
-.patient-create-modal .lich-hen-status-tag .bi {
+.patient-create-modal .lich-hen-status-tag .bi,
+.patient-portal-lichen .lich-hen-status-tag .bi {
   font-size: 1.05rem;
   opacity: 0.95;
 }
 
 .lich-hen-detail-page .lich-hen-status-tag--da-dat,
-.patient-create-modal .lich-hen-status-tag--da-dat {
+.patient-create-modal .lich-hen-status-tag--da-dat,
+.patient-portal-lichen .lich-hen-status-tag--da-dat {
   background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
   color: #fff;
   box-shadow: 0 2px 10px rgba(37, 99, 235, 0.38);
 }
 .lich-hen-detail-page .lich-hen-status-tag--tiep-nhan,
-.patient-create-modal .lich-hen-status-tag--tiep-nhan {
+.patient-create-modal .lich-hen-status-tag--tiep-nhan,
+.patient-portal-lichen .lich-hen-status-tag--tiep-nhan {
   background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
   color: #fff;
   box-shadow: 0 2px 10px rgba(79, 70, 229, 0.35);
 }
 .lich-hen-detail-page .lich-hen-status-tag--dang-kham,
-.patient-create-modal .lich-hen-status-tag--dang-kham {
+.patient-create-modal .lich-hen-status-tag--dang-kham,
+.patient-portal-lichen .lich-hen-status-tag--dang-kham {
   background: linear-gradient(180deg, #f43f5e 0%, #e11d48 100%);
   color: #fff;
   box-shadow: 0 2px 10px rgba(225, 29, 72, 0.35);
 }
 .lich-hen-detail-page .lich-hen-status-tag--xet-nghiem,
-.patient-create-modal .lich-hen-status-tag--xet-nghiem {
+.patient-create-modal .lich-hen-status-tag--xet-nghiem,
+.patient-portal-lichen .lich-hen-status-tag--xet-nghiem {
   background: linear-gradient(180deg, #06b6d4 0%, #0891b2 100%);
   color: #fff;
   box-shadow: 0 2px 10px rgba(8, 145, 178, 0.35);
 }
 .lich-hen-detail-page .lich-hen-status-tag--da-ke-don,
-.patient-create-modal .lich-hen-status-tag--da-ke-don {
+.patient-create-modal .lich-hen-status-tag--da-ke-don,
+.patient-portal-lichen .lich-hen-status-tag--da-ke-don {
   background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
   color: #fff;
   box-shadow: 0 2px 10px rgba(217, 119, 6, 0.35);
 }
 .lich-hen-detail-page .lich-hen-status-tag--cho-thanh-toan,
-.patient-create-modal .lich-hen-status-tag--cho-thanh-toan {
+.patient-create-modal .lich-hen-status-tag--cho-thanh-toan,
+.patient-portal-lichen .lich-hen-status-tag--cho-thanh-toan {
   background: linear-gradient(180deg, #eab308 0%, #ca8a04 100%);
   color: #fff;
   box-shadow: 0 2px 10px rgba(202, 138, 4, 0.38);
 }
 .lich-hen-detail-page .lich-hen-status-tag--da-thanh-toan,
-.patient-create-modal .lich-hen-status-tag--da-thanh-toan {
+.patient-create-modal .lich-hen-status-tag--da-thanh-toan,
+.patient-portal-lichen .lich-hen-status-tag--da-thanh-toan {
   background: linear-gradient(180deg, #10b981 0%, #059669 100%);
   color: #fff;
   box-shadow: 0 2px 10px rgba(5, 150, 105, 0.35);
 }
 .lich-hen-detail-page .lich-hen-status-tag--huy,
-.patient-create-modal .lich-hen-status-tag--huy {
+.patient-create-modal .lich-hen-status-tag--huy,
+.patient-portal-lichen .lich-hen-status-tag--huy {
   background: linear-gradient(180deg, #f87171 0%, #dc2626 100%);
   color: #fff;
   box-shadow: 0 2px 10px rgba(220, 38, 38, 0.35);
 }
 .lich-hen-detail-page .lich-hen-status-tag--vang,
-.patient-create-modal .lich-hen-status-tag--vang {
+.patient-create-modal .lich-hen-status-tag--vang,
+.patient-portal-lichen .lich-hen-status-tag--vang {
   background: linear-gradient(180deg, #fb923c 0%, #ea580c 100%);
   color: #fff;
   box-shadow: 0 2px 10px rgba(234, 88, 12, 0.35);
 }
 .lich-hen-detail-page .lich-hen-status-tag--unknown,
-.patient-create-modal .lich-hen-status-tag--unknown {
+.patient-create-modal .lich-hen-status-tag--unknown,
+.patient-portal-lichen .lich-hen-status-tag--unknown {
   background: #475569;
   color: #fff;
 }

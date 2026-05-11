@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Table, Card, Form, Alert } from "react-bootstrap";
 import Link from "next/link";
@@ -11,6 +11,19 @@ import { LoadingState } from "@/components/LoadingState";
 import { HoaDonStatusTag } from "@/components/HoaDonStatusTag";
 import { daysAgoLocalYmd, todayLocalYmd } from "@/lib/dateLocal";
 import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
+
+function formatTaoLucPatient(t?: string) {
+  if (!t) return "";
+  const d = new Date(t);
+  if (Number.isNaN(d.getTime())) return t;
+  return d.toLocaleString("vi-VN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 function InvoicesPageInner() {
   const searchParams = useSearchParams();
@@ -63,20 +76,52 @@ function InvoicesPageInner() {
       .catch((e) => setError(e.message));
   }, [user, from, to, chiTaiKhoanBn]);
 
+  const rowsHienThi = useMemo(
+    () =>
+      list.filter(
+        (inv) =>
+          !maBenhNhanParam ||
+          inv.maBenhNhan === Number(maBenhNhanParam),
+      ),
+    [list, maBenhNhanParam],
+  );
+
   if (loading) return <LoadingState />;
   if (!user) return null;
 
+  const lichTheoHoSoHref =
+    user.maBenhNhan != null
+      ? `/lich-hen?maBenhNhan=${encodeURIComponent(String(user.maBenhNhan))}`
+      : "/lich-hen";
+
   return (
-    <div>
+    <div className={chiTaiKhoanBn ? "patient-portal-hoadon" : undefined}>
       <PageHeader
         title={chiTaiKhoanBn ? "Hóa đơn của tôi" : "Hóa đơn & thanh toán"}
         subtitle={
           chiTaiKhoanBn
-            ? "Xem chi tiết và trạng thái thanh toán (lọc theo ngày tạo hóa đơn)."
+            ? "Theo dõi số tiền và trạng thái thanh toán theo ngày lập hóa đơn."
             : "Lọc theo ngày tạo hóa đơn."
         }
       >
-        {!chiTaiKhoanBn && (
+        {chiTaiKhoanBn ? (
+          <div className="d-flex flex-wrap gap-2 align-items-center">
+            <Link
+              href="/benh-nhan"
+              className="btn btn-sm btn-light border rounded-pill d-inline-flex align-items-center gap-2"
+            >
+              <i className="bi bi-person-circle" aria-hidden />
+              Hồ sơ của tôi
+            </Link>
+            <Link
+              href={lichTheoHoSoHref}
+              className="btn btn-sm btn-light border rounded-pill d-inline-flex align-items-center gap-2"
+            >
+              <i className="bi bi-calendar3" aria-hidden />
+              Lịch khám
+            </Link>
+          </div>
+        ) : (
           <Link
             href="/lich-hen"
             className="btn btn-outline-primary d-inline-flex align-items-center gap-2"
@@ -91,50 +136,136 @@ function InvoicesPageInner() {
           {error}
         </Alert>
       )}
-      <Card className="mb-3 card--static border-0 shadow-sm">
+      <Card
+        className={`mb-3 card--static border-0 shadow-sm${
+          chiTaiKhoanBn ? " patient-portal-hoadon__filters" : ""
+        }`}
+      >
         <Card.Body>
-          <div className="d-flex flex-wrap gap-3 align-items-end">
-            <Form.Group>
-              <Form.Label>Từ ngày</Form.Label>
-              <Form.Control
-                type="date"
-                value={from}
-                onChange={(e) => setFrom(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Đến ngày</Form.Label>
-              <Form.Control
-                type="date"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-              />
-            </Form.Group>
-          </div>
+          {chiTaiKhoanBn ? (
+            <>
+              <p className="patient-portal-hoadon__lead text-muted mb-0">
+                Chọn <strong className="text-body">khoảng ngày lập hóa đơn</strong>{" "}
+                để xem lại các lần thanh toán của bạn.
+              </p>
+              <div className="patient-portal-hoadon__dates mt-3">
+                <Form.Group>
+                  <Form.Label>Từ ngày</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={from}
+                    onChange={(e) => setFrom(e.target.value)}
+                  />
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Đến ngày</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={to}
+                    onChange={(e) => setTo(e.target.value)}
+                  />
+                </Form.Group>
+              </div>
+            </>
+          ) : (
+            <div className="d-flex flex-wrap gap-3 align-items-end">
+              <Form.Group>
+                <Form.Label>Từ ngày</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group>
+                <Form.Label>Đến ngày</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                />
+              </Form.Group>
+            </div>
+          )}
         </Card.Body>
       </Card>
-      <Card className="card--static border-0 shadow-sm overflow-hidden">
-        <div className="table-responsive">
-        <Table responsive hover className="mb-0 align-middle">
-          <thead>
-            <tr>
-              <th>Mã HĐ</th>
-              <th>Bệnh nhân</th>
-              <th>Tổng tiền</th>
-              <th>Đã thanh toán</th>
-              <th>Trạng thái</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {(() => {
-              const rows = list.filter(
-                (inv) =>
-                  !maBenhNhanParam ||
-                  inv.maBenhNhan === Number(maBenhNhanParam),
-              );
-              if (rows.length === 0) {
-                return (
+      {chiTaiKhoanBn ? (
+        <div className="patient-portal-hoadon__list">
+          {rowsHienThi.length === 0 ? (
+            <Card className="card--static border-0 shadow-sm text-center text-muted">
+              <Card.Body className="py-5 px-3">
+                {list.length === 0
+                  ? "Chưa có hóa đơn trong khoảng ngày này. Thử mở rộng « Từ ngày » hoặc « Đến ngày »."
+                  : "Không có hóa đơn khớp bộ lọc."}
+              </Card.Body>
+            </Card>
+          ) : (
+            rowsHienThi.map((inv) => (
+              <Card
+                key={inv.id}
+                className="patient-portal-invoice-card card--static border-0 shadow-sm"
+              >
+                <Card.Body>
+                  <div className="patient-portal-invoice-card__top">
+                    <div>
+                      <div className="patient-portal-invoice-card__id">
+                        Hóa đơn{" "}
+                        {inv.soHoaDon != null && inv.soHoaDon !== ""
+                          ? inv.soHoaDon
+                          : `#${inv.id}`}
+                      </div>
+                      {inv.taoLuc ? (
+                        <div className="patient-portal-invoice-card__meta">
+                          <i className="bi bi-clock-history me-1" aria-hidden />
+                          {formatTaoLucPatient(inv.taoLuc)}
+                        </div>
+                      ) : null}
+                    </div>
+                    <HoaDonStatusTag trangThai={inv.trangThai} />
+                  </div>
+                  <div className="patient-portal-invoice-card__amount">
+                    {inv.tongTien != null
+                      ? `${inv.tongTien.toLocaleString("vi-VN")}đ`
+                      : "—"}
+                  </div>
+                  <div className="patient-portal-invoice-card__paid">
+                    Đã thanh toán:{" "}
+                    <span className="fw-semibold text-body">
+                      {inv.soTienDaTra != null
+                        ? `${inv.soTienDaTra.toLocaleString("vi-VN")}đ`
+                        : "—"}
+                    </span>
+                  </div>
+                  <div className="patient-portal-invoice-card__actions mt-3 pt-2 border-top">
+                    <Link
+                      href={`/hoa-don/${inv.id}`}
+                      className="btn btn-sm btn-primary"
+                    >
+                      <i className="bi bi-receipt-cutoff me-1" aria-hidden />
+                      Xem chi tiết và thanh toán
+                    </Link>
+                  </div>
+                </Card.Body>
+              </Card>
+            ))
+          )}
+        </div>
+      ) : (
+        <Card className="card--static border-0 shadow-sm overflow-hidden">
+          <div className="table-responsive">
+            <Table responsive hover className="mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Mã HĐ</th>
+                  <th>Bệnh nhân</th>
+                  <th>Tổng tiền</th>
+                  <th>Đã thanh toán</th>
+                  <th>Trạng thái</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {rowsHienThi.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="text-muted text-center py-4">
                       {list.length === 0
@@ -142,33 +273,33 @@ function InvoicesPageInner() {
                         : "Không có hóa đơn khớp bộ lọc (maBenhNhan)."}
                     </td>
                   </tr>
-                );
-              }
-              return rows.map((inv) => (
-                <tr key={inv.id}>
-                  <td>{inv.soHoaDon}</td>
-                  <td>{inv.tenBenhNhan}</td>
-                  <td>{inv.tongTien?.toLocaleString("vi-VN")}đ</td>
-                  <td>{inv.soTienDaTra?.toLocaleString("vi-VN")}đ</td>
-                  <td>
-                    <HoaDonStatusTag trangThai={inv.trangThai} />
-                  </td>
-                  <td className="text-end">
-                    <Link
-                      href={`/hoa-don/${inv.id}`}
-                      className="btn btn-sm btn-outline-primary"
-                    >
-                      <i className="bi bi-eye me-1" />
-                      Chi tiết
-                    </Link>
-                  </td>
-                </tr>
-              ));
-            })()}
-          </tbody>
-        </Table>
-        </div>
-      </Card>
+                ) : (
+                  rowsHienThi.map((inv) => (
+                    <tr key={inv.id}>
+                      <td>{inv.soHoaDon}</td>
+                      <td>{inv.tenBenhNhan}</td>
+                      <td>{inv.tongTien?.toLocaleString("vi-VN")}đ</td>
+                      <td>{inv.soTienDaTra?.toLocaleString("vi-VN")}đ</td>
+                      <td>
+                        <HoaDonStatusTag trangThai={inv.trangThai} />
+                      </td>
+                      <td className="text-end">
+                        <Link
+                          href={`/hoa-don/${inv.id}`}
+                          className="btn btn-sm btn-outline-primary"
+                        >
+                          <i className="bi bi-eye me-1" />
+                          Chi tiết
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </Table>
+          </div>
+        </Card>
+      )}
     </div>
   );
 }

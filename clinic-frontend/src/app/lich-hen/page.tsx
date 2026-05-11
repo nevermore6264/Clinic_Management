@@ -78,6 +78,25 @@ function isoDateLocal(d: Date): string {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 }
 
+function formatNgayKhamPatient(ymd?: string | null): {
+  line1: string;
+  line2: string;
+} {
+  if (!ymd) return { line1: "—", line2: "" };
+  const parts = ymd.split("-").map(Number);
+  const [y, m, d] = parts;
+  if (!y || !m || !d) return { line1: ymd, line2: "" };
+  const dt = new Date(y, m - 1, d);
+  return {
+    line1: dt.toLocaleDateString("vi-VN", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    }),
+    line2: dt.toLocaleDateString("vi-VN", { year: "numeric" }),
+  };
+}
+
 function monthBoundsFromYm(ym: string): { from: string; to: string } {
   const [y, m] = ym.split("-").map(Number);
   if (!y || !m || m < 1 || m > 12) {
@@ -520,6 +539,27 @@ function AppointmentsPageInner() {
     setTo(b.to);
   };
 
+  const patientLichQuickRange = useCallback(
+    (mode: "near" | "month" | "wide") => {
+      const t = new Date();
+      const fromD = new Date(t);
+      const toD = new Date(t);
+      if (mode === "near") {
+        fromD.setDate(t.getDate() - 1);
+        toD.setDate(t.getDate() + 14);
+      } else if (mode === "month") {
+        fromD.setDate(t.getDate() - 2);
+        toD.setDate(t.getDate() + 45);
+      } else {
+        fromD.setMonth(t.getMonth() - 3);
+        toD.setMonth(t.getMonth() + 6);
+      }
+      setFrom(isoDateLocal(fromD));
+      setTo(isoDateLocal(toD));
+    },
+    [],
+  );
+
   const todayStr = isoDateLocal(new Date());
   const bangColSpan = chiTaiKhoanBn ? 6 : 7;
 
@@ -685,17 +725,42 @@ function AppointmentsPageInner() {
   if (loading) return <LoadingState />;
   if (!user) return null;
 
+  const hoaDonTheoHoSoHref =
+    user.maBenhNhan != null
+      ? `/hoa-don?maBenhNhan=${encodeURIComponent(String(user.maBenhNhan))}`
+      : "/hoa-don";
+
   return (
-    <div className="lich-hen-page">
+    <div
+      className={`lich-hen-page${chiTaiKhoanBn ? " patient-portal-lichen" : ""}`}
+    >
       <PageHeader
-        title="Lịch khám"
+        title={chiTaiKhoanBn ? "Lịch khám của bạn" : "Lịch khám"}
         subtitle={
           chiTaiKhoanBn
-            ? "Lịch khám của bạn — lọc theo ngày và đặt lịch mới khi cần."
+            ? "Xem lịch đã đặt, theo dõi trạng thái và đặt thêm lịch mới khi bạn cần."
             : "Lọc ngày, tìm bác sĩ, trạng thái — xem và mở chi tiết từng lượt khám."
         }
       >
         <div className="d-flex flex-wrap gap-2 align-items-center">
+          {chiTaiKhoanBn && (
+            <>
+              <Link
+                href="/benh-nhan"
+                className="btn btn-sm btn-light border rounded-pill d-inline-flex align-items-center gap-2"
+              >
+                <i className="bi bi-person-circle" aria-hidden />
+                Hồ sơ của tôi
+              </Link>
+              <Link
+                href={hoaDonTheoHoSoHref}
+                className="btn btn-sm btn-light border rounded-pill d-inline-flex align-items-center gap-2"
+              >
+                <i className="bi bi-receipt" aria-hidden />
+                Hóa đơn
+              </Link>
+            </>
+          )}
           {!chiTaiKhoanBn && (
             <Button
               className="btn-service-export d-inline-flex align-items-center gap-2"
@@ -707,7 +772,7 @@ function AppointmentsPageInner() {
           )}
           <Button
             variant="primary"
-            className="d-inline-flex align-items-center gap-2"
+            className="d-inline-flex align-items-center gap-2 rounded-pill px-3"
             onClick={openDatLichModal}
           >
             <i className="bi bi-plus-lg" aria-hidden />
@@ -720,89 +785,220 @@ function AppointmentsPageInner() {
           {error}
         </Alert>
       )}
-      <Card className="mb-3 card--static border-0 shadow-sm">
+      <Card
+        className={`mb-3 card--static border-0 shadow-sm${
+          chiTaiKhoanBn ? " patient-portal-lichen__filters" : ""
+        }`}
+      >
         <Card.Body>
-          <div className="d-flex flex-wrap gap-3 align-items-end justify-content-between">
-            <div className="d-flex flex-wrap gap-3 align-items-end flex-grow-1">
-            <Form.Group>
-              <Form.Label>Từ ngày</Form.Label>
-              <Form.Control
-                type="date"
-                value={from}
-                onChange={(e) => setFrom(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Đến ngày</Form.Label>
-              <Form.Control
-                type="date"
-                value={to}
-                onChange={(e) => setTo(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group className="flex-grow-1" style={{ minWidth: "14rem" }}>
-              <Form.Label>Tìm bác sĩ</Form.Label>
-              <Form.Control
-                type="search"
-                placeholder="Tên bác sĩ…"
-                value={timBacSiTrang}
-                onChange={(e) => setTimBacSiTrang(e.target.value)}
-                autoComplete="off"
-                aria-label="Tìm theo bác sĩ"
-              />
-            </Form.Group>
-            <Form.Group style={{ minWidth: "12rem" }}>
-              <Form.Label>Trạng thái</Form.Label>
-              <Form.Select
-                value={locTrangThaiBang}
-                onChange={(e) => {
-                  setLocTrangThaiBang(e.target.value);
-                  setLocGiaiDoan("");
-                }}
-                aria-label="Lọc theo trạng thái"
-              >
-                <option value="">Tất cả trạng thái</option>
-                {(Object.keys(STATUS_LABEL) as Array<keyof typeof STATUS_LABEL>).map(
-                  (key) => (
-                    <option key={key} value={key}>
-                      {STATUS_LABEL[key]}
-                    </option>
-                  ),
-                )}
-              </Form.Select>
-            </Form.Group>
+          {chiTaiKhoanBn ? (
+            <>
+              <p className="patient-portal-lichen__lead text-muted mb-0">
+                Chọn khoảng thời gian theo{" "}
+                <strong className="text-body">ngày khám</strong>. Bạn có thể
+                gõ tên bác sĩ hoặc mở phần trạng thái nếu cần lọc sâu hơn.
+              </p>
+              <div className="patient-portal-lichen__presets">
+                <Button
+                  type="button"
+                  variant="outline-secondary"
+                  size="sm"
+                  onClick={() => patientLichQuickRange("near")}
+                >
+                  ~2 tuần
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline-secondary"
+                  size="sm"
+                  onClick={() => patientLichQuickRange("month")}
+                >
+                  ~1,5 tháng
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline-secondary"
+                  size="sm"
+                  onClick={() => patientLichQuickRange("wide")}
+                >
+                  Nửa năm
+                </Button>
+              </div>
+              <div className="patient-portal-lichen__filter-grid">
+                <Form.Group>
+                  <Form.Label>Từ ngày</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={from}
+                    onChange={(e) => setFrom(e.target.value)}
+                  />
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Đến ngày</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={to}
+                    onChange={(e) => setTo(e.target.value)}
+                  />
+                </Form.Group>
+                <Form.Group className="patient-portal-lichen__filter-span-2">
+                  <Form.Label>Tìm theo bác sĩ</Form.Label>
+                  <Form.Control
+                    type="search"
+                    placeholder="Gõ tên bác sĩ…"
+                    value={timBacSiTrang}
+                    onChange={(e) => setTimBacSiTrang(e.target.value)}
+                    autoComplete="off"
+                    aria-label="Tìm theo bác sĩ"
+                  />
+                </Form.Group>
+                <div className="patient-portal-lichen__filter-view patient-portal-lichen__filter-span-2">
+                  <details className="patient-portal-lichen__advanced">
+                    <summary>Lọc theo trạng thái (tuỳ chọn)</summary>
+                    <Form.Group className="mb-0 mt-2">
+                      <Form.Select
+                        value={locTrangThaiBang}
+                        onChange={(e) => {
+                          setLocTrangThaiBang(e.target.value);
+                          setLocGiaiDoan("");
+                        }}
+                        aria-label="Lọc theo trạng thái"
+                      >
+                        <option value="">Mọi trạng thái</option>
+                        {(
+                          Object.keys(STATUS_LABEL) as Array<
+                            keyof typeof STATUS_LABEL
+                          >
+                        ).map((key) => (
+                          <option key={key} value={key}>
+                            {STATUS_LABEL[key]}
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
+                  </details>
+                  <Form.Group className="mb-0">
+                    <Form.Label className="d-block">Hiển thị</Form.Label>
+                    <ButtonGroup aria-label="Chế độ xem lịch khám">
+                      <Button
+                        type="button"
+                        variant={
+                          viewMode === "bang" ? "primary" : "outline-primary"
+                        }
+                        size="sm"
+                        className="d-inline-flex align-items-center gap-1"
+                        onClick={() => setViewMode("bang")}
+                      >
+                        <i className="bi bi-list-ul" aria-hidden />
+                        Danh sách
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={
+                          viewMode === "lich" ? "primary" : "outline-primary"
+                        }
+                        size="sm"
+                        className="d-inline-flex align-items-center gap-1"
+                        onClick={() => {
+                          setViewMode("lich");
+                          const b = monthBoundsFromYm(from.slice(0, 7));
+                          setFrom(b.from);
+                          setTo(b.to);
+                        }}
+                      >
+                        <i className="bi bi-calendar3" aria-hidden />
+                        Lịch tháng
+                      </Button>
+                    </ButtonGroup>
+                  </Form.Group>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="d-flex flex-wrap gap-3 align-items-end justify-content-between">
+              <div className="d-flex flex-wrap gap-3 align-items-end flex-grow-1">
+                <Form.Group>
+                  <Form.Label>Từ ngày</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={from}
+                    onChange={(e) => setFrom(e.target.value)}
+                  />
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Đến ngày</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={to}
+                    onChange={(e) => setTo(e.target.value)}
+                  />
+                </Form.Group>
+                <Form.Group className="flex-grow-1" style={{ minWidth: "14rem" }}>
+                  <Form.Label>Tìm bác sĩ</Form.Label>
+                  <Form.Control
+                    type="search"
+                    placeholder="Tên bác sĩ…"
+                    value={timBacSiTrang}
+                    onChange={(e) => setTimBacSiTrang(e.target.value)}
+                    autoComplete="off"
+                    aria-label="Tìm theo bác sĩ"
+                  />
+                </Form.Group>
+                <Form.Group style={{ minWidth: "12rem" }}>
+                  <Form.Label>Trạng thái</Form.Label>
+                  <Form.Select
+                    value={locTrangThaiBang}
+                    onChange={(e) => {
+                      setLocTrangThaiBang(e.target.value);
+                      setLocGiaiDoan("");
+                    }}
+                    aria-label="Lọc theo trạng thái"
+                  >
+                    <option value="">Tất cả trạng thái</option>
+                    {(
+                      Object.keys(STATUS_LABEL) as Array<
+                        keyof typeof STATUS_LABEL
+                      >
+                    ).map((key) => (
+                      <option key={key} value={key}>
+                        {STATUS_LABEL[key]}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </div>
+              <Form.Group className="mb-0">
+                <Form.Label className="d-block">Hiển thị</Form.Label>
+                <ButtonGroup aria-label="Chế độ xem lịch khám">
+                  <Button
+                    type="button"
+                    variant={viewMode === "bang" ? "primary" : "outline-primary"}
+                    size="sm"
+                    className="d-inline-flex align-items-center gap-1"
+                    onClick={() => setViewMode("bang")}
+                  >
+                    <i className="bi bi-list-ul" aria-hidden />
+                    Danh sách
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={viewMode === "lich" ? "primary" : "outline-primary"}
+                    size="sm"
+                    className="d-inline-flex align-items-center gap-1"
+                    onClick={() => {
+                      setViewMode("lich");
+                      const b = monthBoundsFromYm(from.slice(0, 7));
+                      setFrom(b.from);
+                      setTo(b.to);
+                    }}
+                  >
+                    <i className="bi bi-calendar3" aria-hidden />
+                    Lịch tháng
+                  </Button>
+                </ButtonGroup>
+              </Form.Group>
             </div>
-            <Form.Group className="mb-0">
-              <Form.Label className="d-block">Hiển thị</Form.Label>
-              <ButtonGroup aria-label="Chế độ xem lịch khám">
-                <Button
-                  type="button"
-                  variant={viewMode === "bang" ? "primary" : "outline-primary"}
-                  size="sm"
-                  className="d-inline-flex align-items-center gap-1"
-                  onClick={() => setViewMode("bang")}
-                >
-                  <i className="bi bi-list-ul" aria-hidden />
-                  Danh sách
-                </Button>
-                <Button
-                  type="button"
-                  variant={viewMode === "lich" ? "primary" : "outline-primary"}
-                  size="sm"
-                  className="d-inline-flex align-items-center gap-1"
-                  onClick={() => {
-                    setViewMode("lich");
-                    const b = monthBoundsFromYm(from.slice(0, 7));
-                    setFrom(b.from);
-                    setTo(b.to);
-                  }}
-                >
-                  <i className="bi bi-calendar3" aria-hidden />
-                  Lịch tháng
-                </Button>
-              </ButtonGroup>
-            </Form.Group>
-          </div>
+          )}
           {locGiaiDoan && GIAI_DOAN_FROM_URL.has(locGiaiDoan) ? (
             <div className="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top small">
               <span className="text-primary fw-semibold">
@@ -823,7 +1019,11 @@ function AppointmentsPageInner() {
         </Card.Body>
       </Card>
       {viewMode === "lich" ? (
-        <Card className="card--static border-0 shadow-sm overflow-hidden lich-hen-cal-card">
+        <Card
+          className={`card--static border-0 shadow-sm overflow-hidden lich-hen-cal-card${
+            chiTaiKhoanBn ? " patient-portal-lichen__cal-shell" : ""
+          }`}
+        >
           <Card.Body className="p-0">
             <div className="lich-hen-cal-toolbar px-3 py-3 border-bottom d-flex flex-wrap align-items-center gap-3">
               <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -948,6 +1148,78 @@ function AppointmentsPageInner() {
             </div>
           </Card.Body>
         </Card>
+      ) : chiTaiKhoanBn ? (
+        <div className="patient-portal-lichen__list">
+          {danhSachLoc.map((a) => {
+            const meta = metaTrangThaiLichHen(a.trangThai);
+            const { line1, line2 } = formatNgayKhamPatient(a.ngayHen);
+            return (
+              <Card
+                key={a.id}
+                className="patient-portal-appt-card card--static border-0 shadow-sm"
+              >
+                <Card.Body>
+                  <div className="patient-portal-appt-card__top">
+                    <div className="patient-portal-appt-card__when">
+                      <span className="patient-portal-appt-card__date">
+                        {line1}
+                      </span>
+                      {line2 ? (
+                        <span className="text-muted small">{line2}</span>
+                      ) : null}
+                      <span className="patient-portal-appt-card__time">
+                        <i className="bi bi-clock me-1" aria-hidden />
+                        {normalizeTime(a.gioHen)}
+                      </span>
+                    </div>
+                    <span
+                      className={`lich-hen-status-tag lich-hen-status-tag--${meta.slug}`}
+                    >
+                      <i className={`bi ${meta.icon}`} aria-hidden />
+                      {meta.label}
+                    </span>
+                  </div>
+                  <div className="patient-portal-appt-card__doctor">
+                    {a.tenBacSi ?? "Bác sĩ"}
+                  </div>
+                  <div className="patient-portal-appt-card__service">
+                    <i
+                      className="bi bi-heart-pulse me-1 text-primary"
+                      aria-hidden
+                    />
+                    {a.tenDichVu ?? "—"}
+                  </div>
+                  <div className="patient-portal-appt-card__actions">
+                    <Link
+                      href={`/lich-hen/${a.id}`}
+                      className="btn btn-sm btn-primary"
+                    >
+                      <i className="bi bi-arrow-right-circle me-1" aria-hidden />
+                      Xem chi tiết lịch
+                    </Link>
+                  </div>
+                </Card.Body>
+              </Card>
+            );
+          })}
+          {danhSachLoc.length === 0 ? (
+            <Card className="card--static border-0 shadow-sm text-center text-muted">
+              <Card.Body className="py-5 px-3">
+                Chưa có lịch khám trong khoảng thời gian này. Bạn có thể thử các
+                nút khoảng nhanh phía trên, mở rộng từ ngày / đến ngày, hoặc{" "}
+                <Button
+                  type="button"
+                  variant="link"
+                  className="p-0 align-baseline"
+                  onClick={openDatLichModal}
+                >
+                  đặt lịch mới
+                </Button>
+                .
+              </Card.Body>
+            </Card>
+          ) : null}
+        </div>
       ) : (
         <Card className="card--static border-0 shadow-sm overflow-hidden">
           <div className="table-responsive">

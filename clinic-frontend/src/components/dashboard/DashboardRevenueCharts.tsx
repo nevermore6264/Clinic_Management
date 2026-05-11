@@ -21,7 +21,6 @@ function localDateKey(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-/** Ghép đủ 7 ngày liên tiếp (theo lịch máy); ngày không có dữ liệu = 0 */
 function normalizeSevenDayRevenue(series: BaoCaoDoanhThu[]): BaoCaoDoanhThu[] {
   const byDay = new Map<string, BaoCaoDoanhThu>();
   for (const r of series) {

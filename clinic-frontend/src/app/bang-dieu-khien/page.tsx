@@ -1,16 +1,17 @@
 "use client";
 
-import type { CSSProperties } from "react";
-import { useEffect, useState } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Row, Col } from "react-bootstrap";
+import { Card, Row, Col, Placeholder } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import { dashboardApi, type DashboardStats } from "@/lib/api";
 import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
-import { PageHeader } from "@/components/PageHeader";
 import { LoadingState } from "@/components/LoadingState";
 import { DashboardRevenueCharts } from "@/components/dashboard/DashboardRevenueCharts";
+import { DashboardClinicalToday } from "@/components/dashboard/DashboardClinicalToday";
+import { hrefLichHenTheoNgay } from "@/lib/dashboardLichHenLinks";
 
 function StatCard({
   label,
@@ -19,6 +20,7 @@ function StatCard({
   accent,
   iconBg,
   iconFg,
+  dash,
 }: {
   label: string;
   value: string | number;
@@ -26,10 +28,11 @@ function StatCard({
   accent?: string;
   iconBg?: string;
   iconFg?: string;
+  dash?: boolean;
 }) {
   return (
     <Card
-      className="stat-card card--static h-100 stagger-item"
+      className={`stat-card card--static h-100 stagger-item${dash ? " stat-card--dash" : ""}`}
       style={
         {
           "--stat-accent": accent,
@@ -58,27 +61,25 @@ function QuickLinkCard({
   title,
   desc,
   icon,
+  tone = 0,
 }: {
   href: string;
   title: string;
   desc: string;
   icon: string;
+  tone?: number;
 }) {
+  const t = ((tone % 5) + 5) % 5;
   return (
     <Col md={6} xl={4}>
-      <Card as={Link} href={href} className="card--link h-100 stagger-item">
-        <Card.Body className="p-4">
+      <Card
+        as={Link}
+        href={href}
+        className={`card--link card--quick-link h-100 stagger-item dashboard-quick-tone-${t}`}
+      >
+        <Card.Body className="p-4 position-relative">
           <div className="d-flex align-items-start gap-3">
-            <div
-              className="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
-              style={{
-                width: 48,
-                height: 48,
-                background: "var(--clinic-teal-soft)",
-                color: "var(--clinic-teal-dark)",
-                fontSize: "1.35rem",
-              }}
-            >
+            <div className="dashboard-quick-link-icon flex-shrink-0">
               <i className={`bi ${icon}`} aria-hidden />
             </div>
             <div>
@@ -89,6 +90,90 @@ function QuickLinkCard({
         </Card.Body>
       </Card>
     </Col>
+  );
+}
+
+function DashboardHero({
+  compact,
+  eyebrow,
+  title,
+  lede,
+  actions,
+}: {
+  compact?: boolean;
+  eyebrow: string;
+  title: string;
+  lede: string;
+  actions?: ReactNode;
+}) {
+  return (
+    <div
+      className={`dashboard-hero mb-4${compact ? " dashboard-hero--compact" : ""}`}
+    >
+      <div className="dashboard-hero__glow" aria-hidden />
+      <div className="dashboard-hero__grid-deco" aria-hidden />
+      <div className="dashboard-hero__inner">
+        <div className="dashboard-hero__eyebrow">
+          <span className="dashboard-hero__pulse" aria-hidden />
+          {eyebrow}
+        </div>
+        <h1 className="dashboard-hero__title">{title}</h1>
+        <p className="dashboard-hero__lede">{lede}</p>
+        {actions ? (
+          <div className="dashboard-hero__actions">{actions}</div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function DashboardKpiSkeleton() {
+  return (
+    <div className="dashboard-kpi-grid mb-4">
+      {[1, 2, 3, 4, 5].map((k) => (
+        <Card
+          key={k}
+          className="card--static border-0 shadow-sm dashboard-stat-skeleton stagger-item position-relative"
+        >
+          <Card.Body className="p-4">
+            <div className="d-flex justify-content-between align-items-start gap-3">
+              <div className="flex-grow-1">
+                <Placeholder as="div" animation="glow" className="mb-2">
+                  <Placeholder xs={7} bg="secondary" />
+                </Placeholder>
+                <Placeholder as="div" animation="glow">
+                  <Placeholder xs={4} size="lg" bg="secondary" />
+                </Placeholder>
+              </div>
+              <Placeholder
+                animation="glow"
+                className="rounded-3 flex-shrink-0"
+                style={{ width: 52, height: 52 }}
+                bg="secondary"
+              />
+            </div>
+          </Card.Body>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function DashboardSectionHead({
+  title,
+  hint,
+}: {
+  title: string;
+  hint: string;
+}) {
+  return (
+    <div className="dashboard-section-head">
+      <div className="dashboard-section-head__rail" aria-hidden />
+      <div className="dashboard-section-head__text">
+        <h2 className="dashboard-section-head__title">{title}</h2>
+        <p className="dashboard-section-head__hint">{hint}</p>
+      </div>
+    </div>
   );
 }
 
@@ -142,36 +227,45 @@ export default function DashboardPage() {
 
   if (laChiTaiKhoanBenhNhan(user)) {
     return (
-      <div>
-        <PageHeader
-          title="Trang chủ"
-          subtitle={`Xin chào, ${user.hoTen || user.tenDangNhap}. Bạn đang dùng tài khoản bệnh nhân — xem hồ sơ, lịch khám và hóa đơn của bạn.`}
+      <div className="dashboard-page dashboard-page--patient">
+        <DashboardHero
+          compact
+          eyebrow="Cổng bệnh nhân"
+          title={`Xin chào, ${user.hoTen || user.tenDangNhap}`}
+          lede="Tài khoản bệnh nhân — xem hồ sơ, lịch khám và hóa đơn của bạn tại đây."
         />
-        <h3 className="h5 fw-bold mb-3 mt-2">Truy cập nhanh</h3>
+        <DashboardSectionHead
+          title="Truy cập nhanh"
+          hint="Các mục bạn hay dùng nhất"
+        />
         <Row className="g-3 stagger-children">
           <QuickLinkCard
             href="/benh-nhan"
             title="Hồ sơ của tôi"
             desc="Xem và cập nhật thông tin liên hệ."
             icon="bi-person-vcard"
+            tone={0}
           />
           <QuickLinkCard
             href={`/lich-hen${bnQuery}`}
             title="Lịch khám"
             desc="Đặt lịch hoặc xem các lượt khám của bạn."
             icon="bi-calendar-heart"
+            tone={1}
           />
           <QuickLinkCard
             href={`/hoa-don${bnQuery}`}
             title="Hóa đơn"
             desc="Xem chi tiết và trạng thái thanh toán."
             icon="bi-wallet2"
+            tone={2}
           />
           <QuickLinkCard
             href="/tro-chuyen"
             title="Chat"
             desc="Trao đổi với phòng khám."
             icon="bi-chat-dots"
+            tone={3}
           />
         </Row>
       </div>
@@ -184,17 +278,61 @@ export default function DashboardPage() {
   const isThuNgan = roles.includes("THU_NGAN");
   const coNhomQuanLy = isAdmin || isLeTan || isThuNgan;
 
+  const todayLong = new Date().toLocaleDateString("vi-VN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  const todayISO = useMemo(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  }, []);
+
   return (
-    <div>
-      <PageHeader
-        title="Trang chủ"
-        subtitle={`Xin chào, ${user.hoTen || user.tenDangNhap}. Đây là tổng quan hoạt động hôm nay.`}
+    <div className="dashboard-page">
+      <DashboardHero
+        eyebrow="Bảng điều khiển"
+        title={`Xin chào, ${user.hoTen || user.tenDangNhap}`}
+        lede={`${todayLong} · Theo dõi luồng khám, lịch và tài chính trong ngày.`}
+        actions={
+          <div className="d-flex flex-wrap gap-2">
+            <Link
+              href={hrefLichHenTheoNgay(todayISO, todayISO)}
+              className="btn btn-sm btn-light border dashboard-hero-chip"
+            >
+              <i className="bi bi-calendar2-check me-1" aria-hidden />
+              Lịch hôm nay
+            </Link>
+            <Link
+              href="/benh-nhan"
+              className="btn btn-sm btn-light border dashboard-hero-chip"
+            >
+              <i className="bi bi-people me-1" aria-hidden />
+              Bệnh nhân
+            </Link>
+            <Link
+              href="/hoa-don"
+              className="btn btn-sm btn-light border dashboard-hero-chip"
+            >
+              <i className="bi bi-receipt me-1" aria-hidden />
+              Hóa đơn
+            </Link>
+          </div>
+        }
       />
 
-      {stats && (
+      {stats ? (
         <>
+          <DashboardClinicalToday stats={stats} todayISO={todayISO} />
+
           <div className="dashboard-kpi-grid mb-4 stagger-children">
             <StatCard
+              dash
               label="Tổng bệnh nhân"
               value={stats.tongBenhNhan}
               icon="bi-people-fill"
@@ -203,7 +341,8 @@ export default function DashboardPage() {
               iconFg="var(--clinic-teal-dark)"
             />
             <StatCard
-              label="Lịch hẹn hôm nay"
+              dash
+              label="Tổng lượt lịch trong ngày"
               value={stats.lichHenHomNay}
               icon="bi-calendar2-check"
               accent="#059669"
@@ -211,6 +350,7 @@ export default function DashboardPage() {
               iconFg="#047857"
             />
             <StatCard
+              dash
               label="Lịch hẹn tuần này"
               value={stats.lichHenTuanNay}
               icon="bi-calendar-week"
@@ -219,6 +359,7 @@ export default function DashboardPage() {
               iconFg="#5b21b6"
             />
             <StatCard
+              dash
               label="Doanh thu hôm nay"
               value={`${(stats.doanhThuHomNay || 0).toLocaleString("vi-VN")}đ`}
               icon="bi-currency-exchange"
@@ -227,6 +368,7 @@ export default function DashboardPage() {
               iconFg="#0369a1"
             />
             <StatCard
+              dash
               label="Doanh thu tuần"
               value={`${(stats.doanhThuTuanNay || 0).toLocaleString("vi-VN")}đ`}
               icon="bi-graph-up"
@@ -241,47 +383,60 @@ export default function DashboardPage() {
             doanhThuTuanNay={Number(stats.doanhThuTuanNay) || 0}
           />
         </>
+      ) : (
+        <DashboardKpiSkeleton />
       )}
 
-      <h3 className="h5 fw-bold mb-3 mt-2">Truy cập nhanh</h3>
+      <DashboardSectionHead
+        title="Truy cập nhanh"
+        hint="Mở module thường dùng — hover thẻ để xem hiệu ứng."
+      />
       <Row className="g-3 stagger-children">
         <QuickLinkCard
           href="/benh-nhan"
           title="Bệnh nhân"
           desc="Hồ sơ, tìm kiếm và cập nhật thông tin bệnh nhân."
           icon="bi-person-vcard"
+          tone={0}
         />
         <QuickLinkCard
           href="/lich-hen"
           title="Lịch khám"
           desc="Đặt lịch, theo dõi trạng thái và hồ sơ khám."
           icon="bi-calendar-heart"
+          tone={1}
         />
         <QuickLinkCard
           href="/lich-lam-viec-bac-si"
           title="Lịch bác sĩ"
           desc="Xem lịch làm việc và khung giờ theo bác sĩ."
           icon="bi-calendar3"
+          tone={2}
         />
         <QuickLinkCard
           href="/hoa-don"
           title="Hóa đơn & thanh toán"
           desc="Lập hóa đơn và ghi nhận thanh toán."
           icon="bi-wallet2"
+          tone={3}
         />
         <QuickLinkCard
           href="/tro-chuyen"
           title="Chat"
           desc="Trao đổi nội bộ và với bệnh nhân."
           icon="bi-chat-dots"
+          tone={4}
         />
       </Row>
 
       {coNhomQuanLy && (
         <>
-          <h3 className="h5 fw-bold mb-3 mt-4">Quản lý &amp; cấu hình</h3>
-          <Card className="card--static border-0 shadow-sm mb-2">
-            <Card.Header className="d-flex align-items-center gap-2 py-3 fw-bold">
+          <DashboardSectionHead
+            title="Quản lý & cấu hình"
+            hint="Dịch vụ, báo cáo, nhắc lịch và tài khoản — gom một chỗ."
+          />
+          <Card className="dashboard-ops-card card--static border-0 shadow-sm mb-2">
+            <Card.Header className="d-flex align-items-center gap-2 py-3 fw-bold border-0">
               <i className="bi bi-grid-1x2-fill text-primary" aria-hidden />
               Module hỗ trợ vận hành
             </Card.Header>

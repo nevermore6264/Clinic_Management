@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import Link from "next/link";
 import { Card } from "react-bootstrap";
 import type { BaoCaoDoanhThu } from "@/lib/api";
@@ -46,12 +46,14 @@ type Props = {
 
 export function DashboardRevenueCharts({ series, doanhThuTuanNay }: Props) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const fillGradId = useId().replace(/:/g, "");
 
   const filled = useMemo(() => normalizeSevenDayRevenue(series), [series]);
 
-  const { values, max, total, avg, peak, peakLabel } = useMemo(() => {
+  const { values, chartMax, total, avg, peak, peakLabel, allZero } = useMemo(() => {
     const vals = filled.map((r) => Number(r.tongDoanhThu) || 0);
-    const mx = Math.max(...vals, 1);
+    const rawMax = Math.max(...vals, 0);
+    const scaleMax = rawMax > 0 ? rawMax * 1.08 : 1;
     const tot = vals.reduce((a, b) => a + b, 0);
     const av = vals.length ? tot / vals.length : 0;
     let pi = 0;
@@ -61,11 +63,12 @@ export function DashboardRevenueCharts({ series, doanhThuTuanNay }: Props) {
     const pl = filled[pi]?.ngay?.slice(5) ?? "—";
     return {
       values: vals,
-      max: mx,
+      chartMax: scaleMax,
       total: tot,
       avg: av,
       peak: vals[pi] ?? 0,
       peakLabel: pl,
+      allZero: tot === 0,
     };
   }, [filled]);
 
@@ -79,17 +82,17 @@ export function DashboardRevenueCharts({ series, doanhThuTuanNay }: Props) {
     const n = values.length;
     if (n === 0) return "";
     if (n === 1) {
-      const y = pad + innerH - (values[0] / max) * innerH;
+      const y = pad + innerH - (values[0] / chartMax) * innerH;
       return `${pad},${y} ${pad + innerW},${y}`;
     }
     return values
       .map((v, i) => {
         const x = pad + (i / (n - 1)) * innerW;
-        const y = pad + innerH - (v / max) * innerH;
+        const y = pad + innerH - (v / chartMax) * innerH;
         return `${x},${y}`;
       })
       .join(" ");
-  }, [values, max, innerW, innerH, pad]);
+  }, [values, chartMax, innerW, innerH, pad]);
 
   const areaD = useMemo(() => {
     const n = values.length;
@@ -97,18 +100,18 @@ export function DashboardRevenueCharts({ series, doanhThuTuanNay }: Props) {
     const baseY = pad + innerH;
     if (n === 1) {
       const x = pad + innerW / 2;
-      const y = pad + innerH - (values[0] / max) * innerH;
+      const y = pad + innerH - (values[0] / chartMax) * innerH;
       return `M ${pad} ${baseY} L ${x} ${y} L ${pad + innerW} ${baseY} Z`;
     }
     const top = values
       .map((v, i) => {
         const x = pad + (i / (n - 1)) * innerW;
-        const y = pad + innerH - (v / max) * innerH;
+        const y = pad + innerH - (v / chartMax) * innerH;
         return `${i === 0 ? "M" : "L"} ${x} ${y}`;
       })
       .join(" ");
     return `${top} L ${pad + innerW} ${baseY} L ${pad} ${baseY} Z`;
-  }, [values, max, innerW, innerH, pad]);
+  }, [values, chartMax, innerW, innerH, pad]);
 
   const lichValues = useMemo(
     () => filled.map((r) => Number(r.soLichHen) || 0),
@@ -164,15 +167,21 @@ export function DashboardRevenueCharts({ series, doanhThuTuanNay }: Props) {
           </div>
 
           <div className="dashboard-chart-wrap mb-3">
+            {allZero ? (
+              <div className="dashboard-chart-empty" role="status">
+                Chưa có doanh thu ghi nhận trong 7 ngày gần đây — biểu đồ sẽ hiển thị
+                khi có dữ liệu thanh toán.
+              </div>
+            ) : null}
             <svg
               viewBox={`0 0 ${w} ${h}`}
               className="dashboard-line-svg"
-              preserveAspectRatio="none"
+              preserveAspectRatio="xMidYMid meet"
               role="img"
               aria-label="Biểu đồ đường doanh thu 7 ngày"
             >
               <defs>
-                <linearGradient id="dashRevFill" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id={fillGradId} x1="0" y1="0" x2="0" y2="1">
                   <stop
                     offset="0%"
                     stopColor="rgb(37, 99, 235)"
@@ -197,39 +206,54 @@ export function DashboardRevenueCharts({ series, doanhThuTuanNay }: Props) {
                   vectorEffect="non-scaling-stroke"
                 />
               ))}
-              <path d={areaD} fill="url(#dashRevFill)" />
-              <polyline
-                fill="none"
-                stroke="rgb(37, 99, 235)"
-                strokeWidth="1.1"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                points={points}
-                vectorEffect="non-scaling-stroke"
-              />
-              {values.map((v, i) => {
-                const n = values.length;
-                const x =
-                  n === 1
-                    ? pad + innerW / 2
-                    : pad + (i / Math.max(1, n - 1)) * innerW;
-                const y = pad + innerH - (v / max) * innerH;
-                const active = hoverIdx === i;
-                return (
-                  <circle
-                    key={filled[i].ngay}
-                    cx={x}
-                    cy={y}
-                    r={active ? 1.8 : 1.15}
-                    fill="#fff"
+              {!allZero ? (
+                <>
+                  <path d={areaD} fill={`url(#${fillGradId})`} />
+                  <polyline
+                    fill="none"
                     stroke="rgb(37, 99, 235)"
-                    strokeWidth="0.65"
-                    className="dashboard-line-dot"
-                    onMouseEnter={() => setHoverIdx(i)}
-                    onMouseLeave={() => setHoverIdx(null)}
+                    strokeWidth="1.1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    points={points}
+                    vectorEffect="non-scaling-stroke"
                   />
-                );
-              })}
+                  {values.map((v, i) => {
+                    const n = values.length;
+                    const x =
+                      n === 1
+                        ? pad + innerW / 2
+                        : pad + (i / Math.max(1, n - 1)) * innerW;
+                    const y = pad + innerH - (v / chartMax) * innerH;
+                    const active = hoverIdx === i;
+                    return (
+                      <circle
+                        key={filled[i].ngay}
+                        cx={x}
+                        cy={y}
+                        r={active ? 1.8 : 1.15}
+                        fill="#fff"
+                        stroke="rgb(37, 99, 235)"
+                        strokeWidth="0.65"
+                        className="dashboard-line-dot"
+                        onMouseEnter={() => setHoverIdx(i)}
+                        onMouseLeave={() => setHoverIdx(null)}
+                      />
+                    );
+                  })}
+                </>
+              ) : (
+                <line
+                  x1={pad}
+                  x2={w - pad}
+                  y1={pad + innerH}
+                  y2={pad + innerH}
+                  stroke="rgba(37, 99, 235, 0.35)"
+                  strokeWidth="0.5"
+                  strokeDasharray="2 2"
+                  vectorEffect="non-scaling-stroke"
+                />
+              )}
             </svg>
             {hoverIdx != null && filled[hoverIdx] && (
               <div className="dashboard-chart-tooltip" role="status">
@@ -247,7 +271,7 @@ export function DashboardRevenueCharts({ series, doanhThuTuanNay }: Props) {
           <div className="dashboard-bar-row" role="list">
             {filled.map((r, i) => {
               const v = Number(r.tongDoanhThu) || 0;
-              const pct = Math.max(6, (v / max) * 100);
+              const pct = v > 0 ? Math.max(8, (v / chartMax) * 100) : 0;
               const label = r.ngay?.slice(5) ?? "";
               const dow = parseNgay(r.ngay).toLocaleDateString("vi-VN", {
                 weekday: "short",
@@ -261,8 +285,12 @@ export function DashboardRevenueCharts({ series, doanhThuTuanNay }: Props) {
                   onMouseLeave={() => setHoverIdx(null)}
                 >
                   <div
-                    className="dashboard-bar-pillar"
-                    style={{ height: `${pct}%` }}
+                    className={
+                      v > 0
+                        ? "dashboard-bar-pillar"
+                        : "dashboard-bar-pillar dashboard-bar-pillar--zero"
+                    }
+                    style={v > 0 ? { height: `${pct}%` } : undefined}
                     title={`${r.ngay}: ${money(v)}`}
                   />
                   <span className="dashboard-bar-meta" title={r.ngay}>

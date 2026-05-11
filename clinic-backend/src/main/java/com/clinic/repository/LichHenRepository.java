@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -20,4 +21,11 @@ public interface LichHenRepository extends JpaRepository<LichHen, Long> {
     List<LichHen> findTrungLich(Long maBacSi, LocalDate ngay, LocalTime gio);
 
     List<LichHen> findByBacSiIdAndNgayHenAndTrangThaiNotIn(Long maBacSi, LocalDate ngay, Collection<LichHen.TrangThaiLichHen> trangThai);
+
+    long countByNgayHenAndTrangThai(LocalDate ngayHen, LichHen.TrangThaiLichHen trangThai);
+
+    long countByNgayHenAndTrangThaiIn(LocalDate ngayHen, Collection<LichHen.TrangThaiLichHen> trangThai);
+
+    @Query("select count(distinct l.bacSi.id) from LichHen l where l.ngayHen = :ngay and l.trangThai not in ('HUY', 'VANG')")
+    long demSoBacSiCoLichTrongNgay(@Param("ngay") LocalDate ngay);
 }

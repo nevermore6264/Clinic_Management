@@ -370,6 +370,12 @@ export interface ThongKeBangDieuKhien {
   doanhThuHomNay: number;
   doanhThuTuanNay: number;
   doanhThu7NgayGanNhat: BaoCaoDoanhThu[];
+  lichHenChoTiepNhanHomNay?: number;
+  lichHenTrongKhamHomNay?: number;
+  lichHenSauKhamHomNay?: number;
+  lichHenDaHoanTatHomNay?: number;
+  lichHenHuyVangHomNay?: number;
+  soBacSiCoLichHomNay?: number;
 }
 
 export const bangDieuKhienApi = {

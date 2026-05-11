@@ -13,4 +13,11 @@ public class ThongKeBangDieuKhienDto {
     private BigDecimal doanhThuHomNay;
     private BigDecimal doanhThuTuanNay;
     private List<BaoCaoDoanhThuDto> doanhThu7NgayGanNhat;
+
+    private long lichHenChoTiepNhanHomNay;
+    private long lichHenTrongKhamHomNay;
+    private long lichHenSauKhamHomNay;
+    private long lichHenDaHoanTatHomNay;
+    private long lichHenHuyVangHomNay;
+    private long soBacSiCoLichHomNay;
 }

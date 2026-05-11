@@ -2,6 +2,7 @@ package com.clinic.service;
 
 import com.clinic.dto.BaoCaoDoanhThuDto;
 import com.clinic.dto.ThongKeBangDieuKhienDto;
+import com.clinic.entity.LichHen;
 import com.clinic.repository.BenhNhanRepository;
 import com.clinic.repository.GiaoDichThanhToanRepository;
 import com.clinic.repository.LichHenRepository;
@@ -15,6 +16,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +51,20 @@ public class BangDieuKhienService {
 
         List<BaoCaoDoanhThuDto> bayNgay = baoCaoService.doanhThuTheoNgay(homNay.minusDays(6), homNay);
 
+        long choTiepNhan = lichHenRepository.countByNgayHenAndTrangThai(homNay, LichHen.TrangThaiLichHen.DA_DAT);
+        long trongKham = lichHenRepository.countByNgayHenAndTrangThaiIn(homNay, Set.of(
+                LichHen.TrangThaiLichHen.DA_TIEP_NHAN,
+                LichHen.TrangThaiLichHen.DANG_KHAM,
+                LichHen.TrangThaiLichHen.XET_NGHIEM));
+        long sauKham = lichHenRepository.countByNgayHenAndTrangThaiIn(homNay, Set.of(
+                LichHen.TrangThaiLichHen.DA_KE_DON,
+                LichHen.TrangThaiLichHen.CHO_THANH_TOAN));
+        long daHoanTat = lichHenRepository.countByNgayHenAndTrangThai(homNay, LichHen.TrangThaiLichHen.DA_THANH_TOAN);
+        long huyVang = lichHenRepository.countByNgayHenAndTrangThaiIn(homNay, Set.of(
+                LichHen.TrangThaiLichHen.HUY,
+                LichHen.TrangThaiLichHen.VANG));
+        long soBs = lichHenRepository.demSoBacSiCoLichTrongNgay(homNay);
+
         ThongKeBangDieuKhienDto dto = new ThongKeBangDieuKhienDto();
         dto.setTongBenhNhan(tongBenhNhan);
         dto.setLichHenHomNay(lichHomNay);
@@ -56,6 +72,12 @@ public class BangDieuKhienService {
         dto.setDoanhThuHomNay(doanhThuHomNay);
         dto.setDoanhThuTuanNay(doanhThuTuan);
         dto.setDoanhThu7NgayGanNhat(bayNgay);
+        dto.setLichHenChoTiepNhanHomNay(choTiepNhan);
+        dto.setLichHenTrongKhamHomNay(trongKham);
+        dto.setLichHenSauKhamHomNay(sauKham);
+        dto.setLichHenDaHoanTatHomNay(daHoanTat);
+        dto.setLichHenHuyVangHomNay(huyVang);
+        dto.setSoBacSiCoLichHomNay(soBs);
         return dto;
     }
 }

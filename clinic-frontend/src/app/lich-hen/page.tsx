@@ -33,6 +33,10 @@ import { notify } from "@/lib/notify";
 import { LICH_HEN_STATUS_LABEL as STATUS_LABEL } from "@/lib/lichHenStatus";
 import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
 import { consumeLandingBookingDraft } from "@/lib/landingBookingDraft";
+import {
+  GIAI_DOAN_LICH_HEN_LABEL,
+  type GiaiDoanLichHen,
+} from "@/lib/dashboardLichHenLinks";
 
 const TRANG_THAI_CO_LICH_DANG_XU_LY = new Set([
   "DA_DAT",
@@ -43,6 +47,14 @@ const TRANG_THAI_CO_LICH_DANG_XU_LY = new Set([
   "CHO_THANH_TOAN",
 ]);
 const SO_LUONG_TOI_DA_MOI_GIO = 10;
+
+const GIAI_DOAN_FROM_URL = new Set([
+  "CHO_TIEP_NHAN",
+  "TRONG_KHAM",
+  "SAU_KHAM",
+  "HOAN_TAT",
+  "HUY_VANG",
+]);
 type SlotThongTin = {
   gio: string;
   tong: number;
@@ -95,6 +107,7 @@ function AppointmentsPageInner() {
   const [locDichVu, setLocDichVu] = useState("");
   const [timBacSiTrang, setTimBacSiTrang] = useState("");
   const [locTrangThaiBang, setLocTrangThaiBang] = useState("");
+  const [locGiaiDoan, setLocGiaiDoan] = useState("");
 
   const resetDatLichForm = useCallback(() => {
     setPatientId(maBenhNhanParam ? String(Number(maBenhNhanParam)) : "");
@@ -160,6 +173,26 @@ function AppointmentsPageInner() {
       { scroll: false },
     );
   }, [user, chiTaiKhoanBn, maBenhNhanParam, router]);
+
+  useEffect(() => {
+    const tu = searchParams.get("tuNgay");
+    const den = searchParams.get("denNgay");
+    const tt = searchParams.get("trangThai");
+    const gd = searchParams.get("giaiDoan");
+    if (tu && den) {
+      setFrom(tu);
+      setTo(den);
+    }
+    if (tt) {
+      setLocTrangThaiBang(tt);
+      setLocGiaiDoan("");
+    } else if (gd && GIAI_DOAN_FROM_URL.has(gd)) {
+      setLocGiaiDoan(gd);
+      setLocTrangThaiBang("");
+    } else {
+      setLocGiaiDoan("");
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!user) return;
@@ -361,7 +394,26 @@ function AppointmentsPageInner() {
         (a.tenBacSi ?? "").toLowerCase().includes(q),
       );
     }
-    if (locTrangThaiBang) {
+    if (locGiaiDoan) {
+      const gd = locGiaiDoan;
+      rows = rows.filter((a) => {
+        const tth = a.trangThai ?? "";
+        if (gd === "CHO_TIEP_NHAN") return tth === "DA_DAT";
+        if (gd === "TRONG_KHAM") {
+          return (
+            tth === "DA_TIEP_NHAN" ||
+            tth === "DANG_KHAM" ||
+            tth === "XET_NGHIEM"
+          );
+        }
+        if (gd === "SAU_KHAM") {
+          return tth === "DA_KE_DON" || tth === "CHO_THANH_TOAN";
+        }
+        if (gd === "HOAN_TAT") return tth === "DA_THANH_TOAN";
+        if (gd === "HUY_VANG") return tth === "HUY" || tth === "VANG";
+        return true;
+      });
+    } else if (locTrangThaiBang) {
       rows = rows.filter((a) => (a.trangThai ?? "") === locTrangThaiBang);
     }
     return rows;
@@ -370,6 +422,7 @@ function AppointmentsPageInner() {
     maBenhNhanParam,
     timBacSiTrang,
     locTrangThaiBang,
+    locGiaiDoan,
     chiTaiKhoanBn,
     user?.maBenhNhan,
     from,
@@ -607,7 +660,10 @@ function AppointmentsPageInner() {
               <Form.Label>Trạng thái</Form.Label>
               <Form.Select
                 value={locTrangThaiBang}
-                onChange={(e) => setLocTrangThaiBang(e.target.value)}
+                onChange={(e) => {
+                  setLocTrangThaiBang(e.target.value);
+                  setLocGiaiDoan("");
+                }}
                 aria-label="Lọc theo trạng thái"
               >
                 <option value="">Tất cả trạng thái</option>
@@ -621,6 +677,23 @@ function AppointmentsPageInner() {
               </Form.Select>
             </Form.Group>
           </div>
+          {locGiaiDoan && GIAI_DOAN_FROM_URL.has(locGiaiDoan) ? (
+            <div className="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top small">
+              <span className="text-primary fw-semibold">
+                <i className="bi bi-funnel me-1" aria-hidden />
+                Lọc luồng từ bảng điều khiển:{" "}
+                {GIAI_DOAN_LICH_HEN_LABEL[locGiaiDoan as GiaiDoanLichHen]}
+              </span>
+              <Button
+                type="button"
+                variant="outline-secondary"
+                size="sm"
+                onClick={() => setLocGiaiDoan("")}
+              >
+                Bỏ lọc luồng
+              </Button>
+            </div>
+          ) : null}
         </Card.Body>
       </Card>
       <Card className="card--static border-0 shadow-sm overflow-hidden">

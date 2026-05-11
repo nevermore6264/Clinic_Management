@@ -441,10 +441,11 @@ export default function UsersPage() {
             <div className="d-flex gap-2 justify-content-end flex-wrap">
               <Button
                 type="button"
-                variant="secondary"
+                className="btn-modal-dismiss"
                 disabled={dangKhoa}
                 onClick={dongHopThoaiKhoa}
               >
+                <i className="bi bi-x-lg me-2" aria-hidden />
                 Hủy
               </Button>
               <Button

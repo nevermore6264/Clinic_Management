@@ -226,16 +226,6 @@ public class LichHenService {
         if (coNghi) {
             return Set.of();
         }
-        List<LichNgoaiLe> doiGio = ngoaiLe.stream()
-                .filter(x -> x.getLoaiNgoaiLe() == LichNgoaiLe.LoaiNgoaiLe.DOI_GIO)
-                .toList();
-        if (!doiGio.isEmpty()) {
-            Set<LocalTime> ketQua = new HashSet<>();
-            for (LichNgoaiLe item : doiGio) {
-                ketQua.addAll(tachTheoCa1Gio(item.getGioBatDau(), item.getGioKetThuc()));
-            }
-            return ketQua;
-        }
         int thu = ngay.getDayOfWeek().getValue();
         List<Integer> thuCanKiemTra = new ArrayList<>();
         thuCanKiemTra.add(thu);
@@ -246,6 +236,12 @@ public class LichHenService {
         Set<LocalTime> ketQua = lichLamViecCoDinhRepository.findByBacSiIdAndThuTrongTuanIn(maBacSi, thuCanKiemTra).stream()
                 .flatMap(x -> tachTheoCa1Gio(x.getKhungGioBatDau(), x.getKhungGioKetThuc()).stream())
                 .collect(Collectors.toCollection(HashSet::new));
+        List<LichNgoaiLe> doiGio = ngoaiLe.stream()
+                .filter(x -> x.getLoaiNgoaiLe() == LichNgoaiLe.LoaiNgoaiLe.DOI_GIO)
+                .toList();
+        for (LichNgoaiLe item : doiGio) {
+            ketQua.addAll(tachTheoCa1Gio(item.getGioBatDau(), item.getGioKetThuc()));
+        }
 
         // Fallback cho các bác sĩ có "lịch legacy" (đang được quản lý tại /lich-lam-viec-bac-si)
         // để modal /lich-hen luôn hiển thị khung giờ phù hợp.

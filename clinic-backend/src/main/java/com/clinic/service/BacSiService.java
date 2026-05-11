@@ -25,6 +25,7 @@ public class BacSiService {
     private final BacSiRepository bacSiRepository;
     private final NguoiDungRepository nguoiDungRepository;
     private final ChuyenKhoaRepository chuyenKhoaRepository;
+    private final LichLamViecBacSiService lichLamViecBacSiService;
 
     @Transactional(readOnly = true)
     public List<BacSiDto> timTatCaDangHoatDong() {
@@ -63,7 +64,9 @@ public class BacSiService {
             bs.setQuaTrinhCongTac(yeuCau.getQuaTrinhCongTac());
             bs.setThanhTichDatDuoc(yeuCau.getThanhTichDatDuoc());
             bs.setHoatDong(true);
-            return sangDto(bacSiRepository.save(bs));
+            BacSi daLuu = bacSiRepository.save(bs);
+            lichLamViecBacSiService.gieoMacDinhChoBacSi(daLuu.getId(), false);
+            return sangDto(daLuu);
         }
 
         NguoiDung nd = nguoiDungRepository.findById(yeuCau.getMaNguoiDung())
@@ -86,7 +89,9 @@ public class BacSiService {
         bs.setQuaTrinhCongTac(yeuCau.getQuaTrinhCongTac());
         bs.setThanhTichDatDuoc(yeuCau.getThanhTichDatDuoc());
         bs.setHoatDong(true);
-        return sangDto(bacSiRepository.save(bs));
+        BacSi daLuu = bacSiRepository.save(bs);
+        lichLamViecBacSiService.gieoMacDinhChoBacSi(daLuu.getId(), false);
+        return sangDto(daLuu);
     }
 
     @Transactional

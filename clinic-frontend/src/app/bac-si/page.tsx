@@ -810,12 +810,11 @@ export default function QuanLyBacSiPage() {
           </Modal.Body>
           <Modal.Footer className="clinic-modal-footer bac-si-modal-footer clinic-modal-footer-actions">
             <Button
-              variant="secondary"
               type="button"
-              className="btn-bac-si-modal-cancel"
+              className="btn-modal-dismiss"
               onClick={dongTaoMoi}
             >
-              <i className="bi bi-x-circle me-2" aria-hidden />
+              <i className="bi bi-x-lg me-2" aria-hidden />
               Hủy
             </Button>
             <Button
@@ -863,12 +862,11 @@ export default function QuanLyBacSiPage() {
           </Modal.Body>
           <Modal.Footer className="clinic-modal-footer bac-si-modal-footer clinic-modal-footer-actions">
             <Button
-              variant="secondary"
               type="button"
-              className="btn-bac-si-modal-cancel"
+              className="btn-modal-dismiss"
               onClick={dongPopupTaiKhoan}
             >
-              <i className="bi bi-x-circle me-2" aria-hidden />
+              <i className="bi bi-x-lg me-2" aria-hidden />
               Hủy
             </Button>
             <Button
@@ -971,12 +969,11 @@ export default function QuanLyBacSiPage() {
           </Modal.Body>
           <Modal.Footer className="clinic-modal-footer bac-si-modal-footer clinic-modal-footer-actions">
             <Button
-              variant="secondary"
               type="button"
-              className="btn-bac-si-modal-cancel"
+              className="btn-modal-dismiss"
               onClick={dongSua}
             >
-              <i className="bi bi-x-circle me-2" aria-hidden />
+              <i className="bi bi-x-lg me-2" aria-hidden />
               Hủy
             </Button>
             <Button

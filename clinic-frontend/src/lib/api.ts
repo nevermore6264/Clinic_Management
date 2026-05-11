@@ -508,6 +508,33 @@ export const lichLamViecBacSiApi = {
   },
 };
 
+export const lichLamViecCoDinhApi = {
+  theoBacSi: (maBacSi: number) =>
+    api<LichCoDinh[]>(`/lich-lam-viec-bac-si/co-dinh/bac-si/${maBacSi}`),
+  tao: (data: Partial<LichCoDinh>) =>
+    api<LichCoDinh>("/lich-lam-viec-bac-si/co-dinh", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  capNhat: (id: number, data: Partial<LichCoDinh>) =>
+    api<LichCoDinh>(`/lich-lam-viec-bac-si/co-dinh/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+  xoa: (id: number) =>
+    api<void>(`/lich-lam-viec-bac-si/co-dinh/${id}`, { method: "DELETE" }),
+  gieoMacDinh: (maBacSi: number, ghiDe = true) =>
+    api<LichCoDinh[]>(
+      `/lich-lam-viec-bac-si/co-dinh/gieo-mac-dinh/${maBacSi}?ghiDe=${ghiDe}`,
+      { method: "POST" },
+    ),
+  gieoMacDinhTatCa: (ghiDe = false) =>
+    api<{ soBacSiDaXuLy: number; ghiDe: boolean }>(
+      `/lich-lam-viec-bac-si/co-dinh/gieo-mac-dinh-tat-ca?ghiDe=${ghiDe}`,
+      { method: "POST" },
+    ),
+};
+
 
 export const patientsApi = {
   ...benhNhanApi,
@@ -923,6 +950,15 @@ export interface LichLamViecBacSi {
   khungGioKetThuc?: string;
   nguonBanGhi?: string;
   nghiCaNgay?: boolean;
+}
+
+export interface LichCoDinh {
+  id?: number;
+  maBacSi: number;
+  tenBacSi?: string;
+  thuTrongTuan: number;
+  khungGioBatDau: string;
+  khungGioKetThuc: string;
 }
 
 export interface DonThuocChiTietBangKe {

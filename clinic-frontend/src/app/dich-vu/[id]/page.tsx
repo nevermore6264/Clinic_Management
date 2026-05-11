@@ -177,7 +177,8 @@ export default function EditServicePage() {
             <Button type="submit" variant="primary">
               Lưu
             </Button>{" "}
-            <Link href="/dich-vu" className="btn btn-secondary">
+            <Link href="/dich-vu" className="btn btn-modal-dismiss">
+              <i className="bi bi-x-lg me-2" aria-hidden />
               Hủy
             </Link>
           </Form>

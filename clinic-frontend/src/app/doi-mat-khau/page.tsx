@@ -124,9 +124,10 @@ export default function ChangePasswordPage() {
             </Button>{" "}
             <Button
               type="button"
-              variant="secondary"
+              className="btn-modal-dismiss"
               onClick={() => router.back()}
             >
+              <i className="bi bi-x-lg me-2" aria-hidden />
               Hủy
             </Button>
           </Form>

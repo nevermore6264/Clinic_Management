@@ -983,9 +983,8 @@ function BenhNhanPageInner() {
           </Modal.Body>
           <Modal.Footer className="patient-create-modal__footer clinic-modal-footer-actions">
             <Button
-              variant="outline-secondary"
               type="button"
-              className="btn-bac-si-modal-cancel"
+              className="btn-modal-dismiss"
               onClick={() => setShowCreate(false)}
               disabled={submitting}
             >
@@ -1129,8 +1128,8 @@ function BenhNhanPageInner() {
           </Modal.Body>
           <Modal.Footer className="patient-create-modal__footer clinic-modal-footer-actions d-flex flex-wrap gap-2 justify-content-end align-items-center">
             <Button
-              variant="secondary"
               type="button"
+              className="btn-modal-dismiss"
               onClick={closeEditModal}
               disabled={editSubmitting}
             >
@@ -1205,9 +1204,8 @@ function BenhNhanPageInner() {
         </Modal.Body>
         <Modal.Footer className="border-top clinic-modal-footer-actions">
           <Button
-            variant="outline-secondary"
             type="button"
-            className="btn-bac-si-modal-cancel"
+            className="btn-modal-dismiss"
             disabled={editSubmitting}
             onClick={() => setShowConfirmAnHoSo(false)}
           >
@@ -1259,9 +1257,8 @@ function BenhNhanPageInner() {
         </Modal.Body>
         <Modal.Footer className="border-top clinic-modal-footer-actions">
           <Button
-            variant="outline-secondary"
             type="button"
-            className="btn-bac-si-modal-cancel"
+            className="btn-modal-dismiss"
             disabled={editSubmitting}
             onClick={() => setShowConfirmHienThiLai(false)}
           >

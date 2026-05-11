@@ -512,8 +512,8 @@ export default function PhieuChiPage() {
         </Modal.Body>
         <Modal.Footer className="border-0 pt-0 clinic-modal-footer-actions">
           <Button
-            variant="outline-secondary"
-            className="d-inline-flex align-items-center gap-2 rounded-pill"
+            type="button"
+            className="btn-modal-dismiss d-inline-flex align-items-center gap-2"
             onClick={() => setShow(false)}
           >
             <i className="bi bi-x-lg" aria-hidden />

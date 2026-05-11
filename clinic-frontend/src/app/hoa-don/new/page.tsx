@@ -353,11 +353,10 @@ function NewInvoicePageInner() {
               </Button>
               <Button
                 type="button"
-                variant="secondary"
-                className="btn-bac-si-modal-cancel d-inline-flex align-items-center"
+                className="btn-modal-dismiss d-inline-flex align-items-center"
                 onClick={() => router.back()}
               >
-                <i className="bi bi-x-circle me-2" aria-hidden />
+                <i className="bi bi-x-lg me-2" aria-hidden />
                 Hủy
               </Button>
             </div>

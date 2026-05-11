@@ -1571,12 +1571,12 @@ function AppointmentsPageInner() {
           </Modal.Body>
           <Modal.Footer className="clinic-modal-footer bac-si-modal-footer clinic-modal-footer-actions border-top">
             <Button
-              variant="secondary"
               type="button"
+              className="btn-modal-dismiss"
               disabled={submitting}
               onClick={() => setShowDatLich(false)}
             >
-              <i className="bi bi-x-circle me-2" aria-hidden />
+              <i className="bi bi-x-lg me-2" aria-hidden />
               Hủy
             </Button>
             <Button

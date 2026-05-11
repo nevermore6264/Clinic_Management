@@ -6,12 +6,19 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/useAuth";
 import { LoadingState } from "@/components/LoadingState";
-import { buildMapIframeSrc, getLandingPublic } from "@/lib/landingPublicContent";
+import {
+  buildMapIframeSrc,
+  getLandingPublic,
+} from "@/lib/landingPublicContent";
 import { LANDING_BOOKING_DRAFT_KEY } from "@/lib/landingBookingDraft";
 
 export default function HomePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [bookName, setBookName] = useState("");
+  const [bookPhone, setBookPhone] = useState("");
+  const [bookNeed, setBookNeed] = useState("");
+  const [bookErr, setBookErr] = useState<string | null>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -33,10 +40,6 @@ export default function HomePage() {
 
   const lp = getLandingPublic();
   const mapIframeSrc = buildMapIframeSrc(lp);
-  const [bookName, setBookName] = useState("");
-  const [bookPhone, setBookPhone] = useState("");
-  const [bookNeed, setBookNeed] = useState("");
-  const [bookErr, setBookErr] = useState<string | null>(null);
 
   const goLogin = () => router.push("/dang-nhap");
 
@@ -80,7 +83,10 @@ export default function HomePage() {
             <i className="bi bi-life-preserver" aria-hidden />
             <span>
               <strong>Cấp cứu / Hỗ trợ 24/7</strong>
-              <a href={`tel:${lp.phoneTel}`} className="landing-urgent-strip__tel">
+              <a
+                href={`tel:${lp.phoneTel}`}
+                className="landing-urgent-strip__tel"
+              >
                 {lp.phoneDisplay}
               </a>
             </span>
@@ -146,7 +152,10 @@ export default function HomePage() {
           </nav>
 
           <div className="landing-site-header__cta">
-            <a href={`tel:${lp.phoneTel}`} className="landing-site-header__phone">
+            <a
+              href={`tel:${lp.phoneTel}`}
+              className="landing-site-header__phone"
+            >
               <i className="bi bi-telephone-outbound" aria-hidden />
               <span>
                 <small>Hotline</small>
@@ -541,7 +550,8 @@ export default function HomePage() {
           </div>
         </div>
         <p className="landing-stats-ribbon__note landing-hospital-shell">
-          * Số liệu minh họa cho giao diện — thay bằng thống kê thật khi vận hành.
+          * Số liệu minh họa cho giao diện — thay bằng thống kê thật khi vận
+          hành.
         </p>
       </section>
 
@@ -999,7 +1009,9 @@ export default function HomePage() {
         <div className="landing-hospital-shell">
           <div className="landing-section__head landing-section__head--center mb-4">
             <p className="landing-section__eyebrow">Đặt lịch</p>
-            <h2 className="landing-section__title">Gửi yêu cầu đặt lịch nhanh</h2>
+            <h2 className="landing-section__title">
+              Gửi yêu cầu đặt lịch nhanh
+            </h2>
             <p className="landing-section__desc mb-0">
               Điền thông tin — bạn sẽ được chuyển tới đăng nhập để hoàn tất trên
               hệ thống đặt lịch (hoặc liên hệ hotline / Zalo).
@@ -1058,7 +1070,10 @@ export default function HomePage() {
               </div>
             </div>
             {bookErr ? (
-              <p className="text-danger small fw-semibold mt-2 mb-0" role="alert">
+              <p
+                className="text-danger small fw-semibold mt-2 mb-0"
+                role="alert"
+              >
                 {bookErr}
               </p>
             ) : null}
@@ -1078,7 +1093,10 @@ export default function HomePage() {
                   Chat Zalo OA
                 </a>
               ) : null}
-              <a href={`tel:${lp.phoneTel}`} className="btn btn-outline-primary btn-lg">
+              <a
+                href={`tel:${lp.phoneTel}`}
+                className="btn btn-outline-primary btn-lg"
+              >
                 <i className="bi bi-telephone me-2" aria-hidden />
                 Gọi {lp.phoneDisplay}
               </a>
@@ -1110,14 +1128,12 @@ export default function HomePage() {
                 </a>
                 <br />
                 Hotline:{" "}
-                <a href={`tel:${lp.phoneTel}`} className="landing-contact-grid__link">
+                <a
+                  href={`tel:${lp.phoneTel}`}
+                  className="landing-contact-grid__link"
+                >
                   {lp.phoneDisplay}
                 </a>
-              </p>
-              <p className="small text-muted fw-semibold mt-3 mb-0">
-                Địa chỉ và bản đồ lấy từ{" "}
-                <code className="small">NEXT_PUBLIC_CLINIC_*</code> — chỉnh trong{" "}
-                <code className="small">.env.local</code>.
               </p>
             </div>
             <div className="landing-contact-card">
@@ -1146,30 +1162,21 @@ export default function HomePage() {
                   <i className="bi bi-geo-alt me-2" aria-hidden />
                   Google Maps (ứng dụng)
                 </a>
-                {lp.zaloUrl ? (
-                  <a
-                    href={lp.zaloUrl}
-                    className="btn btn-outline-secondary w-100"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <i className="bi bi-chat-dots-fill me-2" aria-hidden />
-                    Zalo OA
-                  </a>
-                ) : (
-                  <p className="small text-muted mb-0">
-                    Thêm <code>NEXT_PUBLIC_ZALO_OA_URL</code> để hiện nút Zalo.
-                  </p>
-                )}
+                <a
+                  href={lp.zaloUrl}
+                  className="btn btn-outline-secondary w-100"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <i className="bi bi-chat-dots-fill me-2" aria-hidden />
+                  Zalo OA
+                </a>
               </div>
             </div>
           </div>
           <div className="landing-contact-map-embed landing-reveal">
             <div className="landing-contact-map-embed__head">
               <strong>Bản đồ</strong>
-              <span className="text-muted small fw-semibold ms-2">
-                nhúng theo địa chỉ / embed tuỳ chỉnh
-              </span>
             </div>
             <div className="landing-contact-map-embed__frame">
               <iframe

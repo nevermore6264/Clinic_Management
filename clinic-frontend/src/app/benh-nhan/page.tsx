@@ -29,6 +29,7 @@ import {
   PatientRecordFormFields,
   emptyPatientForm,
 } from "@/components/PatientRecordFormFields";
+import { metaTrangThaiLichHen } from "@/lib/lichHenStatus";
 
 function hienThiGioiTinh(ma?: string) {
   switch (ma) {
@@ -44,8 +45,7 @@ function hienThiGioiTinh(ma?: string) {
 }
 
 function TagGioiTinh({ ma }: { ma?: string }) {
-  if (!ma)
-    return <span className="text-muted">—</span>;
+  if (!ma) return <span className="text-muted">—</span>;
   const cfg =
     ma === "NAM"
       ? {
@@ -68,9 +68,7 @@ function TagGioiTinh({ ma }: { ma?: string }) {
           : null;
   if (!cfg)
     return (
-      <span className="badge rounded-pill bg-light text-dark border">
-        {ma}
-      </span>
+      <span className="badge rounded-pill bg-light text-dark border">{ma}</span>
     );
   return (
     <span className={`badge rounded-pill ${cfg.className}`}>{cfg.label}</span>
@@ -88,9 +86,7 @@ function TagNhomMau({ nhom }: { nhom?: string }) {
   const cls =
     map[nhom] ??
     "bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle";
-  return (
-    <span className={`badge rounded-pill ${cls}`}>{nhom}</span>
-  );
+  return <span className={`badge rounded-pill ${cls}`}>{nhom}</span>;
 }
 
 function BenhNhanPageInner() {
@@ -123,9 +119,7 @@ function BenhNhanPageInner() {
   const [visitHistory, setVisitHistory] = useState<LichHen[]>([]);
   const [showConfirmAnHoSo, setShowConfirmAnHoSo] = useState(false);
   const [showConfirmHienThiLai, setShowConfirmHienThiLai] = useState(false);
-  /** Tránh mở lặp popup hồ sơ khi tài khoản bệnh nhân vào /benh-nhan nhiều lần trong cùng phiên. */
   const daTuMoHoSoBenhNhan = useRef<number | null>(null);
-  /** Hồ sơ hiển thị trên trang cho tài khoản bệnh nhân (không chỉ trong modal). */
   const [patientSelfProfile, setPatientSelfProfile] = useState<BenhNhan | null>(
     null,
   );
@@ -137,11 +131,9 @@ function BenhNhanPageInner() {
   const size = 10;
 
   const refreshList = () => setListTick((t) => t + 1);
-  const refreshPatientSelfProfile = () =>
-    setPatientSelfFetchKey((k) => k + 1);
+  const refreshPatientSelfProfile = () => setPatientSelfFetchKey((k) => k + 1);
 
   const closeEditModal = () => {
-    /* Không chặn theo editSubmitting: nút Hủy/X vẫn đóng được; lưu xong gọi sau khi đã set editSubmitting=false */
     setShowEdit(false);
     setEditId(null);
     setEditForm({});
@@ -284,7 +276,6 @@ function BenhNhanPageInner() {
     filterNhomMau,
   ]);
 
-  /** Bệnh nhân: mở form hồ sơ một lần khi vào trang — không gắn lại ?sua= (tránh mở lại popup sau khi đóng / lưu). */
   useEffect(() => {
     if (!user || !laChiTaiKhoanBenhNhan(user) || user.maBenhNhan == null) {
       daTuMoHoSoBenhNhan.current = null;
@@ -440,7 +431,9 @@ function BenhNhanPageInner() {
         refreshPatientSelfProfile();
       }
     } catch (err: unknown) {
-      setEditError(err instanceof Error ? err.message : "Không hiển thị lại được hồ sơ");
+      setEditError(
+        err instanceof Error ? err.message : "Không hiển thị lại được hồ sơ",
+      );
     } finally {
       setEditSubmitting(false);
     }
@@ -488,27 +481,8 @@ function BenhNhanPageInner() {
 
       {chiTaiKhoanBn && !chiTaiKhoanBnLienKet && (
         <Alert variant="warning" className="mb-3">
-          Tài khoản của bạn chưa được liên kết với hồ sơ bệnh nhân trong hệ thống.
-          Vui lòng liên hệ quầy lễ tân để được hỗ trợ.
-        </Alert>
-      )}
-
-      {chiTaiKhoanBnLienKet && (
-        <Alert variant="light" className="border mb-3">
-          Thông tin hồ sơ hiển thị bên dưới. Form chỉnh sửa có thể mở tự động
-          lần đầu; nếu đã đóng, nhấn{" "}
-          <Button
-            size="sm"
-            variant="primary"
-            className="mx-1"
-            type="button"
-            onClick={() =>
-              user.maBenhNhan != null && openEditModal(user.maBenhNhan)
-            }
-          >
-            Mở hồ sơ
-          </Button>
-          hoặc <strong>Chỉnh sửa hồ sơ</strong> trong thẻ thông tin.
+          Tài khoản của bạn chưa được liên kết với hồ sơ bệnh nhân trong hệ
+          thống. Vui lòng liên hệ quầy lễ tân để được hỗ trợ.
         </Alert>
       )}
 
@@ -541,7 +515,9 @@ function BenhNhanPageInner() {
                       </h5>
                       <div className="text-muted small">
                         {patientSelfProfile.hoatDong === false ? (
-                          <span className="badge bg-secondary">Hồ sơ đã ẩn</span>
+                          <span className="badge bg-secondary">
+                            Hồ sơ đã ẩn
+                          </span>
                         ) : (
                           <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">
                             Đang hoạt động
@@ -605,14 +581,20 @@ function BenhNhanPageInner() {
                     )}
                     {patientSelfProfile.tienSuBenh && (
                       <Col xs={12}>
-                        <div className="text-muted small mb-1">Tiền sử bệnh</div>
-                        <div className="text-break">{patientSelfProfile.tienSuBenh}</div>
+                        <div className="text-muted small mb-1">
+                          Tiền sử bệnh
+                        </div>
+                        <div className="text-break">
+                          {patientSelfProfile.tienSuBenh}
+                        </div>
                       </Col>
                     )}
                     {patientSelfProfile.diUng && (
                       <Col xs={12}>
                         <div className="text-muted small mb-1">Dị ứng</div>
-                        <div className="text-break">{patientSelfProfile.diUng}</div>
+                        <div className="text-break">
+                          {patientSelfProfile.diUng}
+                        </div>
                       </Col>
                     )}
                     {(patientSelfProfile.nguoiLienHe ||
@@ -649,195 +631,198 @@ function BenhNhanPageInner() {
       )}
 
       {!chiTaiKhoanBn && (
-      <Card className="mb-3 card--static border-0 shadow-sm">
-        <Card.Body className="p-3">
-          <Row className="g-2">
-            <Col md={6} lg={3}>
-              <Form.Select
-                value={filterTrangThaiHoSo ?? "hoat-dong"}
-                onChange={(e) => {
-                  setFilterTrangThaiHoSo(
-                    e.target.value as BenhNhanDanhSachLoc["trangThaiHoSo"],
-                  );
-                  setPage(0);
-                }}
-              >
-                <option value="hoat-dong">Hồ sơ đang hoạt động</option>
-                <option value="an">Hồ sơ đã ẩn</option>
-                <option value="tat-ca">Tất cả hồ sơ</option>
-              </Form.Select>
-            </Col>
-            <Col md={6} lg={2}>
-              <Form.Select
-                value={filterGioiTinh}
-                onChange={(e) => {
-                  setFilterGioiTinh(e.target.value);
-                  setPage(0);
-                }}
-              >
-                <option value="">Mọi giới tính</option>
-                <option value="NAM">Nam</option>
-                <option value="NU">Nữ</option>
-                <option value="KHAC">Khác</option>
-              </Form.Select>
-            </Col>
-            <Col md={6} lg={2}>
-              <Form.Select
-                value={filterNhomMau}
-                onChange={(e) => {
-                  setFilterNhomMau(e.target.value);
-                  setPage(0);
-                }}
-              >
-                <option value="">Mọi nhóm máu</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="AB">AB</option>
-                <option value="O">O</option>
-              </Form.Select>
-            </Col>
-            <Col md={12} lg={4}>
-              <Form.Control
-                placeholder="Tìm theo tên..."
-                value={filterTen}
-                onChange={(e) => setFilterTen(e.target.value)}
-              />
-            </Col>
-            <Col md={6} lg={1} className="d-flex align-items-stretch">
-              <Button
-                variant="secondary"
-                className="w-100"
-                type="button"
-                onClick={clearFilters}
-              >
-                <i className="bi bi-arrow-counterclockwise me-1" aria-hidden />
-                Xóa lọc
-              </Button>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
+        <Card className="mb-3 card--static border-0 shadow-sm">
+          <Card.Body className="p-3">
+            <Row className="g-2">
+              <Col md={6} lg={3}>
+                <Form.Select
+                  value={filterTrangThaiHoSo ?? "hoat-dong"}
+                  onChange={(e) => {
+                    setFilterTrangThaiHoSo(
+                      e.target.value as BenhNhanDanhSachLoc["trangThaiHoSo"],
+                    );
+                    setPage(0);
+                  }}
+                >
+                  <option value="hoat-dong">Hồ sơ đang hoạt động</option>
+                  <option value="an">Hồ sơ đã ẩn</option>
+                  <option value="tat-ca">Tất cả hồ sơ</option>
+                </Form.Select>
+              </Col>
+              <Col md={6} lg={2}>
+                <Form.Select
+                  value={filterGioiTinh}
+                  onChange={(e) => {
+                    setFilterGioiTinh(e.target.value);
+                    setPage(0);
+                  }}
+                >
+                  <option value="">Mọi giới tính</option>
+                  <option value="NAM">Nam</option>
+                  <option value="NU">Nữ</option>
+                  <option value="KHAC">Khác</option>
+                </Form.Select>
+              </Col>
+              <Col md={6} lg={2}>
+                <Form.Select
+                  value={filterNhomMau}
+                  onChange={(e) => {
+                    setFilterNhomMau(e.target.value);
+                    setPage(0);
+                  }}
+                >
+                  <option value="">Mọi nhóm máu</option>
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="AB">AB</option>
+                  <option value="O">O</option>
+                </Form.Select>
+              </Col>
+              <Col md={12} lg={4}>
+                <Form.Control
+                  placeholder="Tìm theo tên..."
+                  value={filterTen}
+                  onChange={(e) => setFilterTen(e.target.value)}
+                />
+              </Col>
+              <Col md={6} lg={1} className="d-flex align-items-stretch">
+                <Button
+                  variant="secondary"
+                  className="w-100"
+                  type="button"
+                  onClick={clearFilters}
+                >
+                  <i
+                    className="bi bi-arrow-counterclockwise me-1"
+                    aria-hidden
+                  />
+                  Xóa lọc
+                </Button>
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
       )}
 
       {!chiTaiKhoanBn && (
         <Card className="card--static border-0 shadow-sm overflow-hidden">
-        <div className="table-responsive">
-          <Table responsive hover className="mb-0 align-middle">
-            <thead>
-              <tr>
-                <th>Họ tên</th>
-                <th>Ngày sinh</th>
-                <th>Giới tính</th>
-                <th>Nhóm máu</th>
-                <th>SĐT</th>
-                <th>Email</th>
-                <th>Nghề nghiệp</th>
-                <th>Địa chỉ</th>
-                <th>Trạng thái</th>
-                <th className="text-end">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {list.map((p) => (
-                <tr key={p.id}>
-                  <td className="fw-medium">{p.hoTen}</td>
-                  <td className="text-nowrap">{p.ngaySinh || "—"}</td>
-                  <td className="text-nowrap">
-                    <TagGioiTinh ma={p.gioiTinh} />
-                  </td>
-                  <td className="text-nowrap">
-                    <TagNhomMau nhom={p.nhomMau} />
-                  </td>
-                  <td className="text-nowrap">{p.soDienThoai || "—"}</td>
-                  <td className="text-muted small">
-                    {p.thuDienTu ? (
-                      <span
-                        className="text-truncate d-inline-block align-bottom"
-                        style={{ maxWidth: "11rem" }}
-                        title={p.thuDienTu}
-                      >
-                        {p.thuDienTu}
-                      </span>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                  <td className="text-muted small">
-                    {p.ngheNghiep ? (
-                      <span
-                        className="text-truncate d-inline-block align-bottom"
-                        style={{ maxWidth: "9rem" }}
-                        title={p.ngheNghiep}
-                      >
-                        {p.ngheNghiep}
-                      </span>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                  <td className="text-muted small">
-                    {p.diaChi ? (
-                      <span
-                        className="text-truncate d-inline-block align-bottom"
-                        style={{ maxWidth: "14rem" }}
-                        title={p.diaChi}
-                      >
-                        {p.diaChi}
-                      </span>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                  <td>
-                    {p.hoatDong === false ? (
-                      <span className="badge bg-secondary">Đã ẩn</span>
-                    ) : (
-                      <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">
-                        Hoạt động
-                      </span>
-                    )}
-                  </td>
-                  <td className="text-end text-nowrap">
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      className="me-1 btn-action-edit"
-                      onClick={() => p.id != null && openEditModal(p.id)}
-                    >
-                      <i className="bi bi-pencil me-1" aria-hidden />
-                      Sửa
-                    </Button>
-                    <Link
-                      href={`/lich-hen?maBenhNhan=${p.id}`}
-                      className="btn btn-sm btn-info btn-action-calendar"
-                    >
-                      <i className="bi bi-calendar3 me-1" aria-hidden />
-                      Lịch
-                    </Link>
-                  </td>
+          <div className="table-responsive">
+            <Table responsive hover className="mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Họ tên</th>
+                  <th>Ngày sinh</th>
+                  <th>Giới tính</th>
+                  <th>Nhóm máu</th>
+                  <th>SĐT</th>
+                  <th>Email</th>
+                  <th>Nghề nghiệp</th>
+                  <th>Địa chỉ</th>
+                  <th>Trạng thái</th>
+                  <th className="text-end">Thao tác</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
-        {total > size && (
-          <Card.Footer className="bg-light border-top py-3">
-            <Pagination className="mb-0 justify-content-center">
-              <Pagination.Prev
-                disabled={page === 0}
-                onClick={() => setPage((p) => Math.max(0, p - 1))}
-              />
-              <Pagination.Item active>
-                {page + 1} / {Math.ceil(total / size)}
-              </Pagination.Item>
-              <Pagination.Next
-                disabled={page >= Math.ceil(total / size) - 1}
-                onClick={() => setPage((p) => p + 1)}
-              />
-            </Pagination>
-          </Card.Footer>
-        )}
-      </Card>
+              </thead>
+              <tbody>
+                {list.map((p) => (
+                  <tr key={p.id}>
+                    <td className="fw-medium">{p.hoTen}</td>
+                    <td className="text-nowrap">{p.ngaySinh || "—"}</td>
+                    <td className="text-nowrap">
+                      <TagGioiTinh ma={p.gioiTinh} />
+                    </td>
+                    <td className="text-nowrap">
+                      <TagNhomMau nhom={p.nhomMau} />
+                    </td>
+                    <td className="text-nowrap">{p.soDienThoai || "—"}</td>
+                    <td className="text-muted small">
+                      {p.thuDienTu ? (
+                        <span
+                          className="text-truncate d-inline-block align-bottom"
+                          style={{ maxWidth: "11rem" }}
+                          title={p.thuDienTu}
+                        >
+                          {p.thuDienTu}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="text-muted small">
+                      {p.ngheNghiep ? (
+                        <span
+                          className="text-truncate d-inline-block align-bottom"
+                          style={{ maxWidth: "9rem" }}
+                          title={p.ngheNghiep}
+                        >
+                          {p.ngheNghiep}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td className="text-muted small">
+                      {p.diaChi ? (
+                        <span
+                          className="text-truncate d-inline-block align-bottom"
+                          style={{ maxWidth: "14rem" }}
+                          title={p.diaChi}
+                        >
+                          {p.diaChi}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td>
+                      {p.hoatDong === false ? (
+                        <span className="badge bg-secondary">Đã ẩn</span>
+                      ) : (
+                        <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+                          Hoạt động
+                        </span>
+                      )}
+                    </td>
+                    <td className="text-end text-nowrap">
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        className="me-1 btn-action-edit"
+                        onClick={() => p.id != null && openEditModal(p.id)}
+                      >
+                        <i className="bi bi-pencil me-1" aria-hidden />
+                        Sửa
+                      </Button>
+                      <Link
+                        href={`/lich-hen?maBenhNhan=${p.id}`}
+                        className="btn btn-sm btn-info btn-action-calendar"
+                      >
+                        <i className="bi bi-calendar3 me-1" aria-hidden />
+                        Lịch
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+          {total > size && (
+            <Card.Footer className="bg-light border-top py-3">
+              <Pagination className="mb-0 justify-content-center">
+                <Pagination.Prev
+                  disabled={page === 0}
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                />
+                <Pagination.Item active>
+                  {page + 1} / {Math.ceil(total / size)}
+                </Pagination.Item>
+                <Pagination.Next
+                  disabled={page >= Math.ceil(total / size) - 1}
+                  onClick={() => setPage((p) => p + 1)}
+                />
+              </Pagination>
+            </Card.Footer>
+          )}
+        </Card>
       )}
 
       <Modal
@@ -979,23 +964,36 @@ function BenhNhanPageInner() {
                           </tr>
                         </thead>
                         <tbody>
-                          {visitHistory.map((a) => (
-                            <tr key={a.id}>
-                              <td className="text-nowrap">{a.ngayHen}</td>
-                              <td className="text-nowrap">{a.gioHen}</td>
-                              <td>{a.tenBacSi}</td>
-                              <td>{a.tenDichVu}</td>
-                              <td>{a.trangThai}</td>
-                              <td className="text-end text-nowrap">
-                                <Link
-                                  href={`/lich-hen/${a.id}`}
-                                  className="btn btn-sm btn-outline-primary"
-                                >
-                                  Chi tiết
-                                </Link>
-                              </td>
-                            </tr>
-                          ))}
+                          {visitHistory.map((a) => {
+                            const meta = metaTrangThaiLichHen(a.trangThai);
+                            return (
+                              <tr key={a.id}>
+                                <td className="text-nowrap">{a.ngayHen}</td>
+                                <td className="text-nowrap">{a.gioHen}</td>
+                                <td>{a.tenBacSi}</td>
+                                <td>{a.tenDichVu}</td>
+                                <td>
+                                  <span
+                                    className={`lich-hen-status-tag lich-hen-status-tag--${meta.slug}`}
+                                  >
+                                    <i
+                                      className={`bi ${meta.icon}`}
+                                      aria-hidden
+                                    />
+                                    {meta.label}
+                                  </span>
+                                </td>
+                                <td className="text-end text-nowrap">
+                                  <Link
+                                    href={`/lich-hen/${a.id}`}
+                                    className="btn btn-sm btn-outline-primary"
+                                  >
+                                    Chi tiết
+                                  </Link>
+                                </td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </Table>
                     </div>
@@ -1078,8 +1076,9 @@ function BenhNhanPageInner() {
         </Modal.Header>
         <Modal.Body className="small">
           <p className="text-muted mb-0">
-            Hồ sơ sẽ không còn hiển thị trong danh sách mặc định. Bạn có thể tìm lại khi lọc{" "}
-            <strong>Tất cả hồ sơ</strong> hoặc <strong>Hồ sơ đã ẩn</strong>.
+            Hồ sơ sẽ không còn hiển thị trong danh sách mặc định. Bạn có thể tìm
+            lại khi lọc <strong>Tất cả hồ sơ</strong> hoặc{" "}
+            <strong>Hồ sơ đã ẩn</strong>.
           </p>
         </Modal.Body>
         <Modal.Footer className="border-top clinic-modal-footer-actions">
@@ -1131,7 +1130,8 @@ function BenhNhanPageInner() {
         </Modal.Header>
         <Modal.Body className="small">
           <p className="text-muted mb-0">
-            Hồ sơ sẽ xuất hiện trở lại trong danh sách <strong>Hồ sơ đang hoạt động</strong> và lọc mặc định.
+            Hồ sơ sẽ xuất hiện trở lại trong danh sách{" "}
+            <strong>Hồ sơ đang hoạt động</strong> và lọc mặc định.
           </p>
         </Modal.Body>
         <Modal.Footer className="border-top clinic-modal-footer-actions">

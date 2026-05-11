@@ -73,13 +73,11 @@ function gomPhanUngTheoEmoji(
 }
 
 function ChatDmReactionsBar({
-  messageId,
   phanUng,
   myId,
   connected,
   onPick,
 }: {
-  messageId: number;
   phanUng?: Record<string, string>;
   myId: number;
   connected: boolean;
@@ -91,50 +89,48 @@ function ChatDmReactionsBar({
   );
 
   return (
-    <div className="chat-dm-app__reactions-bar">
-      {chips.map(({ emoji, count, mine }) => (
-        <button
-          key={emoji}
-          type="button"
-          className={`chat-dm-app__reaction-chip${mine ? " chat-dm-app__reaction-chip--mine" : ""}`}
-          disabled={!connected}
-          title={mine ? "Bấm để bỏ phản ứng" : "Phản ứng"}
-          onClick={() => onPick(emoji)}
-        >
-          <span className="chat-dm-app__reaction-emoji" aria-hidden>
-            {emoji}
-          </span>
-          {count > 1 ? (
-            <span className="chat-dm-app__reaction-count">{count}</span>
-          ) : null}
-        </button>
-      ))}
-      <Dropdown drop="up">
-        <Dropdown.Toggle
-          variant="light"
-          size="sm"
-          id={`chat-react-dd-${messageId}`}
-          className="chat-dm-app__reaction-add"
-          disabled={!connected}
-        >
-          <i className="bi bi-plus-lg" aria-hidden />
-          <span className="visually-hidden">Thêm phản ứng</span>
-        </Dropdown.Toggle>
-        <Dropdown.Menu className="chat-dm-app__reaction-menu shadow border-0 p-2 rounded-3">
-          <div className="chat-dm-app__reaction-grid">
-            {EMOJI_PHAN_UNG_NHANH.map((em) => (
-              <button
-                key={em}
-                type="button"
-                className="chat-dm-app__reaction-grid-cell"
-                onClick={() => onPick(em)}
-              >
-                {em}
-              </button>
-            ))}
-          </div>
-        </Dropdown.Menu>
-      </Dropdown>
+    <div className="chat-dm-app__reactions-zone">
+      {chips.length > 0 ? (
+        <div className="chat-dm-app__reactions-chips" aria-label="Phản ứng">
+          {chips.map(({ emoji, count, mine }) => (
+            <button
+              key={emoji}
+              type="button"
+              className={`chat-dm-app__reaction-chip${mine ? " chat-dm-app__reaction-chip--mine" : ""}`}
+              disabled={!connected}
+              title={mine ? "Bấm để bỏ phản ứng" : "Phản ứng"}
+              onClick={() => onPick(emoji)}
+            >
+              <span className="chat-dm-app__reaction-emoji" aria-hidden>
+                {emoji}
+              </span>
+              {count > 1 ? (
+                <span className="chat-dm-app__reaction-count">{count}</span>
+              ) : null}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      <div
+        className="chat-dm-app__reactions-hover-picker"
+        role="toolbar"
+        aria-label="Chọn phản ứng (di chuột vào tin nhắn để hiện trên máy tính)"
+      >
+        <div className="chat-dm-app__reaction-quick-strip">
+          {EMOJI_PHAN_UNG_NHANH.map((em) => (
+            <button
+              key={em}
+              type="button"
+              className="chat-dm-app__reaction-quick-btn"
+              disabled={!connected}
+              title="Gửi phản ứng"
+              onClick={() => onPick(em)}
+            >
+              {em}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -257,6 +253,8 @@ export default function ChatPage() {
   );
   const clientRef = useRef<Client | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesScrollRef = useRef<HTMLDivElement>(null);
+  const prevLoadingThreadRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const peerIdRef = useRef<number | null>(null);
@@ -265,8 +263,14 @@ export default function ChatPage() {
     useState<TroChuyenTaiLenResponse | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
 
-  const scrollToBottom = useCallback(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
+    bottomRef.current?.scrollIntoView({ behavior, block: "end" });
+  }, []);
+
+  const isNearBottom = useCallback((px = 140) => {
+    const el = messagesScrollRef.current;
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight <= px;
   }, []);
 
   useEffect(() => {
@@ -284,6 +288,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (!user || peerId == null) {
       setMessages([]);
+      prevLoadingThreadRef.current = false;
       return;
     }
     let cancelled = false;
@@ -306,8 +311,21 @@ export default function ChatPage() {
   }, [user, peerId]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
+    if (peerId == null) return;
+    const wasLoading = prevLoadingThreadRef.current;
+    prevLoadingThreadRef.current = loadingThread;
+    if (wasLoading && !loadingThread) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => scrollToBottom("auto"));
+      });
+    }
+  }, [loadingThread, peerId, scrollToBottom]);
+
+  useEffect(() => {
+    if (peerId == null || loadingThread) return;
+    if (!isNearBottom()) return;
+    scrollToBottom("auto");
+  }, [messages, peerId, loadingThread, isNearBottom, scrollToBottom]);
 
   useEffect(() => {
     if (!user) return;
@@ -467,6 +485,7 @@ export default function ChatPage() {
       });
       setInput("");
       setPendingAttach(null);
+      requestAnimationFrame(() => scrollToBottom("auto"));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Gửi thất bại");
     }
@@ -616,7 +635,10 @@ export default function ChatPage() {
             )}
           </header>
 
-          <div className="chat-dm-app__messages flex-grow-1">
+          <div
+            ref={messagesScrollRef}
+            className="chat-dm-app__messages flex-grow-1"
+          >
             {peerId == null ? (
               <div className="chat-dm-app__empty d-flex flex-column align-items-center justify-content-center h-100 p-4 text-center">
                 <div className="chat-dm-app__empty-icon mb-3">
@@ -676,7 +698,6 @@ export default function ChatPage() {
                             : ""}
                         </span>
                         <ChatDmReactionsBar
-                          messageId={m.id}
                           phanUng={m.phanUng}
                           myId={user.maNguoiDung}
                           connected={connected}

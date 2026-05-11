@@ -429,7 +429,6 @@ export interface TinNhanChatDto {
   dinhKemLoai?: string;
   maPhong: number;
   taoLuc: string;
-  /** Mã người dùng (chuỗi) → emoji (đồng bộ backend). */
   phanUng?: Record<string, string>;
 }
 
@@ -917,7 +916,6 @@ export interface LichLamViecBacSi {
   ngayLich: string;
   khungGioBatDau?: string;
   khungGioKetThuc?: string;
-  /** NGOAI_LE | CO_DINH | LICH_BAC_SI_THU_VIEN */
   nguonBanGhi?: string;
   nghiCaNgay?: boolean;
 }

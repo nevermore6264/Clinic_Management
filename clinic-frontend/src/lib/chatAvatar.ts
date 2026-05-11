@@ -1,4 +1,3 @@
-/** Chữ ký tắt 2 ký tự (tên Việt: chữ đầu họ + chữ đầu tên). */
 export function chatAvatarInitials(name?: string, fallback?: string): string {
   const raw = (name?.trim() || fallback?.trim() || "?").replace(/\s+/g, " ");
   if (!raw) return "?";
@@ -14,7 +13,6 @@ export function chatAvatarInitials(name?: string, fallback?: string): string {
   return arr.slice(0, 2).join("").toUpperCase() || "?";
 }
 
-/** Bảng màu trầm, phù hợp giao diện phòng khám (không dùng ảnh hoạt hình). */
 const AVATAR_GRADIENTS: ReadonlyArray<readonly [string, string]> = [
   ["#0d9488", "#0f766e"],
   ["#0369a1", "#1e3a8a"],

@@ -204,9 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const j = JSON.parse(text) as { message?: string };
           if (j.message) thongBao = j.message;
-        } catch {
-          /* plain text */
-        }
+        } catch {}
         if (thongBao.length > 220) thongBao = "Đăng ký thất bại";
         notify.error(thongBao);
         throw new Error(thongBao);

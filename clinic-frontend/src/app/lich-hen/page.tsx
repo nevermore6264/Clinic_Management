@@ -10,6 +10,7 @@ import {
   Badge,
   Modal,
   Button,
+  ButtonGroup,
   Dropdown,
 } from "react-bootstrap";
 import Link from "next/link";
@@ -30,7 +31,10 @@ import {
 import { PageHeader } from "@/components/PageHeader";
 import { LoadingState } from "@/components/LoadingState";
 import { notify } from "@/lib/notify";
-import { LICH_HEN_STATUS_LABEL as STATUS_LABEL } from "@/lib/lichHenStatus";
+import {
+  LICH_HEN_STATUS_LABEL as STATUS_LABEL,
+  metaTrangThaiLichHen,
+} from "@/lib/lichHenStatus";
 import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
 import { consumeLandingBookingDraft } from "@/lib/landingBookingDraft";
 import {
@@ -65,6 +69,45 @@ function normalizeTime(value?: string): string {
   if (!value) return "00:00";
   return value.slice(0, 5);
 }
+
+function pad2(n: number) {
+  return String(n).padStart(2, "0");
+}
+
+function isoDateLocal(d: Date): string {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+
+function monthBoundsFromYm(ym: string): { from: string; to: string } {
+  const [y, m] = ym.split("-").map(Number);
+  if (!y || !m || m < 1 || m > 12) {
+    const t = new Date();
+    return monthBoundsFromYm(`${t.getFullYear()}-${pad2(t.getMonth() + 1)}`);
+  }
+  const last = new Date(y, m, 0).getDate();
+  return { from: `${y}-${pad2(m)}-01`, to: `${y}-${pad2(m)}-${pad2(last)}` };
+}
+
+function buildMonthGrid(
+  year: number,
+  monthIndex0: number,
+): { dateStr: string; inMonth: boolean }[] {
+  const first = new Date(year, monthIndex0, 1);
+  const mondayOffset = (first.getDay() + 6) % 7;
+  const start = new Date(year, monthIndex0, 1 - mondayOffset);
+  const grid: { dateStr: string; inMonth: boolean }[] = [];
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    grid.push({
+      dateStr: isoDateLocal(d),
+      inMonth: d.getMonth() === monthIndex0,
+    });
+  }
+  return grid;
+}
+
+const LICH_HEN_CAL_WEEKDAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"] as const;
 
 function AppointmentsPageInner() {
   const searchParams = useSearchParams();
@@ -108,6 +151,7 @@ function AppointmentsPageInner() {
   const [timBacSiTrang, setTimBacSiTrang] = useState("");
   const [locTrangThaiBang, setLocTrangThaiBang] = useState("");
   const [locGiaiDoan, setLocGiaiDoan] = useState("");
+  const [viewMode, setViewMode] = useState<"bang" | "lich">("bang");
 
   const resetDatLichForm = useCallback(() => {
     setPatientId(maBenhNhanParam ? String(Number(maBenhNhanParam)) : "");
@@ -433,6 +477,52 @@ function AppointmentsPageInner() {
     to,
   ]);
 
+  const lichTheoNgay = useMemo(() => {
+    const map = new Map<string, LichHen[]>();
+    for (const a of danhSachLoc) {
+      const d = a.ngayHen;
+      if (!d) continue;
+      if (!map.has(d)) map.set(d, []);
+      map.get(d)!.push(a);
+    }
+    for (const arr of Array.from(map.values())) {
+      arr.sort((x: LichHen, y: LichHen) =>
+        normalizeTime(x.gioHen).localeCompare(normalizeTime(y.gioHen)),
+      );
+    }
+    return map;
+  }, [danhSachLoc]);
+
+  const calendarMonthYm = useMemo(() => from.slice(0, 7), [from]);
+
+  const calendarGrid = useMemo(() => {
+    const [y, m] = calendarMonthYm.split("-").map(Number);
+    if (!y || !m) return buildMonthGrid(new Date().getFullYear(), new Date().getMonth());
+    return buildMonthGrid(y, m - 1);
+  }, [calendarMonthYm]);
+
+  const calendarTitle = useMemo(() => {
+    const [y, m] = calendarMonthYm.split("-").map(Number);
+    if (!y || !m) return "";
+    return new Date(y, m - 1, 1).toLocaleDateString("vi-VN", {
+      month: "long",
+      year: "numeric",
+    });
+  }, [calendarMonthYm]);
+
+  const shiftCalendarMonth = (delta: number) => {
+    const [y, m] = calendarMonthYm.split("-").map(Number);
+    if (!y || !m) return;
+    const d = new Date(y, m - 1 + delta, 1);
+    const nextYm = `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+    const b = monthBoundsFromYm(nextYm);
+    setFrom(b.from);
+    setTo(b.to);
+  };
+
+  const todayStr = isoDateLocal(new Date());
+  const bangColSpan = chiTaiKhoanBn ? 6 : 7;
+
   const handleDatLichSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setModalError("");
@@ -632,7 +722,8 @@ function AppointmentsPageInner() {
       )}
       <Card className="mb-3 card--static border-0 shadow-sm">
         <Card.Body>
-          <div className="d-flex flex-wrap gap-3 align-items-end">
+          <div className="d-flex flex-wrap gap-3 align-items-end justify-content-between">
+            <div className="d-flex flex-wrap gap-3 align-items-end flex-grow-1">
             <Form.Group>
               <Form.Label>Từ ngày</Form.Label>
               <Form.Control
@@ -680,6 +771,37 @@ function AppointmentsPageInner() {
                 )}
               </Form.Select>
             </Form.Group>
+            </div>
+            <Form.Group className="mb-0">
+              <Form.Label className="d-block">Hiển thị</Form.Label>
+              <ButtonGroup aria-label="Chế độ xem lịch khám">
+                <Button
+                  type="button"
+                  variant={viewMode === "bang" ? "primary" : "outline-primary"}
+                  size="sm"
+                  className="d-inline-flex align-items-center gap-1"
+                  onClick={() => setViewMode("bang")}
+                >
+                  <i className="bi bi-list-ul" aria-hidden />
+                  Danh sách
+                </Button>
+                <Button
+                  type="button"
+                  variant={viewMode === "lich" ? "primary" : "outline-primary"}
+                  size="sm"
+                  className="d-inline-flex align-items-center gap-1"
+                  onClick={() => {
+                    setViewMode("lich");
+                    const b = monthBoundsFromYm(from.slice(0, 7));
+                    setFrom(b.from);
+                    setTo(b.to);
+                  }}
+                >
+                  <i className="bi bi-calendar3" aria-hidden />
+                  Lịch tháng
+                </Button>
+              </ButtonGroup>
+            </Form.Group>
           </div>
           {locGiaiDoan && GIAI_DOAN_FROM_URL.has(locGiaiDoan) ? (
             <div className="d-flex flex-wrap align-items-center gap-2 mt-3 pt-3 border-top small">
@@ -700,55 +822,186 @@ function AppointmentsPageInner() {
           ) : null}
         </Card.Body>
       </Card>
-      <Card className="card--static border-0 shadow-sm overflow-hidden">
-        <div className="table-responsive">
-          <Table responsive hover className="mb-0 align-middle">
-            <thead>
-              <tr>
-                <th>Ngày</th>
-                <th>Giờ</th>
-                {!chiTaiKhoanBn && <th>Bệnh nhân</th>}
-                <th>Bác sĩ</th>
-                <th>Dịch vụ</th>
-                <th>Trạng thái</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {danhSachLoc.map((a) => (
-                <tr key={a.id}>
-                  <td>{a.ngayHen}</td>
-                  <td>{a.gioHen}</td>
-                  {!chiTaiKhoanBn && <td>{a.tenBenhNhan}</td>}
-                  <td>{a.tenBacSi}</td>
-                  <td>{a.tenDichVu}</td>
-                  <td>
-                    <Badge bg="secondary">
-                      {STATUS_LABEL[a.trangThai || ""] || a.trangThai}
-                    </Badge>
-                  </td>
-                  <td className="text-end">
-                    <Link
-                      href={`/lich-hen/${a.id}`}
-                      className="btn btn-sm btn-outline-primary"
+      {viewMode === "lich" ? (
+        <Card className="card--static border-0 shadow-sm overflow-hidden lich-hen-cal-card">
+          <Card.Body className="p-0">
+            <div className="lich-hen-cal-toolbar px-3 py-3 border-bottom d-flex flex-wrap align-items-center gap-3">
+              <div className="d-flex align-items-center gap-2 flex-wrap">
+                <Button
+                  type="button"
+                  variant="outline-secondary"
+                  size="sm"
+                  aria-label="Tháng trước"
+                  onClick={() => shiftCalendarMonth(-1)}
+                >
+                  <i className="bi bi-chevron-left" aria-hidden />
+                </Button>
+                <h2 className="h5 mb-0 fw-semibold lich-hen-cal-title">
+                  {calendarTitle}
+                </h2>
+                <Button
+                  type="button"
+                  variant="outline-secondary"
+                  size="sm"
+                  aria-label="Tháng sau"
+                  onClick={() => shiftCalendarMonth(1)}
+                >
+                  <i className="bi bi-chevron-right" aria-hidden />
+                </Button>
+              </div>
+              <Button
+                type="button"
+                variant="outline-primary"
+                size="sm"
+                className="ms-md-auto"
+                onClick={() => {
+                  const b = monthBoundsFromYm(
+                    isoDateLocal(new Date()).slice(0, 7),
+                  );
+                  setFrom(b.from);
+                  setTo(b.to);
+                }}
+              >
+                <i className="bi bi-calendar-event me-1" aria-hidden />
+                Tháng này
+              </Button>
+            </div>
+            <div className="lich-hen-cal-grid-wrap px-2 pb-3 pt-2">
+              <div className="lich-hen-cal-weekdays" aria-hidden>
+                {LICH_HEN_CAL_WEEKDAYS.map((w) => (
+                  <div key={w} className="lich-hen-cal-weekday">
+                    {w}
+                  </div>
+                ))}
+              </div>
+              <div className="lich-hen-cal-cells">
+                {calendarGrid.map((cell) => {
+                  const items = lichTheoNgay.get(cell.dateStr) ?? [];
+                  const isToday = cell.dateStr === todayStr;
+                  const dayNum = Number(cell.dateStr.slice(8, 10));
+                  return (
+                    <div
+                      key={cell.dateStr}
+                      className={[
+                        "lich-hen-cal-cell",
+                        !cell.inMonth ? "lich-hen-cal-cell--fade" : "",
+                        isToday ? "lich-hen-cal-cell--today" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
                     >
-                      <i className="bi bi-arrow-right-circle me-1" />
-                      Chi tiết
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-              {danhSachLoc.length === 0 ? (
+                      <div className="lich-hen-cal-daynum">{dayNum}</div>
+                      <div className="lich-hen-cal-events">
+                        {items.slice(0, 4).map((a) => {
+                          const meta = metaTrangThaiLichHen(a.trangThai);
+                          const chipMain = chiTaiKhoanBn
+                            ? (a.tenBacSi ?? "—")
+                            : (a.tenBenhNhan ?? a.tenBacSi ?? "—");
+                          return (
+                            <Link
+                              key={a.id}
+                              href={`/lich-hen/${a.id}`}
+                              className={[
+                                "lich-hen-cal-chip",
+                                TRANG_THAI_CO_LICH_DANG_XU_LY.has(
+                                  a.trangThai ?? "",
+                                )
+                                  ? ""
+                                  : "lich-hen-cal-chip--muted",
+                              ]
+                                .filter(Boolean)
+                                .join(" ")}
+                              title={[
+                                normalizeTime(a.gioHen),
+                                a.tenBenhNhan,
+                                a.tenBacSi,
+                                a.tenDichVu,
+                                meta.label,
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            >
+                              <span className="lich-hen-cal-chip__time">
+                                {normalizeTime(a.gioHen)}
+                              </span>
+                              <span className="lich-hen-cal-chip__main text-truncate">
+                                {chipMain}
+                              </span>
+                              <span
+                                className={`lich-hen-cal-status-dot lich-hen-cal-status-dot--${meta.slug}`}
+                                title={meta.label}
+                                aria-hidden
+                              />
+                            </Link>
+                          );
+                        })}
+                        {items.length > 4 ? (
+                          <div className="lich-hen-cal-more text-muted">
+                            +{items.length - 4} lịch
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </Card.Body>
+        </Card>
+      ) : (
+        <Card className="card--static border-0 shadow-sm overflow-hidden">
+          <div className="table-responsive">
+            <Table responsive hover className="mb-0 align-middle">
+              <thead>
                 <tr>
-                  <td colSpan={7} className="text-center text-muted py-4">
-                    Không có lịch khám khớp bộ lọc.
-                  </td>
+                  <th>Ngày</th>
+                  <th>Giờ</th>
+                  {!chiTaiKhoanBn && <th>Bệnh nhân</th>}
+                  <th>Bác sĩ</th>
+                  <th>Dịch vụ</th>
+                  <th>Trạng thái</th>
+                  <th></th>
                 </tr>
-              ) : null}
-            </tbody>
-          </Table>
-        </div>
-      </Card>
+              </thead>
+              <tbody>
+                {danhSachLoc.map((a) => (
+                  <tr key={a.id}>
+                    <td>{a.ngayHen}</td>
+                    <td>{a.gioHen}</td>
+                    {!chiTaiKhoanBn && <td>{a.tenBenhNhan}</td>}
+                    <td>{a.tenBacSi}</td>
+                    <td>{a.tenDichVu}</td>
+                    <td>
+                      <Badge bg="secondary">
+                        {STATUS_LABEL[a.trangThai || ""] || a.trangThai}
+                      </Badge>
+                    </td>
+                    <td className="text-end">
+                      <Link
+                        href={`/lich-hen/${a.id}`}
+                        className="btn btn-sm btn-outline-primary"
+                      >
+                        <i className="bi bi-arrow-right-circle me-1" />
+                        Chi tiết
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+                {danhSachLoc.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={bangColSpan}
+                      className="text-center text-muted py-4"
+                    >
+                      Không có lịch khám khớp bộ lọc.
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </Table>
+          </div>
+        </Card>
+      )}
 
       <Modal
         show={showDatLich}

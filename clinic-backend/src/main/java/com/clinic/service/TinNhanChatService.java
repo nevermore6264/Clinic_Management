@@ -33,7 +33,6 @@ public class TinNhanChatService {
 
     private static final Long PHONG_MAC_DINH = 1L;
 
-    /** Emoji được phép (đồng bộ với picker trên frontend). */
     private static final Set<String> EMOJI_PHAN_UNG_HOP_LE = Set.of(
             "\uD83D\uDC4D", "\u2764\uFE0F", "\u2764", "\uD83D\uDE02", "\uD83D\uDE2E", "\uD83D\uDE22",
             "\uD83D\uDE4F", "\uD83D\uDC4F", "\u2705", "\u274C", "\uD83C\uDF89", "\uD83D\uDCAA",

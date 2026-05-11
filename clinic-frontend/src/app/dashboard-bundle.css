@@ -1,5 +1,3 @@
-/* Bảng điều khiển — layout (đồng bộ với bang-dieu-khien + dashboard components) */
-
 .dashboard-page {
   position: relative;
   isolation: isolate;

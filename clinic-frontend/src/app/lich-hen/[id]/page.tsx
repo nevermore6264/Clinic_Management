@@ -98,6 +98,10 @@ export default function AppointmentDetailPage() {
   }, [user, canEdit]);
 
   const updateStatus = async (status: string) => {
+    if (!canEdit) {
+      setError("Bạn không có quyền cập nhật trạng thái lịch hẹn.");
+      return;
+    }
     try {
       await appointmentsApi.updateStatus(id, status);
       if (app) setApp({ ...app, trangThai: status });
@@ -189,24 +193,42 @@ export default function AppointmentDetailPage() {
               <strong>Ghi chú:</strong> {app.ghiChu}
             </p>
           )}
-          <div className="lich-hen-flow-label mb-2 fw-semibold text-secondary">
-            Cập nhật trạng thái
-          </div>
-          <div className="lich-hen-flow-toolbar d-flex flex-wrap gap-2">
-            {STATUS_FLOW.map((s) => (
-              <button
-                key={s.value}
-                type="button"
-                className={`lich-hen-flow-btn lich-hen-flow-btn--${s.slug}${
-                  app.trangThai === s.value ? " is-active" : ""
-                }`}
-                onClick={() => updateStatus(s.value)}
+          {canEdit ? (
+            <>
+              <div className="lich-hen-flow-label mb-2 fw-semibold text-secondary">
+                Cập nhật trạng thái
+              </div>
+              <div className="lich-hen-flow-toolbar d-flex flex-wrap gap-2">
+                {STATUS_FLOW.map((s) => (
+                  <button
+                    key={s.value}
+                    type="button"
+                    className={`lich-hen-flow-btn lich-hen-flow-btn--${s.slug}${
+                      app.trangThai === s.value ? " is-active" : ""
+                    }`}
+                    onClick={() => updateStatus(s.value)}
+                  >
+                    <i
+                      className={`bi ${s.icon} lich-hen-flow-btn__icon`}
+                      aria-hidden
+                    />
+                    <span>{s.label}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="small text-muted d-flex flex-wrap align-items-center gap-2">
+              <span className="fw-semibold text-body">Trạng thái hiện tại:</span>
+              <span
+                className={`lich-hen-status-tag lich-hen-status-tag--${tagMeta.slug}`}
               >
-                <i className={`bi ${s.icon} lich-hen-flow-btn__icon`} aria-hidden />
-                <span>{s.label}</span>
-              </button>
-            ))}
-          </div>
+                <i className={`bi ${tagMeta.icon}`} aria-hidden />
+                {tagMeta.label}
+              </span>
+              <span> (chỉ xem, không thể thay đổi)</span>
+            </div>
+          )}
         </Card.Body>
       </Card>
 

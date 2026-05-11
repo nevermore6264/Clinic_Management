@@ -150,7 +150,6 @@ public class LichHenService {
         return sangDto(lichHenRepository.save(lh));
     }
 
-    /** Trùng theo bệnh nhân + ngày + giờ (không tính HỦY/VẮNG). Sức chỗ theo bác sĩ do {@link #slotHopLeVaChuaDay} xử lý. */
     private boolean benhNhanTrungGio(Long maBenhNhan, LocalDate ngay, LocalTime gio, Long boQuaMaLich) {
         return lichHenRepository.demBenhNhanTrungGio(maBenhNhan, ngay, gio, boQuaMaLich) > 0;
     }

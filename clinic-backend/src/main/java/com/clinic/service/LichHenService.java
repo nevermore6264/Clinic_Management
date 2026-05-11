@@ -276,7 +276,9 @@ public class LichHenService {
         dto.setMaBenhNhan(lh.getBenhNhan().getId());
         dto.setTenBenhNhan(lh.getBenhNhan().getHoTen());
         dto.setMaBacSi(lh.getBacSi().getId());
-        dto.setTenBacSi(lh.getBacSi().getNguoiDung() != null ? lh.getBacSi().getNguoiDung().getHoTen() : null);
+        dto.setTenBacSi(lh.getBacSi().getNguoiDung() != null
+                ? lh.getBacSi().getNguoiDung().getHoTen()
+                : lh.getBacSi().getHoTen());
         dto.setMaDichVu(lh.getDichVu().getId());
         dto.setTenDichVu(lh.getDichVu().getTen());
         dto.setNgayHen(lh.getNgayHen());

@@ -44,11 +44,12 @@ public class ThuocService {
     private DonThuocChiTietBangKeDto sangBangKeChiTiet(ChiTietDonThuoc ct) {
         DonThuocChiTietBangKeDto d = new DonThuocChiTietBangKeDto();
         d.setMaChiTiet(ct.getId());
-        d.setMaHoSoKham(ct.getHoSoKham().getId());
-        d.setMaLichHen(ct.getHoSoKham().getLichHen().getId());
-        d.setTenBenhNhan(ct.getHoSoKham().getLichHen().getBenhNhan().getHoTen());
-        d.setNgayHen(ct.getHoSoKham().getLichHen().getNgayHen());
-        d.setGioHen(ct.getHoSoKham().getLichHen().getGioHen());
+        d.setMaDonThuoc(ct.getDonThuoc().getId());
+        d.setMaHoSoKham(ct.getDonThuoc().getHoSoKham().getId());
+        d.setMaLichHen(ct.getDonThuoc().getHoSoKham().getLichHen().getId());
+        d.setTenBenhNhan(ct.getDonThuoc().getHoSoKham().getLichHen().getBenhNhan().getHoTen());
+        d.setNgayHen(ct.getDonThuoc().getHoSoKham().getLichHen().getNgayHen());
+        d.setGioHen(ct.getDonThuoc().getHoSoKham().getLichHen().getGioHen());
         d.setMaThuoc(ct.getThuoc().getId());
         d.setTenThuoc(ct.getThuoc().getTenThuoc());
         d.setSoLuong(ct.getSoLuong());

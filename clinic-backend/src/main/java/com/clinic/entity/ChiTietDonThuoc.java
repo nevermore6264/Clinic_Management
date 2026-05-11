@@ -20,8 +20,8 @@ public class ChiTietDonThuoc {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_ho_so_kham", nullable = false)
-    private HoSoKham hoSoKham;
+    @JoinColumn(name = "ma_don_thuoc", nullable = false)
+    private DonThuoc donThuoc;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ma_thuoc", nullable = false)

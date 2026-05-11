@@ -4,29 +4,29 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "ho_so_kham")
+@Table(name = "don_thuoc")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class HoSoKham {
+public class DonThuoc {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "ma_lich_hen", nullable = false, unique = true)
-    private LichHen lichHen;
+    @JoinColumn(name = "ma_ho_so_kham", nullable = false, unique = true)
+    private HoSoKham hoSoKham;
 
-    @Column(name = "chan_doan", columnDefinition = "TEXT")
-    private String chanDoan;
-
-    @Column(name = "ghi_chu", columnDefinition = "TEXT")
-    private String ghiChu;
+    /** Nội dung đơn dạng tự do (trước đây là cột ho_so_kham.don_thuoc). */
+    @Column(name = "noi_dung", columnDefinition = "TEXT")
+    private String noiDung;
 
     @Column(name = "tao_luc")
     private Instant taoLuc;
@@ -34,8 +34,9 @@ public class HoSoKham {
     @Column(name = "cap_nhat_luc")
     private Instant capNhatLuc;
 
-    @OneToOne(mappedBy = "hoSoKham", cascade = CascadeType.ALL, orphanRemoval = true)
-    private DonThuoc donThuoc;
+    @OneToMany(mappedBy = "donThuoc", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ChiTietDonThuoc> chiTietDonThuoc = new ArrayList<>();
 
     @PrePersist
     void luuTruoc() {

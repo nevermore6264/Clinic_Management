@@ -968,6 +968,7 @@ export interface LichCoDinh {
 
 export interface DonThuocChiTietBangKe {
   maChiTiet: number;
+  maDonThuoc?: number;
   maHoSoKham: number;
   maLichHen: number;
   tenBenhNhan?: string;

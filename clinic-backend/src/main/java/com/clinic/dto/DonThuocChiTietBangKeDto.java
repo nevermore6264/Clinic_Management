@@ -9,6 +9,7 @@ import java.time.LocalTime;
 @Data
 public class DonThuocChiTietBangKeDto {
     private Long maChiTiet;
+    private Long maDonThuoc;
     private Long maHoSoKham;
     private Long maLichHen;
     private String tenBenhNhan;

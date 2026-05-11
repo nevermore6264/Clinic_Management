@@ -3,13 +3,14 @@ package com.clinic.service;
 import com.clinic.dto.ChiTietDonThuocDto;
 import com.clinic.dto.HoSoKhamDto;
 import com.clinic.entity.ChiTietDonThuoc;
+import com.clinic.entity.DonThuoc;
 import com.clinic.entity.HoSoKham;
 import com.clinic.entity.LichHen;
 import com.clinic.entity.Thuoc;
 import com.clinic.repository.HoSoKhamRepository;
 import com.clinic.repository.LichHenRepository;
-import com.clinic.security.QuyenTruyCapHoSoBenhNhan;
 import com.clinic.repository.ThuocRepository;
+import com.clinic.security.QuyenTruyCapHoSoBenhNhan;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,26 +52,40 @@ public class HoSoKhamService {
         HoSoKham hs = hoSoKhamRepository.findByLichHenIdWithChiTiet(maLichHen).orElse(new HoSoKham());
         hs.setLichHen(lh);
         hs.setChanDoan(dto.getChanDoan());
-        hs.setDonThuoc(dto.getDonThuoc());
         hs.setGhiChu(dto.getGhiChu());
 
+        String noiDungTuDo = dto.getDonThuoc() != null ? dto.getDonThuoc() : "";
         List<ChiTietDonThuocDto> dong = dto.getChiTietDonThuoc();
         if (dong == null) dong = Collections.emptyList();
-        hs.getChiTietDonThuoc().clear();
-        for (ChiTietDonThuocDto ctDto : dong) {
-            if (ctDto.getMaThuoc() == null) continue;
-            Thuoc thuoc = thuocRepository.findById(ctDto.getMaThuoc())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy thuốc: " + ctDto.getMaThuoc()));
-            int sl = ctDto.getSoLuong() != null && ctDto.getSoLuong() > 0 ? ctDto.getSoLuong() : 1;
-            BigDecimal dg = ctDto.getDonGia() != null ? ctDto.getDonGia() : thuoc.getGiaBan();
-            ChiTietDonThuoc ct = ChiTietDonThuoc.builder()
-                    .hoSoKham(hs)
-                    .thuoc(thuoc)
-                    .soLuong(sl)
-                    .donGia(dg)
-                    .lieuDung(ctDto.getLieuDung())
-                    .build();
-            hs.getChiTietDonThuoc().add(ct);
+        boolean coDongThuoc = dong.stream().anyMatch(ct -> ct.getMaThuoc() != null);
+        boolean coNoiDungTuDo = !noiDungTuDo.isBlank();
+
+        if (!coDongThuoc && !coNoiDungTuDo) {
+            hs.setDonThuoc(null);
+        } else {
+            DonThuoc dt = hs.getDonThuoc();
+            if (dt == null) {
+                dt = DonThuoc.builder().hoSoKham(hs).noiDung(noiDungTuDo).build();
+                hs.setDonThuoc(dt);
+            } else {
+                dt.setNoiDung(noiDungTuDo);
+                dt.getChiTietDonThuoc().clear();
+            }
+            for (ChiTietDonThuocDto ctDto : dong) {
+                if (ctDto.getMaThuoc() == null) continue;
+                Thuoc thuoc = thuocRepository.findById(ctDto.getMaThuoc())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy thuốc: " + ctDto.getMaThuoc()));
+                int sl = ctDto.getSoLuong() != null && ctDto.getSoLuong() > 0 ? ctDto.getSoLuong() : 1;
+                BigDecimal dg = ctDto.getDonGia() != null ? ctDto.getDonGia() : thuoc.getGiaBan();
+                ChiTietDonThuoc ct = ChiTietDonThuoc.builder()
+                        .donThuoc(dt)
+                        .thuoc(thuoc)
+                        .soLuong(sl)
+                        .donGia(dg)
+                        .lieuDung(ctDto.getLieuDung())
+                        .build();
+                dt.getChiTietDonThuoc().add(ct);
+            }
         }
 
         return sangDto(hoSoKhamRepository.save(hs));
@@ -81,10 +96,16 @@ public class HoSoKhamService {
         dto.setId(hs.getId());
         dto.setMaLichHen(hs.getLichHen().getId());
         dto.setChanDoan(hs.getChanDoan());
-        dto.setDonThuoc(hs.getDonThuoc());
         dto.setGhiChu(hs.getGhiChu());
-        if (hs.getChiTietDonThuoc() != null && !hs.getChiTietDonThuoc().isEmpty()) {
-            dto.setChiTietDonThuoc(hs.getChiTietDonThuoc().stream().map(this::sangChiTiet).collect(Collectors.toList()));
+        dto.setDonThuoc("");
+        DonThuoc d = hs.getDonThuoc();
+        if (d != null) {
+            if (d.getNoiDung() != null) {
+                dto.setDonThuoc(d.getNoiDung());
+            }
+            if (d.getChiTietDonThuoc() != null && !d.getChiTietDonThuoc().isEmpty()) {
+                dto.setChiTietDonThuoc(d.getChiTietDonThuoc().stream().map(this::sangChiTiet).collect(Collectors.toList()));
+            }
         }
         return dto;
     }

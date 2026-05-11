@@ -8,4 +8,7 @@ public class TaoBacSiYeuCau {
     private String hoTen;
     private Long maChuyenKhoa;
     private String bangCap;
+    private String gioiThieu;
+    private String quaTrinhCongTac;
+    private String thanhTichDatDuoc;
 }

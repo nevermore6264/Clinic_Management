@@ -11,5 +11,8 @@ public class BacSiDto {
     private Long maChuyenKhoa;
     private String tenChuyenKhoa;
     private String bangCap;
+    private String gioiThieu;
+    private String quaTrinhCongTac;
+    private String thanhTichDatDuoc;
     private boolean hoatDong;
 }

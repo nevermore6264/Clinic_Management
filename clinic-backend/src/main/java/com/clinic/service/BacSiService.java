@@ -59,6 +59,9 @@ public class BacSiService {
                 bs.setChuyenKhoa(ck);
             }
             bs.setBangCap(yeuCau.getBangCap());
+            bs.setGioiThieu(yeuCau.getGioiThieu());
+            bs.setQuaTrinhCongTac(yeuCau.getQuaTrinhCongTac());
+            bs.setThanhTichDatDuoc(yeuCau.getThanhTichDatDuoc());
             bs.setHoatDong(true);
             return sangDto(bacSiRepository.save(bs));
         }
@@ -79,6 +82,9 @@ public class BacSiService {
             bs.setChuyenKhoa(ck);
         }
         bs.setBangCap(yeuCau.getBangCap());
+        bs.setGioiThieu(yeuCau.getGioiThieu());
+        bs.setQuaTrinhCongTac(yeuCau.getQuaTrinhCongTac());
+        bs.setThanhTichDatDuoc(yeuCau.getThanhTichDatDuoc());
         bs.setHoatDong(true);
         return sangDto(bacSiRepository.save(bs));
     }
@@ -95,6 +101,9 @@ public class BacSiService {
             bs.setChuyenKhoa(null);
         }
         bs.setBangCap(yeuCau.getBangCap());
+        bs.setGioiThieu(yeuCau.getGioiThieu());
+        bs.setQuaTrinhCongTac(yeuCau.getQuaTrinhCongTac());
+        bs.setThanhTichDatDuoc(yeuCau.getThanhTichDatDuoc());
         bs.setHoatDong(yeuCau.isHoatDong());
         if (bs.getNguoiDung() == null && yeuCau.getHoTen() != null) {
             String ht = yeuCau.getHoTen().trim();
@@ -118,6 +127,9 @@ public class BacSiService {
         dto.setMaChuyenKhoa(bs.getChuyenKhoa() != null ? bs.getChuyenKhoa().getId() : null);
         dto.setTenChuyenKhoa(bs.getChuyenKhoa() != null ? bs.getChuyenKhoa().getTenChuyenKhoa() : null);
         dto.setBangCap(bs.getBangCap());
+        dto.setGioiThieu(bs.getGioiThieu());
+        dto.setQuaTrinhCongTac(bs.getQuaTrinhCongTac());
+        dto.setThanhTichDatDuoc(bs.getThanhTichDatDuoc());
         dto.setHoatDong(bs.isHoatDong());
         return dto;
     }

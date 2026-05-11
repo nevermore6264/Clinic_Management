@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import {
   Alert,
   Button,
@@ -23,11 +24,82 @@ import {
 } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { notify } from "@/lib/notify";
+import DOMPurify from "dompurify";
+import "react-quill/dist/quill.snow.css";
+
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+
+const RICH_TEXT_MODULES = {
+  toolbar: [
+    [{ header: [2, 3, false] }],
+    ["bold", "italic", "underline"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["link", "blockquote"],
+    ["clean"],
+  ],
+};
+
+const RICH_TEXT_FORMATS = [
+  "header",
+  "bold",
+  "italic",
+  "underline",
+  "list",
+  "bullet",
+  "link",
+  "blockquote",
+];
 
 function formatCk(
   b: Pick<BacSi, "tenChuyenKhoa" | "chuyenMon">,
 ): string | undefined {
   return b.tenChuyenKhoa ?? b.chuyenMon;
+}
+
+function sanitizeDoctorHtml(input?: string): string {
+  if (!input) return "";
+  return DOMPurify.sanitize(input, {
+    ALLOWED_TAGS: [
+      "p",
+      "br",
+      "b",
+      "strong",
+      "i",
+      "em",
+      "u",
+      "ul",
+      "ol",
+      "li",
+      "a",
+      "blockquote",
+      "h2",
+      "h3",
+    ],
+    ALLOWED_ATTR: ["href", "target", "rel"],
+  }).trim();
+}
+
+function RichTextInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <div className="bg-white border rounded">
+      <ReactQuill
+        theme="snow"
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        modules={RICH_TEXT_MODULES}
+        formats={RICH_TEXT_FORMATS}
+      />
+    </div>
+  );
 }
 
 export default function QuanLyBacSiPage() {
@@ -47,11 +119,17 @@ export default function QuanLyBacSiPage() {
   const [taoLocCk, setTaoLocCk] = useState("");
   const [taoMaCk, setTaoMaCk] = useState("");
   const [taoBangCap, setTaoBangCap] = useState("");
+  const [taoGioiThieu, setTaoGioiThieu] = useState("");
+  const [taoQuaTrinhCongTac, setTaoQuaTrinhCongTac] = useState("");
+  const [taoThanhTichDatDuoc, setTaoThanhTichDatDuoc] = useState("");
 
   const [dangSua, setDangSua] = useState<BacSi | null>(null);
   const [maCkSua, setMaCkSua] = useState("");
   const [bangCapSua, setBangCapSua] = useState("");
   const [hoTenSua, setHoTenSua] = useState("");
+  const [gioiThieuSua, setGioiThieuSua] = useState("");
+  const [quaTrinhCongTacSua, setQuaTrinhCongTacSua] = useState("");
+  const [thanhTichDatDuocSua, setThanhTichDatDuocSua] = useState("");
   const [hoatDongSua, setHoatDongSua] = useState(true);
 
   const napDuLieu = useCallback(async () => {
@@ -122,6 +200,9 @@ export default function QuanLyBacSiPage() {
     setTaoLocCk("");
     setTaoMaCk("");
     setTaoBangCap("");
+    setTaoGioiThieu("");
+    setTaoQuaTrinhCongTac("");
+    setTaoThanhTichDatDuoc("");
   };
 
   const resetPopupTaiKhoan = () => {
@@ -196,6 +277,9 @@ export default function QuanLyBacSiPage() {
           hoTen: ht,
           maChuyenKhoa: taoMaCk ? Number(taoMaCk) : undefined,
           bangCap: taoBangCap.trim() || undefined,
+          gioiThieu: taoGioiThieu.trim() || undefined,
+          quaTrinhCongTac: taoQuaTrinhCongTac.trim() || undefined,
+          thanhTichDatDuoc: taoThanhTichDatDuoc.trim() || undefined,
         });
         dongTaoMoi();
         await napDuLieu();
@@ -229,12 +313,18 @@ export default function QuanLyBacSiPage() {
           maChuyenKhoa: taoMaCk ? Number(taoMaCk) : null,
           bangCap: taoBangCap.trim(),
           hoatDong: true,
+          gioiThieu: taoGioiThieu.trim() || undefined,
+          quaTrinhCongTac: taoQuaTrinhCongTac.trim() || undefined,
+          thanhTichDatDuoc: taoThanhTichDatDuoc.trim() || undefined,
         });
       } else {
         await bacSiApi.tao({
           maNguoiDung: idNd,
           maChuyenKhoa: taoMaCk ? Number(taoMaCk) : undefined,
           bangCap: taoBangCap.trim() || undefined,
+          gioiThieu: taoGioiThieu.trim() || undefined,
+          quaTrinhCongTac: taoQuaTrinhCongTac.trim() || undefined,
+          thanhTichDatDuoc: taoThanhTichDatDuoc.trim() || undefined,
         });
       }
       dongTaoMoi();
@@ -251,6 +341,9 @@ export default function QuanLyBacSiPage() {
     setMaCkSua(b.maChuyenKhoa != null ? String(b.maChuyenKhoa) : "");
     setBangCapSua(b.bangCap ?? "");
     setHoTenSua(b.hoTen ?? "");
+    setGioiThieuSua(b.gioiThieu ?? "");
+    setQuaTrinhCongTacSua(b.quaTrinhCongTac ?? "");
+    setThanhTichDatDuocSua(b.thanhTichDatDuoc ?? "");
     setHoatDongSua(Boolean(b.hoatDong));
   };
 
@@ -269,6 +362,9 @@ export default function QuanLyBacSiPage() {
         maChuyenKhoa: maCkSua ? Number(maCkSua) : null,
         bangCap: bangCapSua,
         hoatDong: hoatDongSua,
+        gioiThieu: gioiThieuSua.trim() || undefined,
+        quaTrinhCongTac: quaTrinhCongTacSua.trim() || undefined,
+        thanhTichDatDuoc: thanhTichDatDuocSua.trim() || undefined,
         ...(dangSua.maNguoiDung == null ? { hoTen: hoTenSua.trim() } : {}),
       });
       dongSua();
@@ -290,6 +386,9 @@ export default function QuanLyBacSiPage() {
       "TenDangNhap",
       "ChuyenKhoa",
       "BangCap",
+      "GioiThieu",
+      "QuaTrinhCongTac",
+      "ThanhTichDatDuoc",
       "HoatDong",
     ];
     const rows = list.map((b) => [
@@ -298,6 +397,9 @@ export default function QuanLyBacSiPage() {
       csvEscape(b.tenDangNhap ?? ""),
       csvEscape(formatCk(b) ?? ""),
       csvEscape(b.bangCap ?? ""),
+      csvEscape(b.gioiThieu ?? ""),
+      csvEscape(b.quaTrinhCongTac ?? ""),
+      csvEscape(b.thanhTichDatDuoc ?? ""),
       csvEscape(b.hoatDong ? "Có" : "Không"),
     ]);
     const content = [header.join(","), ...rows.map((row) => row.join(","))].join(
@@ -373,6 +475,9 @@ export default function QuanLyBacSiPage() {
               <th>Tên đăng nhập</th>
               <th>Chuyên khoa</th>
               <th>Bằng cấp</th>
+              <th>Giới thiệu</th>
+              <th>Quá trình công tác</th>
+              <th>Thành tích đạt được</th>
               <th className="text-center">Hoạt động</th>
               <th className="text-end">Thao tác</th>
             </tr>
@@ -386,6 +491,45 @@ export default function QuanLyBacSiPage() {
                 </td>
                 <td>{formatCk(b) ?? "—"}</td>
                 <td>{b.bangCap ?? "—"}</td>
+                <td className="text-muted small" style={{ maxWidth: "16rem" }}>
+                  {b.gioiThieu ? (
+                    <div
+                      className="small"
+                      style={{ maxHeight: "4.5rem", overflow: "auto" }}
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeDoctorHtml(b.gioiThieu),
+                      }}
+                    />
+                  ) : (
+                    "—"
+                  )}
+                </td>
+                <td className="text-muted small" style={{ maxWidth: "16rem" }}>
+                  {b.quaTrinhCongTac ? (
+                    <div
+                      className="small"
+                      style={{ maxHeight: "4.5rem", overflow: "auto" }}
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeDoctorHtml(b.quaTrinhCongTac),
+                      }}
+                    />
+                  ) : (
+                    "—"
+                  )}
+                </td>
+                <td className="text-muted small" style={{ maxWidth: "16rem" }}>
+                  {b.thanhTichDatDuoc ? (
+                    <div
+                      className="small"
+                      style={{ maxHeight: "4.5rem", overflow: "auto" }}
+                      dangerouslySetInnerHTML={{
+                        __html: sanitizeDoctorHtml(b.thanhTichDatDuoc),
+                      }}
+                    />
+                  ) : (
+                    "—"
+                  )}
+                </td>
                 <td className="text-center">
                   {b.hoatDong ? (
                     <span className="text-success">
@@ -411,7 +555,7 @@ export default function QuanLyBacSiPage() {
             ))}
             {list.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center text-muted py-4">
+                <td colSpan={9} className="text-center text-muted py-4">
                   Chưa có hồ sơ bác sĩ nào.
                 </td>
               </tr>
@@ -543,6 +687,30 @@ export default function QuanLyBacSiPage() {
                 placeholder="Ví dụ: Bác sĩ đa khoa"
               />
             </Form.Group>
+            <Form.Group className="mt-3">
+              <Form.Label>Giới thiệu</Form.Label>
+              <RichTextInput
+                value={taoGioiThieu}
+                onChange={setTaoGioiThieu}
+                placeholder="Nhập giới thiệu bác sĩ..."
+              />
+            </Form.Group>
+            <Form.Group className="mt-3">
+              <Form.Label>Quá trình công tác</Form.Label>
+              <RichTextInput
+                value={taoQuaTrinhCongTac}
+                onChange={setTaoQuaTrinhCongTac}
+                placeholder="Nhập quá trình công tác..."
+              />
+            </Form.Group>
+            <Form.Group className="mt-3">
+              <Form.Label>Thành tích đạt được</Form.Label>
+              <RichTextInput
+                value={taoThanhTichDatDuoc}
+                onChange={setTaoThanhTichDatDuoc}
+                placeholder="Nhập thành tích đạt được..."
+              />
+            </Form.Group>
           </Modal.Body>
           <Modal.Footer className="clinic-modal-footer bac-si-modal-footer clinic-modal-footer-actions">
             <Button
@@ -657,6 +825,30 @@ export default function QuanLyBacSiPage() {
                 placeholder="Ví dụ: Bác sĩ đa khoa"
                 value={bangCapSua}
                 onChange={(e) => setBangCapSua(e.target.value)}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Giới thiệu</Form.Label>
+              <RichTextInput
+                value={gioiThieuSua}
+                onChange={setGioiThieuSua}
+                placeholder="Nhập giới thiệu bác sĩ..."
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Quá trình công tác</Form.Label>
+              <RichTextInput
+                value={quaTrinhCongTacSua}
+                onChange={setQuaTrinhCongTacSua}
+                placeholder="Nhập quá trình công tác..."
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Thành tích đạt được</Form.Label>
+              <RichTextInput
+                value={thanhTichDatDuocSua}
+                onChange={setThanhTichDatDuocSua}
+                placeholder="Nhập thành tích đạt được..."
               />
             </Form.Group>
             <Form.Check

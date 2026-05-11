@@ -18,8 +18,8 @@ public class BacSi {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "ma_nguoi_dung", unique = true)
+    @OneToOne(fetch = FetchType.EAGER, optional = true)
+    @JoinColumn(name = "ma_nguoi_dung", unique = true, nullable = true)
     private NguoiDung nguoiDung;
 
     @Column(name = "ho_ten")
@@ -31,6 +31,15 @@ public class BacSi {
 
     @Column(name = "bang_cap")
     private String bangCap;
+
+    @Column(name = "gioi_thieu", columnDefinition = "TEXT")
+    private String gioiThieu;
+
+    @Column(name = "qua_trinh_cong_tac", columnDefinition = "TEXT")
+    private String quaTrinhCongTac;
+
+    @Column(name = "thanh_tich_dat_duoc", columnDefinition = "TEXT")
+    private String thanhTichDatDuoc;
 
     @Column(name = "hoat_dong", nullable = false)
     @Builder.Default

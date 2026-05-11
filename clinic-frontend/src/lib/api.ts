@@ -149,6 +149,9 @@ export const bacSiApi = {
     hoTen?: string;
     maChuyenKhoa?: number;
     bangCap?: string;
+    gioiThieu?: string;
+    quaTrinhCongTac?: string;
+    thanhTichDatDuoc?: string;
   }) =>
     api<BacSi>("/bac-si", {
       method: "POST",
@@ -161,6 +164,9 @@ export const bacSiApi = {
       bangCap?: string;
       hoatDong: boolean;
       hoTen?: string;
+      gioiThieu?: string;
+      quaTrinhCongTac?: string;
+      thanhTichDatDuoc?: string;
     },
   ) =>
     api<BacSi>(`/bac-si/${id}`, {
@@ -758,6 +764,9 @@ export interface BacSi {
   tenChuyenKhoa?: string;
   chuyenMon?: string;
   bangCap?: string;
+  gioiThieu?: string;
+  quaTrinhCongTac?: string;
+  thanhTichDatDuoc?: string;
   hoatDong?: boolean;
 }
 

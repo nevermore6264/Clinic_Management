@@ -202,21 +202,21 @@ export default function InvoiceDetailPage() {
             />
           </Form.Group>
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className="clinic-modal-footer-actions">
           <Button
-            variant="secondary"
-            className="d-inline-flex align-items-center gap-2"
+            type="button"
+            className="btn-modal-dismiss"
             onClick={() => setShowPayment(false)}
           >
-            <i className="bi bi-x-lg" aria-hidden />
+            <i className="bi bi-x-lg me-2" aria-hidden />
             Hủy
           </Button>
           <Button
+            type="button"
             variant="primary"
-            className="d-inline-flex align-items-center gap-2"
             onClick={submitPayment}
           >
-            <i className="bi bi-check2-circle" aria-hidden />
+            <i className="bi bi-check2-circle me-2" aria-hidden />
             Xác nhận
           </Button>
         </Modal.Footer>

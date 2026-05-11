@@ -249,7 +249,7 @@ export default function PhieuChiPage() {
           <Col xs={6} md={4}>
             <StatMini
               label="Số phiếu"
-              value={total}
+              value={String(total)}
               hint={
                 total > list.length
                   ? `Hiển thị ${list.length}/${total} (giới hạn 500 dòng)`
@@ -510,7 +510,7 @@ export default function PhieuChiPage() {
             </Col>
           </Row>
         </Modal.Body>
-        <Modal.Footer className="border-0 pt-0">
+        <Modal.Footer className="border-0 pt-0 clinic-modal-footer-actions">
           <Button
             variant="outline-secondary"
             className="d-inline-flex align-items-center gap-2 rounded-pill"

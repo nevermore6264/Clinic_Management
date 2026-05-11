@@ -309,13 +309,16 @@ function AppointmentsPageInner() {
 
   const bacSiSauLoc = useMemo(() => {
     const q = locBacSi.trim().toLowerCase();
-    const ds = doctors.filter((d) => bacSiCoCaTheoNgay[d.id] !== false);
+    const ds = doctors.filter((d) => {
+      if (!appointmentDate || isDangTaiCaKham) return false;
+      return bacSiCoCaTheoNgay[d.id] === true;
+    });
     if (!q) return ds;
     return ds.filter((d) => {
       const ck = (d.tenChuyenKhoa ?? d.chuyenMon ?? "").toLowerCase();
       return (d.hoTen ?? "").toLowerCase().includes(q) || ck.includes(q);
     });
-  }, [doctors, locBacSi, bacSiCoCaTheoNgay]);
+  }, [doctors, locBacSi, bacSiCoCaTheoNgay, appointmentDate, isDangTaiCaKham]);
 
   const dichVuSauLoc = useMemo(() => {
     const q = locDichVu.trim().toLowerCase();
@@ -372,7 +375,8 @@ function AppointmentsPageInner() {
     if (!appointmentTime) return "— Chọn khung giờ —";
     const slot = slotsDaChon.find((x) => x.gio === appointmentTime);
     if (!slot) return appointmentTime;
-    return `${slot.gio} (${slot.tong}/${slot.sucChua})`;
+    const con = slot.sucChua - slot.tong;
+    return `${slot.gio} — đã đặt ${slot.tong}/${slot.sucChua}${con > 0 ? ` (còn ${con})` : ""}`;
   }, [appointmentTime, slotsDaChon]);
 
   const danhSachLoc = useMemo(() => {
@@ -837,6 +841,21 @@ function AppointmentsPageInner() {
               </Form.Group>
             )}
             <Form.Group className="mb-3">
+              <Form.Label className="required">Ngày khám</Form.Label>
+              <Form.Control
+                type="date"
+                value={appointmentDate}
+                onChange={(e) => {
+                  setAppointmentDate(e.target.value);
+                  setDoctorId("");
+                  setAppointmentTime("");
+                }}
+              />
+              <Form.Text className="text-muted">
+                Chọn ngày trước — chỉ hiển thị bác sĩ có lịch trực (cố định hoặc ngoại lệ) trong ngày đó.
+              </Form.Text>
+            </Form.Group>
+            <Form.Group className="mb-3">
               <Form.Label id="label-loc-ck-dat-lich">Chuyên khoa (lọc bác sĩ)</Form.Label>
               <Form.Select
                 aria-labelledby="label-loc-ck-dat-lich"
@@ -893,9 +912,13 @@ function AppointmentsPageInner() {
                     )}
                     {bacSiSauLoc.length === 0 ? (
                       <div className="px-2 py-3 text-muted small text-center">
-                        {doctors.length === 0
-                          ? "Chưa có bác sĩ trong hệ thống."
-                          : "Không có bác sĩ nào có ca làm việc trong ngày này."}
+                        {!appointmentDate
+                          ? "Chọn ngày khám."
+                          : isDangTaiCaKham
+                            ? "Đang tải…"
+                            : doctors.length === 0
+                              ? "Chưa có bác sĩ trong hệ thống."
+                              : "Không có bác sĩ nào có ca làm việc trong ngày này."}
                       </div>
                     ) : (
                       bacSiSauLoc.map((d) => (
@@ -977,67 +1000,54 @@ function AppointmentsPageInner() {
                 </Dropdown.Menu>
               </Dropdown>
             </Form.Group>
-            <div className="row g-3">
-              <div className="col-md-6">
-                <Form.Group>
-                  <Form.Label className="required">Ngày khám</Form.Label>
-                  <Form.Control
-                    type="date"
-                    value={appointmentDate}
-                    onChange={(e) => setAppointmentDate(e.target.value)}
-                  />
-                </Form.Group>
-              </div>
-              <div className="col-md-6">
-                <Form.Group>
-                  <Form.Label className="required">Giờ khám</Form.Label>
-                  <Dropdown className="bac-si-ck-dropdown w-100">
-                    <Dropdown.Toggle
-                      variant="outline-secondary"
-                      id="dropdown-dat-gio-kham"
-                      className="w-100 text-start d-flex justify-content-between align-items-center"
-                    >
-                      <span className="text-truncate me-2 flex-grow-1">
-                        {appointmentTimeLabel}
-                      </span>
-                    </Dropdown.Toggle>
-                    <Dropdown.Menu className="bac-si-ck-dropdown__menu w-100 shadow-sm pt-2 px-2 pb-2">
-                      <div
-                        className="bac-si-ck-dropdown__list border rounded"
-                        style={{ maxHeight: 220, overflowY: "auto" }}
-                      >
-                        {!doctorId ? (
-                          <div className="px-2 py-3 text-muted small text-center">
-                            Chọn bác sĩ trước khi chọn giờ khám.
-                          </div>
-                        ) : slotsDaChon.length === 0 ? (
-                          <div className="px-2 py-3 text-muted small text-center">
-                            Không có khung giờ hợp lệ trong ngày này.
-                          </div>
-                        ) : (
-                          slotsDaChon.map((slot) => {
-                            const daDay = slot.tong >= slot.sucChua;
-                            return (
-                              <Dropdown.Item
-                                key={slot.gio}
-                                active={slot.gio === appointmentTime}
-                                disabled={daDay}
-                                onClick={() => {
-                                  setAppointmentTime(slot.gio);
-                                }}
-                              >
-                                {slot.gio} ({slot.tong}/{slot.sucChua})
-                                {daDay ? " — Đã đầy" : ""}
-                              </Dropdown.Item>
-                            );
-                          })
-                        )}
+            <Form.Group className="mb-3">
+              <Form.Label className="required">Giờ khám</Form.Label>
+              <Dropdown className="bac-si-ck-dropdown w-100">
+                <Dropdown.Toggle
+                  variant="outline-secondary"
+                  id="dropdown-dat-gio-kham"
+                  className="w-100 text-start d-flex justify-content-between align-items-center"
+                >
+                  <span className="text-truncate me-2 flex-grow-1">
+                    {appointmentTimeLabel}
+                  </span>
+                </Dropdown.Toggle>
+                <Dropdown.Menu className="bac-si-ck-dropdown__menu w-100 shadow-sm pt-2 px-2 pb-2">
+                  <div
+                    className="bac-si-ck-dropdown__list border rounded"
+                    style={{ maxHeight: 220, overflowY: "auto" }}
+                  >
+                    {!doctorId ? (
+                      <div className="px-2 py-3 text-muted small text-center">
+                        Chọn bác sĩ trước khi chọn giờ khám.
                       </div>
-                    </Dropdown.Menu>
-                  </Dropdown>
-                </Form.Group>
-              </div>
-            </div>
+                    ) : slotsDaChon.length === 0 ? (
+                      <div className="px-2 py-3 text-muted small text-center">
+                        Không có khung giờ hợp lệ trong ngày này.
+                      </div>
+                    ) : (
+                      slotsDaChon.map((slot) => {
+                        const daDay = slot.tong >= slot.sucChua;
+                        const conCho = slot.sucChua - slot.tong;
+                        return (
+                          <Dropdown.Item
+                            key={slot.gio}
+                            active={slot.gio === appointmentTime}
+                            disabled={daDay}
+                            onClick={() => {
+                              setAppointmentTime(slot.gio);
+                            }}
+                          >
+                            {slot.gio} — đã đặt {slot.tong}/{slot.sucChua}
+                            {!daDay ? ` (còn ${conCho})` : " — Đã đầy"}
+                          </Dropdown.Item>
+                        );
+                      })
+                    )}
+                  </div>
+                </Dropdown.Menu>
+              </Dropdown>
+            </Form.Group>
             <Form.Group className="mb-0 mt-3">
               <Form.Label>Ghi chú</Form.Label>
               <Form.Control
@@ -1049,7 +1059,7 @@ function AppointmentsPageInner() {
               />
             </Form.Group>
           </Modal.Body>
-          <Modal.Footer className="clinic-modal-footer bac-si-modal-footer border-top">
+          <Modal.Footer className="clinic-modal-footer bac-si-modal-footer clinic-modal-footer-actions border-top">
             <Button
               variant="secondary"
               type="button"

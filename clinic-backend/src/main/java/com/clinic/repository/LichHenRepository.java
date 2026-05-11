@@ -17,8 +17,13 @@ public interface LichHenRepository extends JpaRepository<LichHen, Long> {
     List<LichHen> findByBacSiIdAndNgayHenOrderByGioHen(Long maBacSi, LocalDate ngay);
     Page<LichHen> findByNgayHenBetweenOrderByNgayHenAscGioHenAsc(LocalDate tuNgay, LocalDate denNgay, Pageable pageable);
 
-    @Query("SELECT a FROM LichHen a WHERE a.bacSi.id = :maBacSi AND a.ngayHen = :ngay AND a.gioHen = :gio AND a.trangThai NOT IN ('HUY', 'VANG')")
-    List<LichHen> findTrungLich(Long maBacSi, LocalDate ngay, LocalTime gio);
+    @Query("SELECT COUNT(a) FROM LichHen a WHERE a.benhNhan.id = :maBenhNhan AND a.ngayHen = :ngay AND a.gioHen = :gio "
+            + "AND a.trangThai NOT IN ('HUY', 'VANG') AND (:boQuaMa IS NULL OR a.id <> :boQuaMa)")
+    long demBenhNhanTrungGio(
+            @Param("maBenhNhan") Long maBenhNhan,
+            @Param("ngay") LocalDate ngay,
+            @Param("gio") LocalTime gio,
+            @Param("boQuaMa") Long boQuaMaLich);
 
     List<LichHen> findByBacSiIdAndNgayHenAndTrangThaiNotIn(Long maBacSi, LocalDate ngay, Collection<LichHen.TrangThaiLichHen> trangThai);
 

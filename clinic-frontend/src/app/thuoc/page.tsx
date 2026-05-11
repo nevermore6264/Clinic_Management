@@ -12,8 +12,9 @@ import {
   Row,
   Col,
 } from "react-bootstrap";
+import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
-import { thuocApi, type Thuoc } from "@/lib/api";
+import { thuocApi, type Thuoc, type DonThuocChiTietBangKe } from "@/lib/api";
 
 const BUOC_THUOC = [
   {
@@ -135,6 +136,9 @@ export default function ThuocPage() {
   const [thuocCanXoa, setThuocCanXoa] = useState<Thuoc | null>(null);
   const [tuKhoa, setTuKhoa] = useState("");
   const [boLocTrangThai, setBoLocTrangThai] = useState("tat-ca");
+  const [donThuocBangKe, setDonThuocBangKe] = useState<DonThuocChiTietBangKe[]>(
+    [],
+  );
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -142,11 +146,16 @@ export default function ThuocPage() {
       router.replace("/bang-dieu-khien");
   }, [user, loading, router]);
 
-  const load = () =>
+  const load = () => {
     thuocApi
       .tatCa()
       .then(setList)
       .catch((e) => setError(e.message));
+    thuocApi
+      .bangKeDonThuoc()
+      .then(setDonThuocBangKe)
+      .catch(() => setDonThuocBangKe([]));
+  };
 
   useEffect(() => {
     if (!user?.cacVaiTro.includes("QUAN_TRI")) return;
@@ -167,6 +176,12 @@ export default function ThuocPage() {
     setStep(1);
     setModalError("");
     setShow(true);
+  };
+
+  const dongModalThuoc = () => {
+    setShow(false);
+    setModalError("");
+    setStep(1);
   };
 
   const save = async () => {
@@ -203,8 +218,7 @@ export default function ThuocPage() {
       } else {
         await thuocApi.tao(form);
       }
-      setShow(false);
-      setModalError("");
+      dongModalThuoc();
       await load();
     } catch (e: unknown) {
       setModalError(e instanceof Error ? e.message : "Lỗi");
@@ -517,13 +531,63 @@ export default function ThuocPage() {
         </Table>
       </Card>
 
-      <Modal
-        show={show}
-        onHide={() => setShow(false)}
-        centered
-        size="xl"
-        scrollable
-      >
+      <Card className="mt-4 card--static border-0 shadow-sm">
+        <Card.Header className="fw-semibold">
+          Đơn thuốc (chi tiết theo hồ sơ khám)
+        </Card.Header>
+        <Card.Body className="p-0">
+          <div className="table-responsive">
+            <Table responsive hover className="mb-0 align-middle small">
+              <thead className="table-light">
+                <tr>
+                  <th>Ngày khám</th>
+                  <th>Giờ</th>
+                  <th>Bệnh nhân</th>
+                  <th>Tên thuốc</th>
+                  <th className="text-end">Số lượng</th>
+                  <th>Liều dùng</th>
+                  <th className="text-end">Đơn giá</th>
+                  <th className="text-nowrap">Mã lịch</th>
+                </tr>
+              </thead>
+              <tbody>
+                {donThuocBangKe.map((d) => (
+                  <tr key={d.maChiTiet}>
+                    <td>{d.ngayHen ?? "—"}</td>
+                    <td>{d.gioHen != null ? String(d.gioHen).slice(0, 5) : "—"}</td>
+                    <td>{d.tenBenhNhan ?? "—"}</td>
+                    <td className="fw-medium">{d.tenThuoc ?? "—"}</td>
+                    <td className="text-end">{d.soLuong ?? "—"}</td>
+                    <td className="text-muted">{d.lieuDung || "—"}</td>
+                    <td className="text-end">
+                      {d.donGia != null
+                        ? `${Number(d.donGia).toLocaleString("vi-VN")}đ`
+                        : "—"}
+                    </td>
+                    <td>
+                      <Link
+                        href={`/lich-hen/${d.maLichHen}`}
+                        className="text-decoration-none"
+                      >
+                        #{d.maLichHen}
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+                {donThuocBangKe.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="text-center text-muted py-4">
+                      Chưa có dòng đơn thuốc nào (ghi trong hồ sơ khám sau khi khám).
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </Table>
+          </div>
+        </Card.Body>
+      </Card>
+
+      <Modal show={show} onHide={dongModalThuoc} centered size="xl" scrollable>
         <Modal.Header closeButton>
           <Modal.Title>{editing ? "Sửa thuốc" : "Thêm thuốc"}</Modal.Title>
         </Modal.Header>
@@ -857,9 +921,13 @@ export default function ThuocPage() {
             </>
           )}
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShow(false)}>
-            <i className="bi bi-x-circle me-2" aria-hidden />
+        <Modal.Footer className="clinic-modal-footer-actions">
+          <Button
+            type="button"
+            className="btn-modal-dismiss"
+            onClick={dongModalThuoc}
+          >
+            <i className="bi bi-x-lg me-2" aria-hidden />
             Hủy
           </Button>
           {step > 1 ? (
@@ -905,9 +973,13 @@ export default function ThuocPage() {
           Bạn có chắc muốn xóa thuốc{" "}
           <strong>{thuocCanXoa?.tenThuoc || "này"}</strong>?
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setThuocCanXoa(null)}>
-            <i className="bi bi-x-circle me-2" aria-hidden />
+        <Modal.Footer className="clinic-modal-footer-actions">
+          <Button
+            type="button"
+            className="btn-modal-dismiss"
+            onClick={() => setThuocCanXoa(null)}
+          >
+            <i className="bi bi-x-lg me-2" aria-hidden />
             Hủy
           </Button>
           <Button variant="danger" onClick={xoaThuoc}>

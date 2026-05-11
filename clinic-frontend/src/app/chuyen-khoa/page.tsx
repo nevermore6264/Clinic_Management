@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Alert, Button, Card, Form, Modal, Table } from "react-bootstrap";
+import { Alert, Badge, Button, Card, Form, Modal, Table } from "react-bootstrap";
 import Link from "next/link";
 import { bacSiApi, chuyenKhoaApi, type BacSi, type ChuyenKhoa } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
@@ -21,6 +21,9 @@ export default function ChuyenKhoaPage() {
   const [tenDangSuaError, setTenDangSuaError] = useState("");
   const [mucCanXoa, setMucCanXoa] = useState<ChuyenKhoa | null>(null);
   const [dangXoa, setDangXoa] = useState(false);
+  const [chuyenKhoaXemBacSi, setChuyenKhoaXemBacSi] = useState<ChuyenKhoa | null>(
+    null,
+  );
 
   const napDuLieu = async () => {
     try {
@@ -44,6 +47,20 @@ export default function ChuyenKhoaPage() {
     });
     return dem;
   }, [bacSi]);
+
+  const bacSiTrongChuyenKhoa = useMemo(() => {
+    if (!chuyenKhoaXemBacSi) return [];
+    return bacSi
+      .filter((b) => b.maChuyenKhoa === chuyenKhoaXemBacSi.id)
+      .slice()
+      .sort((a, b) =>
+        (a.hoTen ?? a.tenDangNhap ?? "").localeCompare(
+          b.hoTen ?? b.tenDangNhap ?? "",
+          "vi",
+          { sensitivity: "base" },
+        ),
+      );
+  }, [bacSi, chuyenKhoaXemBacSi]);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -219,6 +236,7 @@ export default function ChuyenKhoaPage() {
             <tr>
               <th>Tên chuyên khoa</th>
               <th className="text-center">Số bác sĩ</th>
+              <th className="text-center text-nowrap">Bác sĩ</th>
               <th className="text-end">Thao tác</th>
             </tr>
           </thead>
@@ -249,6 +267,20 @@ export default function ChuyenKhoaPage() {
                   )}
                 </td>
                 <td className="text-center">{demBacSiTheoCk.get(item.id) ?? 0}</td>
+                <td className="text-center">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline-primary"
+                    className="text-nowrap"
+                    onClick={() => setChuyenKhoaXemBacSi(item)}
+                    disabled={dangSuaId === item.id}
+                    title="Xem danh sách bác sĩ thuộc chuyên khoa"
+                  >
+                    <i className="bi bi-person-lines-fill me-1" aria-hidden />
+                    Xem
+                  </Button>
+                </td>
                 <td className="text-end">
                   {dangSuaId === item.id ? (
                     <>
@@ -302,7 +334,7 @@ export default function ChuyenKhoaPage() {
             ))}
             {list.length === 0 ? (
               <tr>
-                <td colSpan={3} className="text-center text-muted py-4">
+                <td colSpan={4} className="text-center text-muted py-4">
                   Chưa có chuyên khoa nào.
                 </td>
               </tr>
@@ -310,6 +342,85 @@ export default function ChuyenKhoaPage() {
           </tbody>
         </Table>
       </Card>
+
+      <Modal
+        show={Boolean(chuyenKhoaXemBacSi)}
+        onHide={() => setChuyenKhoaXemBacSi(null)}
+        centered
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title className="d-flex flex-wrap align-items-center gap-2">
+            <i className="bi bi-person-badge text-primary" aria-hidden />
+            Bác sĩ — {chuyenKhoaXemBacSi?.tenChuyenKhoa}
+            <Badge bg="secondary" pill className="fw-normal">
+              {bacSiTrongChuyenKhoa.length}
+            </Badge>
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="pt-0">
+          {bacSiTrongChuyenKhoa.length === 0 ? (
+            <p className="text-muted mb-0">
+              Chưa có bác sĩ nào gán vào chuyên khoa này. Bạn có thể gán khi{" "}
+              <Link href="/bac-si">tạo hoặc sửa hồ sơ bác sĩ</Link>.
+            </p>
+          ) : (
+            <Table responsive hover size="sm" className="mb-0 align-middle">
+              <thead className="table-light">
+                <tr>
+                  <th>Họ tên</th>
+                  <th>Tên đăng nhập</th>
+                  <th>Bằng cấp</th>
+                  <th className="text-center">Hoạt động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {bacSiTrongChuyenKhoa.map((b) => (
+                  <tr key={b.id}>
+                    <td className="fw-semibold">{b.hoTen ?? "—"}</td>
+                    <td>
+                      <code className="small">{b.tenDangNhap ?? "—"}</code>
+                    </td>
+                    <td>{b.bangCap ?? "—"}</td>
+                    <td className="text-center">
+                      {b.hoatDong !== false ? (
+                        <Badge bg="success">Có</Badge>
+                      ) : (
+                        <Badge bg="secondary">Không</Badge>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="clinic-modal-footer-actions justify-content-between">
+          <span className="text-muted small">
+            {chuyenKhoaXemBacSi
+              ? `${bacSiTrongChuyenKhoa.length} bác sĩ`
+              : ""}
+          </span>
+          <div className="d-flex flex-wrap gap-2">
+            <Button
+              type="button"
+              className="btn-modal-dismiss"
+              onClick={() => setChuyenKhoaXemBacSi(null)}
+            >
+              <i className="bi bi-x-lg me-2" aria-hidden />
+              Đóng
+            </Button>
+            <Link
+              href="/bac-si"
+              className="btn btn-primary"
+              onClick={() => setChuyenKhoaXemBacSi(null)}
+            >
+              <i className="bi bi-box-arrow-up-right me-2" aria-hidden />
+              Quản lý bác sĩ
+            </Link>
+          </div>
+        </Modal.Footer>
+      </Modal>
 
       <Modal show={Boolean(mucCanXoa)} onHide={() => setMucCanXoa(null)} centered>
         <Modal.Header closeButton>
@@ -321,9 +432,14 @@ export default function ChuyenKhoaPage() {
         <Modal.Body>
           Bạn có chắc muốn xóa chuyên khoa <strong>{mucCanXoa?.tenChuyenKhoa}</strong>?
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setMucCanXoa(null)} disabled={dangXoa}>
-            <i className="bi bi-x-circle me-2" aria-hidden />
+        <Modal.Footer className="clinic-modal-footer-actions">
+          <Button
+            type="button"
+            className="btn-modal-dismiss"
+            onClick={() => setMucCanXoa(null)}
+            disabled={dangXoa}
+          >
+            <i className="bi bi-x-lg me-2" aria-hidden />
             Hủy
           </Button>
           <Button variant="danger" onClick={handleConfirmDelete} disabled={dangXoa}>

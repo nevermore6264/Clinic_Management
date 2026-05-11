@@ -42,6 +42,7 @@ export default function HomePage() {
   const mapIframeSrc = buildMapIframeSrc(lp);
 
   const goLogin = () => router.push("/dang-nhap");
+  const goRegister = () => router.push("/dang-ky");
 
   const submitLandingBooking = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -68,7 +69,7 @@ export default function HomePage() {
       );
     } catch {
     }
-    router.push("/dang-nhap?next=/lich-hen");
+    router.push("/dang-ky?next=/lich-hen");
   };
 
   return (
@@ -182,6 +183,13 @@ export default function HomePage() {
               onClick={goLogin}
             >
               Nhân viên
+            </button>
+            <button
+              type="button"
+              className="btn btn-hospital-ghost"
+              onClick={goRegister}
+            >
+              Đăng ký BN
             </button>
           </div>
         </div>

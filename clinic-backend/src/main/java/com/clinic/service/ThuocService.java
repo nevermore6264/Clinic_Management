@@ -1,9 +1,13 @@
 package com.clinic.service;
 
+import com.clinic.dto.DonThuocChiTietBangKeDto;
 import com.clinic.dto.ThuocDto;
+import com.clinic.entity.ChiTietDonThuoc;
 import com.clinic.entity.Thuoc;
+import com.clinic.repository.ChiTietDonThuocRepository;
 import com.clinic.repository.ThuocRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +21,7 @@ import java.util.stream.Collectors;
 public class ThuocService {
 
     private final ThuocRepository thuocRepository;
+    private final ChiTietDonThuocRepository chiTietDonThuocRepository;
     private final NhatKyHeThongService nhatKyHeThongService;
 
     @Transactional(readOnly = true)
@@ -27,6 +32,29 @@ public class ThuocService {
     @Transactional(readOnly = true)
     public List<ThuocDto> danhSachTatCa() {
         return thuocRepository.findAll().stream().map(this::sangDto).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<DonThuocChiTietBangKeDto> bangKeDonThuocChiTiet() {
+        return chiTietDonThuocRepository.bangKeGanNhat(PageRequest.of(0, 2000)).stream()
+                .map(this::sangBangKeChiTiet)
+                .collect(Collectors.toList());
+    }
+
+    private DonThuocChiTietBangKeDto sangBangKeChiTiet(ChiTietDonThuoc ct) {
+        DonThuocChiTietBangKeDto d = new DonThuocChiTietBangKeDto();
+        d.setMaChiTiet(ct.getId());
+        d.setMaHoSoKham(ct.getHoSoKham().getId());
+        d.setMaLichHen(ct.getHoSoKham().getLichHen().getId());
+        d.setTenBenhNhan(ct.getHoSoKham().getLichHen().getBenhNhan().getHoTen());
+        d.setNgayHen(ct.getHoSoKham().getLichHen().getNgayHen());
+        d.setGioHen(ct.getHoSoKham().getLichHen().getGioHen());
+        d.setMaThuoc(ct.getThuoc().getId());
+        d.setTenThuoc(ct.getThuoc().getTenThuoc());
+        d.setSoLuong(ct.getSoLuong());
+        d.setLieuDung(ct.getLieuDung());
+        d.setDonGia(ct.getDonGia());
+        return d;
     }
 
     @Transactional(readOnly = true)

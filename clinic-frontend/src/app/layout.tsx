@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./globals.css";
+import "./dashboard-bundle.css";
 import { AuthProvider } from "@/lib/useAuth";
 import { AppShell } from "@/components/AppShell";
 

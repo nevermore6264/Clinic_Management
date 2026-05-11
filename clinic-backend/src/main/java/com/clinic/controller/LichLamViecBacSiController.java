@@ -45,8 +45,10 @@ public class LichLamViecBacSiController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> xoa(@PathVariable Long id) {
-        lichLamViecBacSiService.xoa(id);
+    public ResponseEntity<Void> xoa(
+            @PathVariable Long id,
+            @RequestParam(required = false) String nguon) {
+        lichLamViecBacSiService.xoa(id, nguon);
         return ResponseEntity.noContent().build();
     }
 }

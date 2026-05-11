@@ -18,7 +18,7 @@ type ToastItem = {
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [toasts, setToasts] = useState<ToastItem[]>([]);
-  const isAuthScreen = pathname === "/dang-nhap";
+  const isAuthScreen = pathname === "/dang-nhap" || pathname === "/dang-ky";
   const isLandingScreen = pathname === "/";
   const hideChrome = isAuthScreen || isLandingScreen;
 

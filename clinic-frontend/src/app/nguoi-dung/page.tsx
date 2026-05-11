@@ -534,9 +534,13 @@ export default function UsersPage() {
               </Form.Select>
             </Form.Group>
           </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowCreate(false)}>
-              <i className="bi bi-x-circle me-2" aria-hidden />
+          <Modal.Footer className="clinic-modal-footer-actions">
+            <Button
+              type="button"
+              className="btn-modal-dismiss"
+              onClick={() => setShowCreate(false)}
+            >
+              <i className="bi bi-x-lg me-2" aria-hidden />
               Hủy
             </Button>
             <Button variant="primary" type="submit">
@@ -599,15 +603,16 @@ export default function UsersPage() {
               </Form.Select>
             </Form.Group>
           </Modal.Body>
-          <Modal.Footer>
+          <Modal.Footer className="clinic-modal-footer-actions">
             <Button
-              variant="secondary"
+              type="button"
+              className="btn-modal-dismiss"
               onClick={() => {
                 setShowEdit(false);
                 setEditingUser(null);
               }}
             >
-              <i className="bi bi-x-circle me-2" aria-hidden />
+              <i className="bi bi-x-lg me-2" aria-hidden />
               Hủy
             </Button>
             <Button variant="primary" type="submit">

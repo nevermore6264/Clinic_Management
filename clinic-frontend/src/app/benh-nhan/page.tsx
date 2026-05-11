@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Table,
@@ -123,13 +123,25 @@ function BenhNhanPageInner() {
   const [visitHistory, setVisitHistory] = useState<LichHen[]>([]);
   const [showConfirmAnHoSo, setShowConfirmAnHoSo] = useState(false);
   const [showConfirmHienThiLai, setShowConfirmHienThiLai] = useState(false);
+  /** Tránh mở lặp popup hồ sơ khi tài khoản bệnh nhân vào /benh-nhan nhiều lần trong cùng phiên. */
+  const daTuMoHoSoBenhNhan = useRef<number | null>(null);
+  /** Hồ sơ hiển thị trên trang cho tài khoản bệnh nhân (không chỉ trong modal). */
+  const [patientSelfProfile, setPatientSelfProfile] = useState<BenhNhan | null>(
+    null,
+  );
+  const [patientSelfProfileLoading, setPatientSelfProfileLoading] =
+    useState(false);
+  const [patientSelfProfileError, setPatientSelfProfileError] = useState("");
+  const [patientSelfFetchKey, setPatientSelfFetchKey] = useState(0);
 
   const size = 10;
 
   const refreshList = () => setListTick((t) => t + 1);
+  const refreshPatientSelfProfile = () =>
+    setPatientSelfFetchKey((k) => k + 1);
 
   const closeEditModal = () => {
-    if (editSubmitting) return;
+    /* Không chặn theo editSubmitting: nút Hủy/X vẫn đóng được; lưu xong gọi sau khi đã set editSubmitting=false */
     setShowEdit(false);
     setEditId(null);
     setEditForm({});
@@ -140,13 +152,13 @@ function BenhNhanPageInner() {
     setShowConfirmHienThiLai(false);
   };
 
-  const openEditModal = (id: number) => {
+  const openEditModal = useCallback((id: number) => {
     setEditError("");
     setShowConfirmAnHoSo(false);
     setShowConfirmHienThiLai(false);
     setEditId(id);
     setShowEdit(true);
-  };
+  }, []);
 
   const locQuery = (): BenhNhanDanhSachLoc => ({
     ten: filterTenDebounced || undefined,
@@ -217,6 +229,37 @@ function BenhNhanPageInner() {
   }, [showEdit, editId, user]);
 
   useEffect(() => {
+    if (!user || !laChiTaiKhoanBenhNhan(user) || user.maBenhNhan == null) {
+      setPatientSelfProfile(null);
+      setPatientSelfProfileError("");
+      setPatientSelfProfileLoading(false);
+      return;
+    }
+    const ma = user.maBenhNhan;
+    let cancelled = false;
+    setPatientSelfProfileLoading(true);
+    setPatientSelfProfileError("");
+    patientsApi
+      .get(ma)
+      .then((p) => {
+        if (cancelled) return;
+        setPatientSelfProfile(p);
+        setPatientSelfProfileLoading(false);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        setPatientSelfProfile(null);
+        setPatientSelfProfileError(
+          e instanceof Error ? e.message : "Không tải được hồ sơ",
+        );
+        setPatientSelfProfileLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, patientSelfFetchKey]);
+
+  useEffect(() => {
     if (!user) return;
     if (laChiTaiKhoanBenhNhan(user)) {
       setList([]);
@@ -241,12 +284,17 @@ function BenhNhanPageInner() {
     filterNhomMau,
   ]);
 
+  /** Bệnh nhân: mở form hồ sơ một lần khi vào trang — không gắn lại ?sua= (tránh mở lại popup sau khi đóng / lưu). */
   useEffect(() => {
-    if (!user || !laChiTaiKhoanBenhNhan(user) || user.maBenhNhan == null)
+    if (!user || !laChiTaiKhoanBenhNhan(user) || user.maBenhNhan == null) {
+      daTuMoHoSoBenhNhan.current = null;
       return;
-    if (searchParams.get("sua")) return;
-    router.replace(`/benh-nhan?sua=${user.maBenhNhan}`, { scroll: false });
-  }, [user, router, searchParams]);
+    }
+    const ma = user.maBenhNhan;
+    if (daTuMoHoSoBenhNhan.current === ma) return;
+    daTuMoHoSoBenhNhan.current = ma;
+    openEditModal(ma);
+  }, [user, openEditModal]);
 
   const clearFilters = () => {
     setFilterTen("");
@@ -335,31 +383,41 @@ function BenhNhanPageInner() {
     }
     setEditError("");
     setEditSubmitting(true);
+    let daLuu = false;
     try {
       await patientsApi.update(editId, editForm);
-      closeEditModal();
+      daLuu = true;
       refreshList();
+      if (user && laChiTaiKhoanBenhNhan(user) && user.maBenhNhan === editId) {
+        refreshPatientSelfProfile();
+      }
     } catch (err: unknown) {
       setEditError(err instanceof Error ? err.message : "Không cập nhật được");
     } finally {
       setEditSubmitting(false);
     }
+    if (daLuu) closeEditModal();
   };
 
   const handleConfirmAnHoSo = async () => {
     if (editId == null) return;
     setEditError("");
     setEditSubmitting(true);
+    let daXoa = false;
     try {
       await patientsApi.delete(editId);
       setShowConfirmAnHoSo(false);
-      closeEditModal();
+      daXoa = true;
       refreshList();
+      if (user && laChiTaiKhoanBenhNhan(user) && user.maBenhNhan === editId) {
+        refreshPatientSelfProfile();
+      }
     } catch (err: unknown) {
       setEditError(err instanceof Error ? err.message : "Không ẩn được hồ sơ");
     } finally {
       setEditSubmitting(false);
     }
+    if (daXoa) closeEditModal();
   };
 
   const handleConfirmHienThiLai = async () => {
@@ -378,6 +436,9 @@ function BenhNhanPageInner() {
       setEditForm(capNhat);
       setShowConfirmHienThiLai(false);
       refreshList();
+      if (user && laChiTaiKhoanBenhNhan(user) && user.maBenhNhan === editId) {
+        refreshPatientSelfProfile();
+      }
     } catch (err: unknown) {
       setEditError(err instanceof Error ? err.message : "Không hiển thị lại được hồ sơ");
     } finally {
@@ -434,18 +495,157 @@ function BenhNhanPageInner() {
 
       {chiTaiKhoanBnLienKet && (
         <Alert variant="light" className="border mb-3">
-          Form chỉnh sửa hồ sơ sẽ mở tự động. Nếu đã đóng, nhấn{" "}
+          Thông tin hồ sơ hiển thị bên dưới. Form chỉnh sửa có thể mở tự động
+          lần đầu; nếu đã đóng, nhấn{" "}
           <Button
             size="sm"
             variant="primary"
             className="mx-1"
             type="button"
-            onClick={() => user.maBenhNhan != null && openEditModal(user.maBenhNhan)}
+            onClick={() =>
+              user.maBenhNhan != null && openEditModal(user.maBenhNhan)
+            }
           >
             Mở hồ sơ
           </Button>
-          để xem lại.
+          hoặc <strong>Chỉnh sửa hồ sơ</strong> trong thẻ thông tin.
         </Alert>
+      )}
+
+      {chiTaiKhoanBnLienKet && (
+        <Card className="mb-3 card--static border-0 shadow-sm">
+          <Card.Body className="p-4">
+            {patientSelfProfileLoading && (
+              <div className="text-center text-muted py-4">
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden
+                />
+                Đang tải hồ sơ…
+              </div>
+            )}
+            {!patientSelfProfileLoading && patientSelfProfileError && (
+              <Alert variant="danger" className="mb-0">
+                {patientSelfProfileError}
+              </Alert>
+            )}
+            {!patientSelfProfileLoading &&
+              !patientSelfProfileError &&
+              patientSelfProfile && (
+                <>
+                  <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+                    <div className="min-w-0">
+                      <h5 className="mb-1 text-break">
+                        {patientSelfProfile.hoTen || "—"}
+                      </h5>
+                      <div className="text-muted small">
+                        {patientSelfProfile.hoatDong === false ? (
+                          <span className="badge bg-secondary">Hồ sơ đã ẩn</span>
+                        ) : (
+                          <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+                            Đang hoạt động
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      variant="primary"
+                      className="d-inline-flex align-items-center gap-2 flex-shrink-0"
+                      type="button"
+                      onClick={() =>
+                        user.maBenhNhan != null &&
+                        openEditModal(user.maBenhNhan)
+                      }
+                    >
+                      <i className="bi bi-pencil" aria-hidden />
+                      Chỉnh sửa hồ sơ
+                    </Button>
+                  </div>
+                  <Row className="g-3">
+                    <Col sm={6} lg={4}>
+                      <div className="text-muted small mb-1">Ngày sinh</div>
+                      <div>{patientSelfProfile.ngaySinh || "—"}</div>
+                    </Col>
+                    <Col sm={6} lg={4}>
+                      <div className="text-muted small mb-1">Giới tính</div>
+                      <div>
+                        <TagGioiTinh ma={patientSelfProfile.gioiTinh} />
+                      </div>
+                    </Col>
+                    <Col sm={6} lg={4}>
+                      <div className="text-muted small mb-1">Nhóm máu</div>
+                      <div>
+                        <TagNhomMau nhom={patientSelfProfile.nhomMau} />
+                      </div>
+                    </Col>
+                    <Col sm={6} lg={4}>
+                      <div className="text-muted small mb-1">Số điện thoại</div>
+                      <div>{patientSelfProfile.soDienThoai || "—"}</div>
+                    </Col>
+                    <Col sm={6} lg={4}>
+                      <div className="text-muted small mb-1">Email</div>
+                      <div className="text-break">
+                        {patientSelfProfile.thuDienTu || "—"}
+                      </div>
+                    </Col>
+                    <Col sm={6} lg={4}>
+                      <div className="text-muted small mb-1">Nghề nghiệp</div>
+                      <div>{patientSelfProfile.ngheNghiep || "—"}</div>
+                    </Col>
+                    <Col xs={12}>
+                      <div className="text-muted small mb-1">Địa chỉ</div>
+                      <div>{patientSelfProfile.diaChi || "—"}</div>
+                    </Col>
+                    {patientSelfProfile.soCccd && (
+                      <Col sm={6} lg={4}>
+                        <div className="text-muted small mb-1">CCCD / CMND</div>
+                        <div>{patientSelfProfile.soCccd}</div>
+                      </Col>
+                    )}
+                    {patientSelfProfile.tienSuBenh && (
+                      <Col xs={12}>
+                        <div className="text-muted small mb-1">Tiền sử bệnh</div>
+                        <div className="text-break">{patientSelfProfile.tienSuBenh}</div>
+                      </Col>
+                    )}
+                    {patientSelfProfile.diUng && (
+                      <Col xs={12}>
+                        <div className="text-muted small mb-1">Dị ứng</div>
+                        <div className="text-break">{patientSelfProfile.diUng}</div>
+                      </Col>
+                    )}
+                    {(patientSelfProfile.nguoiLienHe ||
+                      patientSelfProfile.soDienThoaiLienHe) && (
+                      <Col xs={12}>
+                        <div className="text-muted small mb-1">
+                          Người liên hệ khẩn cấp
+                        </div>
+                        <div>
+                          {patientSelfProfile.nguoiLienHe || "—"}
+                          {patientSelfProfile.soDienThoaiLienHe ? (
+                            <span className="text-muted">
+                              {" "}
+                              · {patientSelfProfile.soDienThoaiLienHe}
+                            </span>
+                          ) : null}
+                        </div>
+                      </Col>
+                    )}
+                  </Row>
+                  <div className="mt-3 pt-3 border-top">
+                    <Link
+                      href={`/lich-hen?maBenhNhan=${patientSelfProfile.id ?? user.maBenhNhan}`}
+                      className="btn btn-sm btn-outline-primary"
+                    >
+                      <i className="bi bi-calendar3 me-1" aria-hidden />
+                      Lịch hẹn của tôi
+                    </Link>
+                  </div>
+                </>
+              )}
+          </Card.Body>
+        </Card>
       )}
 
       {!chiTaiKhoanBn && (
@@ -672,7 +872,7 @@ function BenhNhanPageInner() {
               setForm={setCreateForm}
             />
           </Modal.Body>
-          <Modal.Footer className="patient-create-modal__footer">
+          <Modal.Footer className="patient-create-modal__footer clinic-modal-footer-actions">
             <Button
               variant="light"
               className="border"
@@ -804,7 +1004,7 @@ function BenhNhanPageInner() {
               </>
             )}
           </Modal.Body>
-          <Modal.Footer className="patient-create-modal__footer d-flex flex-wrap gap-2 justify-content-between">
+          <Modal.Footer className="patient-create-modal__footer clinic-modal-footer-actions d-flex flex-wrap gap-2 justify-content-between">
             <div className="d-flex flex-wrap gap-2">
               <Button
                 variant="light"
@@ -882,7 +1082,7 @@ function BenhNhanPageInner() {
             <strong>Tất cả hồ sơ</strong> hoặc <strong>Hồ sơ đã ẩn</strong>.
           </p>
         </Modal.Body>
-        <Modal.Footer className="border-top">
+        <Modal.Footer className="border-top clinic-modal-footer-actions">
           <Button
             variant="light"
             className="border"
@@ -934,7 +1134,7 @@ function BenhNhanPageInner() {
             Hồ sơ sẽ xuất hiện trở lại trong danh sách <strong>Hồ sơ đang hoạt động</strong> và lọc mặc định.
           </p>
         </Modal.Body>
-        <Modal.Footer className="border-top">
+        <Modal.Footer className="border-top clinic-modal-footer-actions">
           <Button
             variant="light"
             className="border"

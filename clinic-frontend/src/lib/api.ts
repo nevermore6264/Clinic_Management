@@ -280,6 +280,7 @@ export const hoSoKhamApi = {
 export const thuocApi = {
   dangHoatDong: () => api<Thuoc[]>("/thuoc/dang-hoat-dong"),
   tatCa: () => api<Thuoc[]>("/thuoc"),
+  bangKeDonThuoc: () => api<DonThuocChiTietBangKe[]>("/thuoc/bang-ke-don-thuoc"),
   layTheoMa: (id: number) => api<Thuoc>(`/thuoc/${id}`),
   tao: (data: Partial<Thuoc>) =>
     api<Thuoc>("/thuoc", { method: "POST", body: JSON.stringify(data) }),
@@ -422,6 +423,8 @@ export interface TinNhanChatDto {
   dinhKemLoai?: string;
   maPhong: number;
   taoLuc: string;
+  /** Mã người dùng (chuỗi) → emoji (đồng bộ backend). */
+  phanUng?: Record<string, string>;
 }
 
 export interface TroChuyenTaiLenResponse {
@@ -488,8 +491,11 @@ export const lichLamViecBacSiApi = {
       method: "PUT",
       body: JSON.stringify(data),
     }),
-  xoa: (id: number) =>
-    api<void>(`/lich-lam-viec-bac-si/${id}`, { method: "DELETE" }),
+  xoa: (id: number, nguonBanGhi?: string) => {
+    let q = `/lich-lam-viec-bac-si/${id}`;
+    if (nguonBanGhi) q += `?nguon=${encodeURIComponent(nguonBanGhi)}`;
+    return api<void>(q, { method: "DELETE" });
+  },
 };
 
 
@@ -900,8 +906,25 @@ export interface LichLamViecBacSi {
   maBacSi: number;
   tenBacSi?: string;
   ngayLich: string;
-  khungGioBatDau: string;
-  khungGioKetThuc: string;
+  khungGioBatDau?: string;
+  khungGioKetThuc?: string;
+  /** NGOAI_LE | CO_DINH | LICH_BAC_SI_THU_VIEN */
+  nguonBanGhi?: string;
+  nghiCaNgay?: boolean;
+}
+
+export interface DonThuocChiTietBangKe {
+  maChiTiet: number;
+  maHoSoKham: number;
+  maLichHen: number;
+  tenBenhNhan?: string;
+  ngayHen?: string;
+  gioHen?: string;
+  maThuoc: number;
+  tenThuoc?: string;
+  soLuong?: number;
+  lieuDung?: string;
+  donGia?: number;
 }
 
 export interface BaoCaoDoanhThu {

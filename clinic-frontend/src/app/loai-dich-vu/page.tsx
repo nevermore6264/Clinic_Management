@@ -412,7 +412,7 @@ export default function ServiceTypesPage() {
           Bạn có chắc muốn xóa loại dịch vụ{" "}
           <strong>{mucCanXoa?.tenLoaiDichVu}</strong> không?
         </Modal.Body>
-        <Modal.Footer>
+        <Modal.Footer className="clinic-modal-footer-actions">
           <Button
             type="button"
             className="btn-modal-dismiss"
@@ -480,7 +480,7 @@ export default function ServiceTypesPage() {
             </Table>
           )}
         </Modal.Body>
-        <Modal.Footer className="justify-content-between">
+        <Modal.Footer className="clinic-modal-footer-actions justify-content-between">
           <span className="text-muted small">
             {loaiXemDichVu ? `${dichVuTheoLoaiXem.length} dịch vụ` : ""}
           </span>

@@ -112,6 +112,22 @@ function DashboardHero({
     >
       <div className="dashboard-hero__glow" aria-hidden />
       <div className="dashboard-hero__grid-deco" aria-hidden />
+      {!compact ? (
+        <div className="dashboard-hero__floats" aria-hidden>
+          <span className="dashboard-hero__shape dashboard-hero__shape--a">
+            <i className="bi bi-heart-pulse" />
+          </span>
+          <span className="dashboard-hero__shape dashboard-hero__shape--b">
+            <i className="bi bi-hospital" />
+          </span>
+          <span className="dashboard-hero__shape dashboard-hero__shape--c">
+            <i className="bi bi-clipboard2-pulse" />
+          </span>
+          <span className="dashboard-hero__shape dashboard-hero__shape--d">
+            <i className="bi bi-shield-plus" />
+          </span>
+        </div>
+      ) : null}
       <div className="dashboard-hero__inner">
         <div className="dashboard-hero__eyebrow">
           <span className="dashboard-hero__pulse" aria-hidden />
@@ -218,6 +234,22 @@ export default function DashboardPage() {
       .catch(() => {});
   }, [user]);
 
+  const { todayISO, todayLong } = useMemo(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return {
+      todayISO: `${y}-${m}-${day}`,
+      todayLong: d.toLocaleDateString("vi-VN", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }),
+    };
+  }, []);
+
   if (loading) return <LoadingState />;
   if (!user) return null;
 
@@ -277,21 +309,6 @@ export default function DashboardPage() {
   const isLeTan = roles.includes("LE_TAN");
   const isThuNgan = roles.includes("THU_NGAN");
   const coNhomQuanLy = isAdmin || isLeTan || isThuNgan;
-
-  const todayLong = new Date().toLocaleDateString("vi-VN", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-
-  const todayISO = useMemo(() => {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${day}`;
-  }, []);
 
   return (
     <div className="dashboard-page">

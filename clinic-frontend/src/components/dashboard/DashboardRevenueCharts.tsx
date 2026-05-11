@@ -121,7 +121,7 @@ export function DashboardRevenueCharts({ series, doanhThuTuanNay }: Props) {
 
   return (
     <div className="mb-4">
-      <Card className="dashboard-chart-card card--static border-0 shadow-sm h-100">
+      <Card className="dashboard-chart-card card--static border-0 shadow-sm">
         <Card.Header className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3 border-0 bg-transparent">
           <div className="d-flex align-items-center gap-2 fw-bold">
             <i className="bi bi-graph-up-arrow text-primary" aria-hidden />
@@ -166,7 +166,9 @@ export function DashboardRevenueCharts({ series, doanhThuTuanNay }: Props) {
             </div>
           </div>
 
-          <div className="dashboard-chart-wrap mb-3">
+          <div
+            className={`dashboard-chart-wrap mb-3${allZero ? " dashboard-chart-wrap--empty" : ""}`}
+          >
             {allZero ? (
               <div className="dashboard-chart-empty" role="status">
                 Chưa có doanh thu ghi nhận trong 7 ngày gần đây — biểu đồ sẽ hiển thị

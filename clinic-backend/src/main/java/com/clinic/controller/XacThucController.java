@@ -1,5 +1,6 @@
 package com.clinic.controller;
 
+import com.clinic.dto.DangKyBenhNhanYeuCau;
 import com.clinic.dto.DoiMatKhauYeuCau;
 import com.clinic.dto.DangNhapYeuCau;
 import com.clinic.dto.DangNhapPhanHoi;
@@ -19,6 +20,11 @@ public class XacThucController {
     @PostMapping("/dang-nhap")
     public ResponseEntity<DangNhapPhanHoi> dangNhap(@Valid @RequestBody DangNhapYeuCau yeuCau) {
         return ResponseEntity.ok(xacThucService.dangNhap(yeuCau));
+    }
+
+    @PostMapping("/dang-ky-benh-nhan")
+    public ResponseEntity<DangNhapPhanHoi> dangKyBenhNhan(@Valid @RequestBody DangKyBenhNhanYeuCau yeuCau) {
+        return ResponseEntity.ok(xacThucService.dangKyBenhNhan(yeuCau));
     }
 
     @PutMapping("/doi-mat-khau")

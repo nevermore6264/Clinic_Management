@@ -28,13 +28,116 @@ function wsOrigin(): string {
   return raw.replace(/\/?api\/?$/i, "") || raw;
 }
 
-export function dmTopicKey(a: number, b: number): string {
+function dmTopicKey(a: number, b: number): string {
   return `${Math.min(a, b)}-${Math.max(a, b)}`;
 }
 
 const EMOJI_NHANH: string[] = [
   "😀", "😃", "😄", "😁", "😅", "🤣", "🥰", "😘", "🤔", "😮", "👍", "👎", "🙏", "👏", "🎉", "✨", "❤️", "💙", "✅", "❌", "📌", "📎", "💊", "🏥", "☕", "🙋", "💪",
 ];
+
+const EMOJI_PHAN_UNG_NHANH: string[] = [
+  "👍",
+  "❤️",
+  "😂",
+  "😮",
+  "😢",
+  "🙏",
+  "👏",
+  "✅",
+  "❌",
+  "🎉",
+  "💪",
+  "💙",
+  "🔥",
+  "🙌",
+  "💯",
+  "✨",
+];
+
+function gomPhanUngTheoEmoji(
+  phanUng: Record<string, string> | undefined,
+  myId: number,
+): { emoji: string; count: number; mine: boolean }[] {
+  if (!phanUng) return [];
+  const map = new Map<string, { count: number; mine: boolean }>();
+  for (const [uid, emoji] of Object.entries(phanUng)) {
+    const prev = map.get(emoji) ?? { count: 0, mine: false };
+    prev.count += 1;
+    if (Number(uid) === myId) prev.mine = true;
+    map.set(emoji, prev);
+  }
+  return Array.from(map.entries())
+    .map(([emoji, v]) => ({ emoji, ...v }))
+    .sort((a, b) => b.count - a.count);
+}
+
+function ChatDmReactionsBar({
+  messageId,
+  phanUng,
+  myId,
+  connected,
+  onPick,
+}: {
+  messageId: number;
+  phanUng?: Record<string, string>;
+  myId: number;
+  connected: boolean;
+  onPick: (emoji: string) => void;
+}) {
+  const chips = useMemo(
+    () => gomPhanUngTheoEmoji(phanUng, myId),
+    [phanUng, myId],
+  );
+
+  return (
+    <div className="chat-dm-app__reactions-bar">
+      {chips.map(({ emoji, count, mine }) => (
+        <button
+          key={emoji}
+          type="button"
+          className={`chat-dm-app__reaction-chip${mine ? " chat-dm-app__reaction-chip--mine" : ""}`}
+          disabled={!connected}
+          title={mine ? "Bấm để bỏ phản ứng" : "Phản ứng"}
+          onClick={() => onPick(emoji)}
+        >
+          <span className="chat-dm-app__reaction-emoji" aria-hidden>
+            {emoji}
+          </span>
+          {count > 1 ? (
+            <span className="chat-dm-app__reaction-count">{count}</span>
+          ) : null}
+        </button>
+      ))}
+      <Dropdown drop="up">
+        <Dropdown.Toggle
+          variant="light"
+          size="sm"
+          id={`chat-react-dd-${messageId}`}
+          className="chat-dm-app__reaction-add"
+          disabled={!connected}
+        >
+          <i className="bi bi-plus-lg" aria-hidden />
+          <span className="visually-hidden">Thêm phản ứng</span>
+        </Dropdown.Toggle>
+        <Dropdown.Menu className="chat-dm-app__reaction-menu shadow border-0 p-2 rounded-3">
+          <div className="chat-dm-app__reaction-grid">
+            {EMOJI_PHAN_UNG_NHANH.map((em) => (
+              <button
+                key={em}
+                type="button"
+                className="chat-dm-app__reaction-grid-cell"
+                onClick={() => onPick(em)}
+              >
+                {em}
+              </button>
+            ))}
+          </div>
+        </Dropdown.Menu>
+      </Dropdown>
+    </div>
+  );
+}
 
 function useAuthMediaUrl(path: string | undefined) {
   const [url, setUrl] = useState<string | null>(null);
@@ -255,6 +358,12 @@ export default function ChatPage() {
           const viewing = peerIdRef.current === peerForTopic;
           setMessages((prev) => {
             if (!viewing) return prev;
+            const idx = prev.findIndex((p) => p.id === body.id);
+            if (idx >= 0) {
+              const next = [...prev];
+              next[idx] = body;
+              return next;
+            }
             if (prev.some((p) => p.id === body.id)) return prev;
             return [...prev, body];
           });
@@ -302,6 +411,18 @@ export default function ChatPage() {
     const c = contacts.find((x) => x.id === peerId);
     return c?.hoTen?.trim() || c?.tenDangNhap || `Người dùng #${peerId}`;
   }, [contacts, peerId]);
+
+  const sendReaction = useCallback((maTinNhan: number, emoji: string) => {
+    if (!clientRef.current?.connected) return;
+    try {
+      clientRef.current.publish({
+        destination: "/app/tro-chuyen.react",
+        body: JSON.stringify({ maTinNhan, emoji }),
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Không gửi được phản ứng");
+    }
+  }, []);
 
   const insertEmoji = useCallback((emoji: string) => {
     const el = textareaRef.current;
@@ -554,6 +675,13 @@ export default function ChatPage() {
                               })
                             : ""}
                         </span>
+                        <ChatDmReactionsBar
+                          messageId={m.id}
+                          phanUng={m.phanUng}
+                          myId={user.maNguoiDung}
+                          connected={connected}
+                          onPick={(emoji) => sendReaction(m.id, emoji)}
+                        />
                       </div>
                     </div>
                   );

@@ -1,5 +1,6 @@
 package com.clinic.controller;
 
+import com.clinic.dto.DonThuocChiTietBangKeDto;
 import com.clinic.dto.ThuocDto;
 import com.clinic.service.ThuocService;
 import jakarta.validation.Valid;
@@ -27,6 +28,12 @@ public class ThuocController {
     @PreAuthorize("hasRole('QUAN_TRI')")
     public ResponseEntity<List<ThuocDto>> tatCa() {
         return ResponseEntity.ok(thuocService.danhSachTatCa());
+    }
+
+    @GetMapping("/bang-ke-don-thuoc")
+    @PreAuthorize("hasRole('QUAN_TRI')")
+    public ResponseEntity<List<DonThuocChiTietBangKeDto>> bangKeDonThuoc() {
+        return ResponseEntity.ok(thuocService.bangKeDonThuocChiTiet());
     }
 
     @GetMapping("/{id}")

@@ -54,6 +54,12 @@ public class TinNhanChat {
     @Column(name = "tao_luc")
     private Instant taoLuc;
 
+    /** JSON: mã người dùng (chuỗi) → một emoji phản ứng */
+    @Column(
+            name = "phan_ung_json",
+            columnDefinition = "varchar(4000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
+    private String phanUngJson;
+
     @PrePersist
     void luuTruoc() {
         if (taoLuc == null) taoLuc = Instant.now();

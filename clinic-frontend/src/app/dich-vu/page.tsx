@@ -742,7 +742,7 @@ export default function ServicesPage() {
           )}
         </Modal.Body>
         {modalLoai === "them-dich-vu" ? (
-          <Modal.Footer className="align-items-center gap-2">
+          <Modal.Footer className="clinic-modal-footer-actions">
             <Button
               type="button"
               className="btn-modal-dismiss"
@@ -778,7 +778,7 @@ export default function ServicesPage() {
           Bạn có chắc muốn xóa dịch vụ <strong>{dichVuCanXoa?.ten}</strong>{" "}
           không?
         </Modal.Body>
-        <Modal.Footer className="align-items-center gap-2">
+        <Modal.Footer className="clinic-modal-footer-actions">
           <Button
             type="button"
             className="btn-modal-dismiss"

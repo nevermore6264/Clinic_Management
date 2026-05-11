@@ -544,7 +544,7 @@ export default function QuanLyBacSiPage() {
               />
             </Form.Group>
           </Modal.Body>
-          <Modal.Footer className="clinic-modal-footer bac-si-modal-footer">
+          <Modal.Footer className="clinic-modal-footer bac-si-modal-footer clinic-modal-footer-actions">
             <Button
               variant="secondary"
               type="button"
@@ -597,7 +597,7 @@ export default function QuanLyBacSiPage() {
               />
             </Form.Group>
           </Modal.Body>
-          <Modal.Footer className="clinic-modal-footer bac-si-modal-footer">
+          <Modal.Footer className="clinic-modal-footer bac-si-modal-footer clinic-modal-footer-actions">
             <Button
               variant="secondary"
               type="button"
@@ -667,7 +667,7 @@ export default function QuanLyBacSiPage() {
               onChange={(e) => setHoatDongSua(e.target.checked)}
             />
           </Modal.Body>
-          <Modal.Footer className="clinic-modal-footer bac-si-modal-footer">
+          <Modal.Footer className="clinic-modal-footer bac-si-modal-footer clinic-modal-footer-actions">
             <Button
               variant="secondary"
               type="button"

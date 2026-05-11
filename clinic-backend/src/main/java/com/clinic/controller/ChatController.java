@@ -4,6 +4,7 @@ import com.clinic.config.ChatPrincipal;
 import com.clinic.dto.TinNhanChatDto;
 import com.clinic.service.TinNhanChatService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Controller;
 
 import java.util.Map;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class ChatController {
@@ -55,6 +57,38 @@ public class ChatController {
                 maPhong
         );
         khuonMauGui.convertAndSend("/topic/room/" + daLuu.getMaPhong(), daLuu);
+    }
+
+    @MessageMapping("/tro-chuyen.react")
+    public void phanUng(@Payload Map<String, Object> payload, ChatPrincipal chuThe) {
+        if (chuThe == null) return;
+        Object rawId = payload.get("maTinNhan");
+        if (rawId == null) rawId = payload.get("messageId");
+        if (rawId == null) return;
+        Long maTinNhan = parseLong(rawId);
+        if (maTinNhan == null || maTinNhan <= 0) return;
+        String emoji = chuoi(payload, "emoji", "reaction");
+        if (emoji == null) return;
+        try {
+            TinNhanChatDto dto = tinNhanChatService.capNhatPhanUngRieng(
+                    chuThe.maNguoiDung(), maTinNhan, emoji);
+            Long a = dto.getMaNguoiGui();
+            Long b = dto.getMaNguoiNhan();
+            if (a == null || b == null) return;
+            String kenh = TinNhanChatService.maKenhDm(a, b);
+            khuonMauGui.convertAndSend("/topic/dm/" + kenh, dto);
+        } catch (RuntimeException ex) {
+            log.debug("Phản ứng tin nhắn thất bại: {}", ex.getMessage());
+        }
+    }
+
+    private static Long parseLong(Object raw) {
+        if (raw instanceof Number number) return number.longValue();
+        try {
+            return Long.parseLong(String.valueOf(raw));
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     private static String chuoi(Map<String, Object> payload, String... keys) {

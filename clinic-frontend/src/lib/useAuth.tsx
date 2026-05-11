@@ -23,6 +23,13 @@ interface AuthContextType {
   token: string | null;
   loading: boolean;
   login: (tenDangNhap: string, matKhau: string) => Promise<void>;
+  registerPatient: (payload: {
+    tenDangNhap: string;
+    matKhau: string;
+    hoTen: string;
+    thuDienTu?: string;
+    soDienThoai?: string;
+  }) => Promise<void>;
   logout: () => void;
   setUser: (u: NguoiDung | null) => void;
   setToken: (t: string | null) => void;
@@ -57,6 +64,47 @@ export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
+}
+
+function luuPhienTuPhanHoiDangNhap(
+  data: Record<string, unknown>,
+  fallbackTenDn: string,
+  setTokenState: (t: string | null) => void,
+  setUser: (u: NguoiDung | null) => void,
+) {
+  const token = data.token;
+  if (typeof token !== "string" || !token.trim()) {
+    const msg = "Phản hồi đăng nhập thiếu token.";
+    notify.error(msg);
+    throw new Error(msg);
+  }
+  const t = token.trim();
+  setTokenState(t);
+  localStorage.setItem("token", t);
+  const vt = data.cacVaiTro;
+  const maBnRaw = data.maBenhNhan;
+  const maBenhNhan =
+    typeof maBnRaw === "number"
+      ? maBnRaw
+      : typeof maBnRaw === "string"
+        ? Number(maBnRaw) || undefined
+        : undefined;
+
+  const nd: NguoiDung = {
+    tenDangNhap:
+      typeof data.tenDangNhap === "string" ? data.tenDangNhap : fallbackTenDn,
+    hoTen: typeof data.hoTen === "string" ? data.hoTen : "",
+    cacVaiTro: vt != null ? Array.from(vt as Iterable<string>) : [],
+    maNguoiDung:
+      typeof data.maNguoiDung === "number"
+        ? data.maNguoiDung
+        : typeof data.maNguoiDung === "string"
+          ? Number(data.maNguoiDung) || 0
+          : 0,
+    ...(maBenhNhan != null && maBenhNhan > 0 ? { maBenhNhan } : {}),
+  };
+  setUser(nd);
+  localStorage.setItem("user", JSON.stringify(nd));
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -118,39 +166,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       notify.error(msg);
       throw new Error(msg);
     }
-    const token = data.token;
-    if (typeof token !== "string" || !token.trim()) {
-      const msg = "Phản hồi đăng nhập thiếu token.";
-      notify.error(msg);
-      throw new Error(msg);
-    }
-    setToken(token);
-    const vt = data.cacVaiTro;
-    const maBnRaw = data.maBenhNhan;
-    const maBenhNhan =
-      typeof maBnRaw === "number"
-        ? maBnRaw
-        : typeof maBnRaw === "string"
-          ? Number(maBnRaw) || undefined
-          : undefined;
-
-    const nd: NguoiDung = {
-      tenDangNhap:
-        typeof data.tenDangNhap === "string" ? data.tenDangNhap : tenDangNhap,
-      hoTen: typeof data.hoTen === "string" ? data.hoTen : "",
-      cacVaiTro: vt != null ? Array.from(vt as Iterable<string>) : [],
-      maNguoiDung:
-        typeof data.maNguoiDung === "number"
-          ? data.maNguoiDung
-          : typeof data.maNguoiDung === "string"
-            ? Number(data.maNguoiDung) || 0
-            : 0,
-      ...(maBenhNhan != null && maBenhNhan > 0 ? { maBenhNhan } : {}),
-    };
-    setUser(nd);
-    localStorage.setItem("user", JSON.stringify(nd));
+    luuPhienTuPhanHoiDangNhap(data, tenDangNhap, setTokenState, setUser);
     notify.success("Đăng nhập thành công");
   }, []);
+
+  const registerPatient = useCallback(
+    async (payload: {
+      tenDangNhap: string;
+      matKhau: string;
+      hoTen: string;
+      thuDienTu?: string;
+      soDienThoai?: string;
+    }) => {
+      const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8081";
+      let res: Response;
+      try {
+        res = await fetch(`${base}/api/xac-thuc/dang-ky-benh-nhan`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tenDangNhap: payload.tenDangNhap.trim(),
+            matKhau: payload.matKhau,
+            hoTen: payload.hoTen.trim(),
+            thuDienTu: payload.thuDienTu?.trim() || undefined,
+            soDienThoai: payload.soDienThoai?.trim() || undefined,
+          }),
+        });
+      } catch {
+        const msg =
+          "Không kết nối được máy chủ. Kiểm tra backend đang chạy và địa chỉ API.";
+        notify.error(msg);
+        throw new Error(msg);
+      }
+      if (!res.ok) {
+        const text = await res.text();
+        let thongBao = text.trim();
+        try {
+          const j = JSON.parse(text) as { message?: string };
+          if (j.message) thongBao = j.message;
+        } catch {
+          /* plain text */
+        }
+        if (thongBao.length > 220) thongBao = "Đăng ký thất bại";
+        notify.error(thongBao);
+        throw new Error(thongBao);
+      }
+      let data: Record<string, unknown>;
+      try {
+        data = await res.json();
+      } catch {
+        const msg = "Phản hồi đăng ký không hợp lệ.";
+        notify.error(msg);
+        throw new Error(msg);
+      }
+      luuPhienTuPhanHoiDangNhap(
+        data,
+        payload.tenDangNhap.trim(),
+        setTokenState,
+        setUser,
+      );
+      notify.success("Đăng ký thành công — bạn đã được đăng nhập.");
+    },
+    [],
+  );
 
   const logout = () => {
     setUser(null);
@@ -162,7 +240,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, loading, login, logout, setUser, setToken }}
+      value={{
+        user,
+        token,
+        loading,
+        login,
+        registerPatient,
+        logout,
+        setUser,
+        setToken,
+      }}
     >
       {children}
     </AuthContext.Provider>

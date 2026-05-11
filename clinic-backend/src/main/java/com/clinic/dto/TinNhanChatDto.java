@@ -3,6 +3,7 @@ package com.clinic.dto;
 import lombok.Data;
 
 import java.time.Instant;
+import java.util.Map;
 
 @Data
 public class TinNhanChatDto {
@@ -17,4 +18,6 @@ public class TinNhanChatDto {
     private String dinhKemLoai;
     private Long maPhong;
     private Instant taoLuc;
+    /** key: mã người dùng dạng chuỗi, value: emoji */
+    private Map<String, String> phanUng;
 }

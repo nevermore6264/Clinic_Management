@@ -79,8 +79,8 @@ public class LichHenService {
                 throw new AccessDeniedException("Chỉ được đặt lịch cho chính mình.");
             }
         }
-        if (coTrung(dto.getMaBacSi(), dto.getNgayHen(), dto.getGioHen(), null)) {
-            throw new RuntimeException("Trùng lịch khám với bác sĩ tại thời điểm này.");
+        if (benhNhanTrungGio(dto.getMaBenhNhan(), dto.getNgayHen(), dto.getGioHen(), null)) {
+            throw new RuntimeException("Bệnh nhân đã có lịch khác cùng ngày và cùng giờ.");
         }
         if (!slotHopLeVaChuaDay(dto.getMaBacSi(), dto.getNgayHen(), dto.getGioHen(), null)) {
             throw new RuntimeException("Khung giờ không hợp lệ hoặc đã đầy.");
@@ -135,8 +135,8 @@ public class LichHenService {
                 throw new AccessDeniedException("Không được đổi bệnh nhân của lịch.");
             }
         }
-        if (coTrung(dto.getMaBacSi(), dto.getNgayHen(), dto.getGioHen(), ma)) {
-            throw new RuntimeException("Trùng lịch khám.");
+        if (benhNhanTrungGio(dto.getMaBenhNhan(), dto.getNgayHen(), dto.getGioHen(), ma)) {
+            throw new RuntimeException("Bệnh nhân đã có lịch khác cùng ngày và cùng giờ.");
         }
         if (!slotHopLeVaChuaDay(dto.getMaBacSi(), dto.getNgayHen(), dto.getGioHen(), ma)) {
             throw new RuntimeException("Khung giờ không hợp lệ hoặc đã đầy.");
@@ -150,9 +150,9 @@ public class LichHenService {
         return sangDto(lichHenRepository.save(lh));
     }
 
-    private boolean coTrung(Long maBacSi, LocalDate ngay, java.time.LocalTime gio, Long boQuaMaLich) {
-        var ds = lichHenRepository.findTrungLich(maBacSi, ngay, gio);
-        return ds.stream().anyMatch(a -> !a.getId().equals(boQuaMaLich));
+    /** Trùng theo bệnh nhân + ngày + giờ (không tính HỦY/VẮNG). Sức chỗ theo bác sĩ do {@link #slotHopLeVaChuaDay} xử lý. */
+    private boolean benhNhanTrungGio(Long maBenhNhan, LocalDate ngay, LocalTime gio, Long boQuaMaLich) {
+        return lichHenRepository.demBenhNhanTrungGio(maBenhNhan, ngay, gio, boQuaMaLich) > 0;
     }
 
     @Transactional(readOnly = true)

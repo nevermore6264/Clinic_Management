@@ -77,13 +77,31 @@ export default function LichLamViecBacSisPage() {
     }
   };
 
-  const handleDelete = async (scheduleId: number) => {
-    if (!confirm("Xóa ca này?")) return;
+  const handleDelete = async (s: LichLamViecBacSi) => {
+    if (s.id == null) return;
+    if (!confirm("Xóa mục lịch này?")) return;
     setError("");
     try {
-      await doctorSchedulesApi.delete(scheduleId);
+      await doctorSchedulesApi.delete(s.id, s.nguonBanGhi);
       if (doctorId)
         doctorSchedulesApi.byDoctor(Number(doctorId), date).then(setSchedules);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Lỗi");
+    }
+  };
+
+  const handleNghiCaNgay = async () => {
+    if (!doctorId) return;
+    if (!confirm("Đánh dấu nghỉ cả ngày cho ngày đã chọn? (Không còn khung giờ khám)")) return;
+    setError("");
+    try {
+      await doctorSchedulesApi.create({
+        maBacSi: Number(doctorId),
+        ngayLich: date,
+        nghiCaNgay: true,
+      });
+      doctorSchedulesApi.byDoctor(Number(doctorId), date).then(setSchedules);
+      setShowAdd(false);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Lỗi");
     }
@@ -94,7 +112,13 @@ export default function LichLamViecBacSisPage() {
 
   return (
     <div>
-      <h2 className="mb-4">Lịch bác sĩ</h2>
+      <h2 className="mb-2">Lịch bác sĩ</h2>
+      <p className="text-muted small mb-4">
+        Ca làm việc theo ngày lấy từ{" "}
+        <strong>lịch cố định theo tuần</strong> và{" "}
+        <strong>ngoại lệ (đổi giờ / nghỉ)</strong>. Thêm ca trong ngày sẽ tạo{" "}
+        <strong>ngoại lệ đổi giờ</strong> — đúng với logic đặt lịch khám.
+      </p>
       {error && (
         <Alert variant="danger" dismissible onClose={() => setError("")}>
           {error}
@@ -126,12 +150,17 @@ export default function LichLamViecBacSisPage() {
               />
             </Form.Group>
             {canEditSchedules && doctorId && (
-              <Button
-                variant="outline-primary"
-                onClick={() => setShowAdd(!showAdd)}
-              >
-                {showAdd ? "Đóng" : "Thêm ca làm việc"}
-              </Button>
+              <div className="d-flex flex-wrap gap-2">
+                <Button
+                  variant="outline-primary"
+                  onClick={() => setShowAdd(!showAdd)}
+                >
+                  {showAdd ? "Đóng" : "Thêm ca (ngoại lệ)"}
+                </Button>
+                <Button variant="outline-warning" onClick={handleNghiCaNgay}>
+                  Nghỉ cả ngày
+                </Button>
+              </div>
             )}
           </div>
           {showAdd && doctorId && (
@@ -167,10 +196,11 @@ export default function LichLamViecBacSisPage() {
       {doctorId && (
         <>
           <Card className="mb-3">
-            <Card.Header>Ca làm việc</Card.Header>
+            <Card.Header>Ca làm việc trong ngày (cố định / ngoại lệ)</Card.Header>
             <Table size="sm" className="mb-0">
               <thead>
                 <tr>
+                  <th>Nguồn</th>
                   <th>Từ giờ</th>
                   <th>Đến giờ</th>
                   {canEditSchedules && <th></th>}
@@ -178,15 +208,44 @@ export default function LichLamViecBacSisPage() {
               </thead>
               <tbody>
                 {schedules.map((s) => (
-                  <tr key={s.id}>
-                    <td>{s.khungGioBatDau}</td>
-                    <td>{s.khungGioKetThuc}</td>
+                  <tr key={`${s.nguonBanGhi ?? "x"}-${s.id}`}>
+                    <td className="text-muted small text-nowrap">
+                      {s.nguonBanGhi === "CO_DINH"
+                        ? "Cố định (tuần)"
+                        : s.nguonBanGhi === "NGOAI_LE"
+                          ? s.nghiCaNgay
+                            ? "Nghỉ (ngoại lệ)"
+                            : "Đổi giờ (ngoại lệ)"
+                          : s.nguonBanGhi === "LICH_BAC_SI_THU_VIEN"
+                            ? "Bản ghi cũ"
+                            : "—"}
+                    </td>
+                    {s.nghiCaNgay ? (
+                      <td colSpan={2}>
+                        <span className="text-warning fw-semibold">Nghỉ cả ngày</span>
+                      </td>
+                    ) : (
+                      <>
+                        <td>{s.khungGioBatDau ?? "—"}</td>
+                        <td>{s.khungGioKetThuc ?? "—"}</td>
+                      </>
+                    )}
                     {canEditSchedules && (
                       <td>
                         <Button
                           size="sm"
                           variant="outline-danger"
-                          onClick={() => handleDelete(s.id!)}
+                          onClick={() => handleDelete(s)}
+                          disabled={
+                            s.nguonBanGhi === "CO_DINH" &&
+                            !user?.cacVaiTro.includes("QUAN_TRI")
+                          }
+                          title={
+                            s.nguonBanGhi === "CO_DINH" &&
+                            !user?.cacVaiTro.includes("QUAN_TRI")
+                              ? "Chỉ quản trị được xóa lịch cố định tuần."
+                              : undefined
+                          }
                         >
                           Xóa
                         </Button>

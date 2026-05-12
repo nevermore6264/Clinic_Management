@@ -614,8 +614,8 @@ export default function ServicesPage() {
         {danhSachDichVuLoc.length > 0 ? (
           <Card.Footer className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
             <div className="small text-muted">
-              {danhSachDichVuLoc.length} dịch vụ khớp lọc · trang {trang + 1}/
-              {tongTrangDichVu}
+              {danhSachDichVuLoc.length} dịch vụ khớp lọc · trang{" "}
+              {trang + 1}/{tongTrangDichVu}
             </div>
             <Pagination className="mb-0 flex-wrap">
               <Pagination.Prev

@@ -619,7 +619,7 @@ export default function ThuocPage() {
             <div className="small text-muted">
               Hiển thị {trang * kichThuocTrang + 1}–
               {Math.min((trang + 1) * kichThuocTrang, tongPhanTu)} trong{" "}
-              {tongPhanTu} thuốc
+              {tongPhanTu} thuốc khớp lọc · trang {trang + 1}/{tongSoTrang}
             </div>
             <Pagination className="mb-0 flex-wrap">
               <Pagination.First

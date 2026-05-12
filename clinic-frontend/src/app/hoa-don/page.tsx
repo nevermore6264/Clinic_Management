@@ -326,8 +326,8 @@ function InvoicesPageInner() {
               {tongTrangBn > 1 ? (
                 <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3 px-1">
                   <span className="small text-muted">
-                    Trang {trangBn + 1}/{tongTrangBn} · {rowsHienThi.length} hóa
-                    đơn
+                    {rowsHienThi.length} hóa đơn khớp lọc · trang{" "}
+                    {trangBn + 1}/{tongTrangBn}
                   </span>
                   <Pagination className="mb-0 flex-wrap">
                     <Pagination.Prev
@@ -404,7 +404,7 @@ function InvoicesPageInner() {
               <div className="small text-muted">
                 Hiển thị {trang * kichThuoc + 1}–
                 {Math.min((trang + 1) * kichThuoc, tongPhanTu)} trong{" "}
-                {tongPhanTu} hóa đơn
+                {tongPhanTu} hóa đơn khớp lọc · trang {trang + 1}/{tongTrang}
               </div>
               <Pagination className="mb-0 flex-wrap">
                 <Pagination.First

@@ -267,7 +267,7 @@ export default function PhieuChiPage() {
               value={String(tongSoPhieu)}
               hint={
                 tongSoPhieu > 0
-                  ? `Trang ${trang + 1}/${tongTrang} · ${list.length} dòng/trang`
+                  ? `${tongSoPhieu} phiếu chi khớp lọc · trang ${trang + 1}/${tongTrang}`
                   : "Chưa có phiếu"
               }
               icon="bi-receipt-cutoff"
@@ -487,7 +487,7 @@ export default function PhieuChiPage() {
             {tongSoPhieu > 0 ? (
               <Card.Footer className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
                 <div className="small text-muted">
-                  Trang {trang + 1} / {tongTrang}
+                  {tongSoPhieu} phiếu chi khớp lọc · trang {trang + 1}/{tongTrang}
                 </div>
                 <Pagination className="mb-0 flex-wrap">
                   <Pagination.First

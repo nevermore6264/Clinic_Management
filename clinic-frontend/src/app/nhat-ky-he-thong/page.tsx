@@ -143,7 +143,7 @@ export default function NhatKyHeThongsPage() {
             <div className="small text-muted">
               Hiển thị {trang * kichThuoc + 1}–
               {Math.min((trang + 1) * kichThuoc, tongPhanTu)} trong {tongPhanTu}{" "}
-              bản ghi
+              bản ghi khớp lọc · trang {trang + 1}/{tongTrang}
             </div>
             <Pagination className="mb-0 flex-wrap">
               <Pagination.First

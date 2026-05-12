@@ -495,12 +495,10 @@ export default function QuanLyBacSiPage() {
       {error ? <Alert variant="danger">{error}</Alert> : null}
 
       <Card>
-        <Card.Header className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-2">
-          <span className="small text-muted mb-0">
-            {list.length} bác sĩ · trang {trang + 1}/{tongTrangBs}
-          </span>
+        <Card.Header className="d-flex flex-wrap align-items-center justify-content-end gap-2 py-2">
           <Form.Select
             size="sm"
+            aria-label="Số dòng mỗi trang"
             style={{ maxWidth: "8rem" }}
             value={kichThuocTrang}
             onChange={(e) =>
@@ -605,7 +603,10 @@ export default function QuanLyBacSiPage() {
           </tbody>
         </Table>
         {list.length > 0 ? (
-          <Card.Footer className="d-flex flex-wrap justify-content-end py-2">
+          <Card.Footer className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
+            <div className="small text-muted">
+              {list.length} bác sĩ khớp lọc · trang {trang + 1}/{tongTrangBs}
+            </div>
             <Pagination className="mb-0 flex-wrap">
               <Pagination.Prev
                 disabled={trang <= 0}

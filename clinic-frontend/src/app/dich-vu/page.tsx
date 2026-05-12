@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Table, Button, Card, Alert, Modal, Form, Badge, Pagination } from "react-bootstrap";
+import { Table, Button, Card, Alert, Modal, Form, Pagination } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import {
@@ -397,7 +397,7 @@ export default function ServicesPage() {
               <th>Tên dịch vụ</th>
               <th>Mô tả</th>
               <th>Đơn giá</th>
-              <th>Trạng thái</th>
+              <th className="service-col-status">Trạng thái</th>
               <th></th>
             </tr>
           </thead>
@@ -496,20 +496,27 @@ export default function ServicesPage() {
                     `${s.gia?.toLocaleString("vi-VN")}đ`
                   )}
                 </td>
-                <td>
+                <td className="service-col-status">
                   {dangSuaId === s.id ? (
-                    <Form.Check
-                      type="switch"
-                      checked={formSua.hoatDong !== false}
-                      onChange={(e) =>
-                        setFormSua({ ...formSua, hoatDong: e.target.checked })
-                      }
-                    />
+                    <div className="service-dv-status-switch-wrap">
+                      <Form.Check
+                        type="switch"
+                        id={`dich-vu-hoat-dong-${s.id}`}
+                        checked={formSua.hoatDong !== false}
+                        onChange={(e) =>
+                          setFormSua({ ...formSua, hoatDong: e.target.checked })
+                        }
+                        label={formSua.hoatDong !== false ? "Đang áp dụng" : "Ngừng"}
+                        className="service-dv-status-switch"
+                      />
+                    </div>
                   ) : (
-                    <Badge
-                      bg={s.hoatDong !== false ? "success" : "secondary"}
-                      pill
-                      className="fw-normal text-white align-middle"
+                    <span
+                      className={
+                        s.hoatDong !== false
+                          ? "service-dv-status service-dv-status--on"
+                          : "service-dv-status service-dv-status--off"
+                      }
                       aria-label={
                         s.hoatDong !== false
                           ? "Trạng thái: đang áp dụng"
@@ -519,13 +526,13 @@ export default function ServicesPage() {
                       <i
                         className={
                           s.hoatDong !== false
-                            ? "bi bi-check-circle-fill me-1"
-                            : "bi bi-pause-circle-fill me-1"
+                            ? "bi bi-check-circle-fill"
+                            : "bi bi-pause-circle-fill"
                         }
                         aria-hidden
                       />
                       {s.hoatDong !== false ? "Đang áp dụng" : "Ngừng"}
-                    </Badge>
+                    </span>
                   )}
                 </td>
                 <td>

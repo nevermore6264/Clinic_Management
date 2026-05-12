@@ -7,7 +7,7 @@ import { Card, Row, Col, Placeholder } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import { dashboardApi, type DashboardStats } from "@/lib/api";
-import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
+import { laBacSiKhongXemHoaDon, laChiTaiKhoanBenhNhan } from "@/lib/roles";
 import { LoadingState } from "@/components/LoadingState";
 import { DashboardRevenueCharts } from "@/components/dashboard/DashboardRevenueCharts";
 import { DashboardClinicalToday } from "@/components/dashboard/DashboardClinicalToday";
@@ -330,6 +330,7 @@ export default function DashboardPage() {
   const isLeTan = roles.includes("LE_TAN");
   const isThuNgan = roles.includes("THU_NGAN");
   const coNhomQuanLy = isAdmin || isLeTan || isThuNgan;
+  const chiBacSiKhongHoaDon = laBacSiKhongXemHoaDon(user);
 
   return (
     <div className="dashboard-page">
@@ -360,13 +361,15 @@ export default function DashboardPage() {
               <i className="bi bi-people me-1" aria-hidden />
               Bệnh nhân
             </Link>
-            <Link
-              href="/hoa-don"
-              className="btn btn-sm btn-light border dashboard-hero-chip"
-            >
-              <i className="bi bi-receipt me-1" aria-hidden />
-              Hóa đơn
-            </Link>
+            {!chiBacSiKhongHoaDon && (
+              <Link
+                href="/hoa-don"
+                className="btn btn-sm btn-light border dashboard-hero-chip"
+              >
+                <i className="bi bi-receipt me-1" aria-hidden />
+                Hóa đơn
+              </Link>
+            )}
           </div>
         }
       />
@@ -458,19 +461,21 @@ export default function DashboardPage() {
           icon="bi-calendar3"
           tone={2}
         />
-        <QuickLinkCard
-          href="/hoa-don"
-          title="Hóa đơn & thanh toán"
-          desc="Lập hóa đơn và ghi nhận thanh toán."
-          icon="bi-wallet2"
-          tone={3}
-        />
+        {!chiBacSiKhongHoaDon ? (
+          <QuickLinkCard
+            href="/hoa-don"
+            title="Hóa đơn & thanh toán"
+            desc="Lập hóa đơn và ghi nhận thanh toán."
+            icon="bi-wallet2"
+            tone={3}
+          />
+        ) : null}
         <QuickLinkCard
           href="/tro-chuyen"
           title="Chat"
           desc="Trao đổi nội bộ và với bệnh nhân."
           icon="bi-chat-dots"
-          tone={4}
+          tone={chiBacSiKhongHoaDon ? 3 : 4}
         />
       </Row>
 

@@ -20,7 +20,7 @@ import {
   lichHenChoPhepLapHoaDon,
   metaTrangThaiLichHen as metaTrangThai,
 } from "@/lib/lichHenStatus";
-import { laChiTaiKhoanBenhNhan, laNhanVien } from "@/lib/roles";
+import { laBacSiKhongXemHoaDon, laChiTaiKhoanBenhNhan, laNhanVien } from "@/lib/roles";
 
 function newRow(maThuoc: number): ChiTietDonThuoc {
   return { maThuoc, soLuong: 1, lieuDung: "" };
@@ -417,7 +417,17 @@ export default function AppointmentDetailPage() {
         </Card>
       ) : null}
       <div className="mt-3 d-flex flex-wrap gap-2 align-items-center lich-hen-detail-actions">
-        {lichHenChoPhepLapHoaDon(app.trangThai) ? (
+        {user && laBacSiKhongXemHoaDon(user) ? (
+          <Button
+            variant="outline-secondary"
+            disabled
+            className="d-inline-flex align-items-center gap-2"
+            title="Bác sĩ không truy cập hóa đơn; lễ tân hoặc thu ngân lập và thanh toán."
+          >
+            <i className="bi bi-receipt" aria-hidden />
+            Hóa đơn
+          </Button>
+        ) : lichHenChoPhepLapHoaDon(app.trangThai) ? (
           <Link
             href={`/hoa-don/new?maLichHen=${id}`}
             className="btn btn-outline-primary d-inline-flex align-items-center gap-2"

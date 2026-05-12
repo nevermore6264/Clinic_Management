@@ -10,6 +10,7 @@ import com.clinic.repository.BacSiRepository;
 import com.clinic.repository.LichLamViecBacSiRepository;
 import com.clinic.repository.LichLamViecCoDinhRepository;
 import com.clinic.repository.LichNgoaiLeRepository;
+import com.clinic.security.QuyenTruyCapLichLamViecBacSi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,9 +41,11 @@ public class LichLamViecBacSiService {
     private final BacSiRepository khoBacSi;
     private final LichNgoaiLeRepository lichNgoaiLeRepository;
     private final LichLamViecCoDinhRepository lichLamViecCoDinhRepository;
+    private final QuyenTruyCapLichLamViecBacSi quyenTruyCapLichLamViecBacSi;
 
     @Transactional(readOnly = true)
     public List<LichLamViecBacSiDto> timTheoBacSiVaNgay(Long maBacSi, LocalDate ngay) {
+        quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(maBacSi);
         BacSi bs = khoBacSi.findById(maBacSi).orElseThrow(() -> new RuntimeException("Không tìm thấy bác sĩ"));
         String tenBs = layTenBacSi(bs);
         List<LichLamViecBacSiDto> ketQua = new ArrayList<>();
@@ -81,6 +84,7 @@ public class LichLamViecBacSiService {
 
     @Transactional(readOnly = true)
     public List<LichLamViecBacSiDto> timTheoBacSiVaKhoangNgay(Long maBacSi, LocalDate tuNgay, LocalDate denNgay) {
+        quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(maBacSi);
         if (tuNgay.isAfter(denNgay)) {
             return List.of();
         }
@@ -93,6 +97,7 @@ public class LichLamViecBacSiService {
 
     @Transactional
     public LichLamViecBacSiDto tao(LichLamViecBacSiDto dto) {
+        quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(dto.getMaBacSi());
         BacSi bs = khoBacSi.findById(dto.getMaBacSi()).orElseThrow(() -> new RuntimeException("Không tìm thấy bác sĩ"));
         LocalDate ngay = dto.getNgayLich();
         if (ngay == null) {
@@ -150,6 +155,7 @@ public class LichLamViecBacSiService {
         String nguon = dto.getNguonBanGhi();
         if (nguon != null && nguon.equalsIgnoreCase(NGUON_NGOAI_LE)) {
             LichNgoaiLe nl = lichNgoaiLeRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy ngoại lệ"));
+            quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(nl.getBacSi().getId());
             if (nl.getLoaiNgoaiLe() == LichNgoaiLe.LoaiNgoaiLe.NGHI) {
                 nl.setNgayNgoaiLe(dto.getNgayLich() != null ? dto.getNgayLich() : nl.getNgayNgoaiLe());
             } else {
@@ -174,6 +180,7 @@ public class LichLamViecBacSiService {
         }
         if (nguon != null && nguon.equalsIgnoreCase(NGUON_CO_DINH)) {
             LichLamViecCoDinh cd = lichLamViecCoDinhRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy lịch cố định"));
+            quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(cd.getBacSi().getId());
             if (dto.getKhungGioBatDau() != null) {
                 cd.setKhungGioBatDau(dto.getKhungGioBatDau());
             }
@@ -185,6 +192,7 @@ public class LichLamViecBacSiService {
             return sangDtoTuCoDinh(daLuu, daLuu.getBacSi().getId(), layTenBacSi(daLuu.getBacSi()), ngayHien);
         }
         LichLamViecBacSi s = khoLichLamViec.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy lịch làm việc (bản ghi cũ)"));
+        quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(s.getBacSi().getId());
         s.setNgayLich(dto.getNgayLich());
         s.setKhungGioBatDau(dto.getKhungGioBatDau());
         s.setKhungGioKetThuc(dto.getKhungGioKetThuc());
@@ -195,30 +203,49 @@ public class LichLamViecBacSiService {
     public void xoa(Long id, String nguon) {
         if (nguon != null && !nguon.isBlank()) {
             if (NGUON_NGOAI_LE.equalsIgnoreCase(nguon)) {
+                LichNgoaiLe nl = lichNgoaiLeRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy ngoại lệ"));
+                quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(nl.getBacSi().getId());
                 lichNgoaiLeRepository.deleteById(id);
                 return;
             }
             if (NGUON_CO_DINH.equalsIgnoreCase(nguon)) {
+                LichLamViecCoDinh cd = lichLamViecCoDinhRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch cố định"));
+                quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(cd.getBacSi().getId());
                 lichLamViecCoDinhRepository.deleteById(id);
                 return;
             }
             if (NGUON_LICH_BAC_SI.equalsIgnoreCase(nguon)) {
+                LichLamViecBacSi s = khoLichLamViec.findById(id)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch làm việc (bản ghi cũ)"));
+                quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(s.getBacSi().getId());
                 khoLichLamViec.deleteById(id);
                 return;
             }
             throw new RuntimeException("Tham số nguon không hợp lệ: " + nguon);
         }
         if (lichNgoaiLeRepository.existsById(id)) {
+            LichNgoaiLe nl = lichNgoaiLeRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy ngoại lệ"));
+            quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(nl.getBacSi().getId());
             lichNgoaiLeRepository.deleteById(id);
         } else if (lichLamViecCoDinhRepository.existsById(id)) {
+            LichLamViecCoDinh cd = lichLamViecCoDinhRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch cố định"));
+            quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(cd.getBacSi().getId());
             lichLamViecCoDinhRepository.deleteById(id);
         } else {
+            LichLamViecBacSi s = khoLichLamViec.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch làm việc (bản ghi cũ)"));
+            quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(s.getBacSi().getId());
             khoLichLamViec.deleteById(id);
         }
     }
 
     @Transactional(readOnly = true)
     public List<LichCoDinhDto> layCoDinhTheoBacSi(Long maBacSi) {
+        quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(maBacSi);
         BacSi bs = khoBacSi.findById(maBacSi).orElseThrow(() -> new RuntimeException("Không tìm thấy bác sĩ"));
         String tenBs = layTenBacSi(bs);
         return lichLamViecCoDinhRepository
@@ -233,6 +260,7 @@ public class LichLamViecBacSiService {
         if (dto.getMaBacSi() == null) {
             throw new RuntimeException("Mã bác sĩ là bắt buộc.");
         }
+        quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(dto.getMaBacSi());
         if (dto.getThuTrongTuan() == null || dto.getThuTrongTuan() < 1 || dto.getThuTrongTuan() > 7) {
             throw new RuntimeException("Thứ trong tuần phải nằm trong khoảng 1..7.");
         }
@@ -258,6 +286,7 @@ public class LichLamViecBacSiService {
     public LichCoDinhDto capNhatCoDinh(Long id, LichCoDinhDto dto) {
         LichLamViecCoDinh cd = lichLamViecCoDinhRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch cố định"));
+        quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(cd.getBacSi().getId());
         if (dto.getThuTrongTuan() != null) {
             if (dto.getThuTrongTuan() < 1 || dto.getThuTrongTuan() > 7) {
                 throw new RuntimeException("Thứ trong tuần phải nằm trong khoảng 1..7.");
@@ -280,11 +309,15 @@ public class LichLamViecBacSiService {
 
     @Transactional
     public void xoaCoDinh(Long id) {
+        LichLamViecCoDinh cd = lichLamViecCoDinhRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch cố định"));
+        quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(cd.getBacSi().getId());
         lichLamViecCoDinhRepository.deleteById(id);
     }
 
     @Transactional
     public List<LichCoDinhDto> gieoMacDinhChoBacSi(Long maBacSi, boolean ghiDe) {
+        quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(maBacSi);
         BacSi bs = khoBacSi.findById(maBacSi)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bác sĩ"));
         long daCo = lichLamViecCoDinhRepository.countByBacSiId(maBacSi);

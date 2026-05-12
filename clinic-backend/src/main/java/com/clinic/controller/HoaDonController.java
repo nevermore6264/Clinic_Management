@@ -25,7 +25,7 @@ public class HoaDonController {
     private final HoaDonService hoaDonService;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','BAC_SI','THU_NGAN')")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','THU_NGAN')")
     public ResponseEntity<Page<HoaDonDto>> danhSach(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tuNgay,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate denNgay,
@@ -36,11 +36,13 @@ public class HoaDonController {
     }
 
     @GetMapping("/benh-nhan/{maBenhNhan}")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','THU_NGAN') or hasRole('BENH_NHAN')")
     public ResponseEntity<List<HoaDonDto>> theoBenhNhan(@PathVariable Long maBenhNhan) {
         return ResponseEntity.ok(hoaDonService.timTheoBenhNhan(maBenhNhan));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','THU_NGAN') or hasRole('BENH_NHAN')")
     public ResponseEntity<HoaDonDto> layTheoMa(@PathVariable Long id) {
         return ResponseEntity.ok(hoaDonService.layTheoMa(id));
     }

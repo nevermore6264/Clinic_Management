@@ -7,6 +7,7 @@ import { invoicesApi, lichHenApi, type HoaDon, type LichHen } from "@/lib/api";
 import { HoaDonStatusTag } from "@/components/HoaDonStatusTag";
 import { PhuongThucThanhToanTag } from "@/components/PhuongThucThanhToanTag";
 import { LoadingState } from "@/components/LoadingState";
+import { laBacSiKhongXemHoaDon } from "@/lib/roles";
 import {
   formatGioHen,
   formatInstantVi,
@@ -35,7 +36,14 @@ export default function InvoicePrintPage() {
   }, [user, loading, router]);
 
   useEffect(() => {
+    if (!loading && user && laBacSiKhongXemHoaDon(user)) {
+      router.replace("/bang-dieu-khien");
+    }
+  }, [user, loading, router]);
+
+  useEffect(() => {
     if (!user || !id) return;
+    if (laBacSiKhongXemHoaDon(user)) return;
     invoicesApi
       .get(id)
       .then(setInv)
@@ -72,6 +80,13 @@ export default function InvoicePrintPage() {
     );
   }
   if (!user) return null;
+  if (laBacSiKhongXemHoaDon(user)) {
+    return (
+      <div className="invoice-print-page py-4">
+        <LoadingState />
+      </div>
+    );
+  }
   if (!inv) {
     return (
       <div className="invoice-print-page py-4">

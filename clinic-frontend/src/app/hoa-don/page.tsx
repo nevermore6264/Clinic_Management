@@ -10,7 +10,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { LoadingState } from "@/components/LoadingState";
 import { HoaDonStatusTag } from "@/components/HoaDonStatusTag";
 import { daysAgoLocalYmd, todayLocalYmd } from "@/lib/dateLocal";
-import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
+import { laBacSiKhongXemHoaDon, laChiTaiKhoanBenhNhan } from "@/lib/roles";
 
 function formatTaoLucPatient(t?: string) {
   if (!t) return "";
@@ -39,10 +39,17 @@ function InvoicesPageInner() {
     if (!loading && !user) router.replace("/dang-nhap");
   }, [user, loading, router]);
 
+  useEffect(() => {
+    if (!loading && user && laBacSiKhongXemHoaDon(user)) {
+      router.replace("/bang-dieu-khien");
+    }
+  }, [user, loading, router]);
+
   const chiTaiKhoanBn = !!user && laChiTaiKhoanBenhNhan(user);
 
   useEffect(() => {
     if (!user) return;
+    if (laBacSiKhongXemHoaDon(user)) return;
     if (chiTaiKhoanBn && !user.maBenhNhan) {
       setError(
         "Tài khoản chưa liên kết hồ sơ bệnh nhân — không thể tải hóa đơn. Liên hệ lễ tân.",
@@ -88,6 +95,7 @@ function InvoicesPageInner() {
 
   if (loading) return <LoadingState />;
   if (!user) return null;
+  if (laBacSiKhongXemHoaDon(user)) return <LoadingState />;
 
   const lichTheoHoSoHref =
     user.maBenhNhan != null

@@ -10,6 +10,8 @@ import { HoaDonStatusTag } from "@/components/HoaDonStatusTag";
 import { PhuongThucThanhToanTag } from "@/components/PhuongThucThanhToanTag";
 import { formatVndInput, parseVndInput } from "@/lib/moneyVnd";
 import { formatInstantVi } from "@/lib/formatInstantVi";
+import { laBacSiKhongXemHoaDon } from "@/lib/roles";
+import { LoadingState } from "@/components/LoadingState";
 
 export default function InvoiceDetailPage() {
   const params = useParams();
@@ -28,7 +30,14 @@ export default function InvoiceDetailPage() {
   }, [user, loading, router]);
 
   useEffect(() => {
+    if (!loading && user && laBacSiKhongXemHoaDon(user)) {
+      router.replace("/bang-dieu-khien");
+    }
+  }, [user, loading, router]);
+
+  useEffect(() => {
     if (!user || !id) return;
+    if (laBacSiKhongXemHoaDon(user)) return;
     invoicesApi
       .get(id)
       .then(setInv)
@@ -57,7 +66,9 @@ export default function InvoiceDetailPage() {
     }
   };
 
-  if (!loading && !user) return null;
+  if (loading) return <LoadingState />;
+  if (!user) return null;
+  if (laBacSiKhongXemHoaDon(user)) return <LoadingState />;
   if (!inv) return <div className="py-4">Đang tải...</div>;
 
   const remaining = inv.tongTien - inv.soTienDaTra;

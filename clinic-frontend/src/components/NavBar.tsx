@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Navbar, Nav, Container, NavDropdown } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
-import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
+import { laBacSiKhongXemHoaDon, laChiTaiKhoanBenhNhan } from "@/lib/roles";
 
 function NavLinkItem({
   href,
@@ -234,6 +234,7 @@ export function NavBar() {
 
   const vt = user.cacVaiTro.join(" · ");
   const chiTaiKhoanBn = laChiTaiKhoanBenhNhan(user);
+  const chiBacSiKhongHoaDon = laBacSiKhongXemHoaDon(user);
   const bnQuery = user.maBenhNhan
     ? `?maBenhNhan=${encodeURIComponent(String(user.maBenhNhan))}`
     : "";
@@ -318,13 +319,15 @@ export function NavBar() {
                 >
                   Lịch bác sĩ
                 </NavLinkItem>
-                <NavLinkItem
-                  href="/hoa-don"
-                  active={pathname.startsWith("/hoa-don")}
-                  icon="bi-receipt"
-                >
-                  Hóa đơn
-                </NavLinkItem>
+                {!chiBacSiKhongHoaDon && (
+                  <NavLinkItem
+                    href="/hoa-don"
+                    active={pathname.startsWith("/hoa-don")}
+                    icon="bi-receipt"
+                  >
+                    Hóa đơn
+                  </NavLinkItem>
+                )}
                 <NavLinkItem
                   href="/tro-chuyen"
                   active={pathname === "/tro-chuyen"}

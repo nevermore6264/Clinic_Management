@@ -18,7 +18,7 @@ import {
   Modal,
 } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
-import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
+import { laBacSiChiXemLichLamViecCuaBanThan, laChiTaiKhoanBenhNhan } from "@/lib/roles";
 import { PageHeader } from "@/components/PageHeader";
 import { LICH_HEN_STATUS_LABEL } from "@/lib/lichHenStatus";
 import {
@@ -329,6 +329,8 @@ export default function LichLamViecBacSisPage() {
   }, [user, doctorId, date]);
 
   const [loiNgoaiLe, setLoiNgoaiLe] = useState("");
+
+  const chiBsChiMinh = !!user && laBacSiChiXemLichLamViecCuaBanThan(user);
 
   const thuTrongTuanHomNay = useMemo(() => thuTuNgayIso(date), [date]);
 

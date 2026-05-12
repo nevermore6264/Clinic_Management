@@ -7,6 +7,7 @@ import com.clinic.entity.*;
 import com.clinic.repository.*;
 import com.clinic.security.NguoiDungChinhThuc;
 import com.clinic.security.QuyenTruyCapHoSoBenhNhan;
+import com.clinic.security.QuyenTruyCapLichLamViecBacSi;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.data.domain.Page;
@@ -41,6 +42,7 @@ public class LichHenService {
     private final LichLamViecBacSiRepository lichLamViecBacSiRepository;
     private final LichSuTrangThaiLichHenRepository lichSuTrangThaiLichHenRepository;
     private final QuyenTruyCapHoSoBenhNhan quyenTruyCapHoSoBenhNhan;
+    private final QuyenTruyCapLichLamViecBacSi quyenTruyCapLichLamViecBacSi;
     private static final int SUC_CHUA_MOI_GIO = 10;
     private static final EnumSet<LichHen.TrangThaiLichHen> TRANG_THAI_KHONG_TINH_SLOT =
             EnumSet.of(LichHen.TrangThaiLichHen.HUY, LichHen.TrangThaiLichHen.VANG);
@@ -60,28 +62,9 @@ public class LichHenService {
 
     @Transactional(readOnly = true)
     public List<LichHenDto> timTheoBacSiVaNgay(Long maBacSi, LocalDate ngay) {
-        yeuCauDuocTruyCapLichTheoBacSi(maBacSi);
+        quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(maBacSi);
         return lichHenRepository.findByBacSiIdAndNgayHenOrderByGioHen(maBacSi, ngay).stream()
                 .map(this::sangDto).collect(Collectors.toList());
-    }
-
-    private void yeuCauDuocTruyCapLichTheoBacSi(Long maBacSi) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !(auth.getPrincipal() instanceof NguoiDungChinhThuc chuThe)) {
-            return;
-        }
-        Set<String> vaiTro = chuThe.layCacTenVaiTro();
-        if (vaiTro.contains("QUAN_TRI") || vaiTro.contains("LE_TAN") || vaiTro.contains("THU_NGAN")) {
-            return;
-        }
-        if (!vaiTro.contains("BAC_SI")) {
-            return;
-        }
-        BacSi bs = bacSiRepository.findByNguoiDung_Id(chuThe.getMaNguoiDung())
-                .orElseThrow(() -> new AccessDeniedException("Tài khoản chưa liên kết hồ sơ bác sĩ."));
-        if (!bs.getId().equals(maBacSi)) {
-            throw new AccessDeniedException("Chỉ được xem lịch của chính mình.");
-        }
     }
 
     @Transactional(readOnly = true)

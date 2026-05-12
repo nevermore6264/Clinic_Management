@@ -17,7 +17,7 @@ import {
   lichHenChoPhepLapHoaDon,
   metaTrangThaiLichHen,
 } from "@/lib/lichHenStatus";
-import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
+import { laBacSiKhongXemHoaDon, laChiTaiKhoanBenhNhan } from "@/lib/roles";
 
 function dinhDangNgayHen(ngayHen?: string) {
   if (!ngayHen) return "—";
@@ -88,6 +88,12 @@ function NewInvoicePageInner() {
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
+  }, [user, loading, router]);
+
+  useEffect(() => {
+    if (!loading && user && laBacSiKhongXemHoaDon(user)) {
+      router.replace("/bang-dieu-khien");
+    }
   }, [user, loading, router]);
 
   useEffect(() => {

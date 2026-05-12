@@ -45,6 +45,18 @@ export function laChiTaiKhoanBacSiXemLichHomNay(
   return true;
 }
 
+export function laBacSiKhongXemHoaDon(
+  user: Pick<NguoiDung, "cacVaiTro"> | null,
+): boolean {
+  return laChiTaiKhoanBacSiXemLichHomNay(user);
+}
+
+export function laBacSiChiXemLichLamViecCuaBanThan(
+  user: Pick<NguoiDung, "cacVaiTro"> | null,
+): boolean {
+  return laChiTaiKhoanBacSiXemLichHomNay(user);
+}
+
 export function laCoTuDongBaoVangLichHen(
   user: Pick<NguoiDung, "cacVaiTro"> | null,
 ): boolean {

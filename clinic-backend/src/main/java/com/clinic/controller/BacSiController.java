@@ -4,6 +4,7 @@ import com.clinic.dto.BacSiDto;
 import com.clinic.dto.CapNhatBacSiYeuCau;
 import com.clinic.dto.TaoBacSiYeuCau;
 import com.clinic.service.BacSiService;
+import com.clinic.security.QuyenTruyCapLichLamViecBacSi;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/bac-si")
@@ -21,6 +23,7 @@ import java.util.List;
 public class BacSiController {
 
     private final BacSiService bacSiService;
+    private final QuyenTruyCapLichLamViecBacSi quyenTruyCapLichLamViecBacSi;
 
     @GetMapping
     public ResponseEntity<List<BacSiDto>> danhSach(
@@ -35,11 +38,21 @@ public class BacSiController {
             }
             return ResponseEntity.ok(bacSiService.timTatCa());
         }
-        return ResponseEntity.ok(bacSiService.timTatCaDangHoatDong());
+        List<BacSiDto> list = bacSiService.timTatCaDangHoatDong();
+        if (quyenTruyCapLichLamViecBacSi.chiDuocThaoTacLichLamViecCuaBanThan()) {
+            Optional<Long> maBs = quyenTruyCapLichLamViecBacSi.layMaBacSiLienKetVoiTaiKhoan();
+            if (maBs.isEmpty()) {
+                return ResponseEntity.ok(List.of());
+            }
+            return ResponseEntity.ok(
+                    list.stream().filter(d -> maBs.get().equals(d.getId())).toList());
+        }
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<BacSiDto> layTheoMa(@PathVariable Long id) {
+        quyenTruyCapLichLamViecBacSi.yeuCauDuocTruyCapLichCuaBacSi(id);
         return ResponseEntity.ok(bacSiService.layTheoMa(id));
     }
 

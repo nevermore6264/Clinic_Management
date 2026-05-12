@@ -387,6 +387,39 @@ export const phieuChiApi = {
     if (!res.ok) throw new Error(await res.text());
     return res.blob();
   },
+  taiLenAnhChungTu: async (
+    file: File,
+  ): Promise<{
+    duongDan: string;
+    tenHienThi: string;
+    loaiMime: string;
+    kichThuoc: number;
+  }> => {
+    const token = getToken();
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch(`${API_BASE}/phieu-chi/chung-tu-anh/tai-len`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: fd,
+    });
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try {
+        const j = (await res.json()) as { message?: string };
+        if (j.message) msg = j.message;
+      } catch {
+        /* ignore */
+      }
+      throw new Error(msg);
+    }
+    return res.json() as Promise<{
+      duongDan: string;
+      tenHienThi: string;
+      loaiMime: string;
+      kichThuoc: number;
+    }>;
+  },
 };
 
 export const hoaDonApi = {

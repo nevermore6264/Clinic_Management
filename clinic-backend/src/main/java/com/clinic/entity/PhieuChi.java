@@ -39,7 +39,7 @@ public class PhieuChi {
     @Builder.Default
     private LoaiPhieuChi loai = LoaiPhieuChi.KHAC;
 
-    @Column(name = "chung_tu_tham_chieu", length = 200)
+    @Column(name = "chung_tu_tham_chieu", length = 500)
     private String chungTuThamChieu;
 
     @Column(name = "ma_nguoi_tao")

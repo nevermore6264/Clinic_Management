@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -13,11 +13,11 @@ import {
   Col,
   Badge,
   Pagination,
-  InputGroup,
 } from "react-bootstrap";
 import type { CSSProperties } from "react";
 import { useAuth } from "@/lib/useAuth";
 import {
+  API_BASE,
   phieuChiApi,
   type PhieuChi,
   type PhieuChiTongHop,
@@ -95,6 +95,18 @@ function danhSachNamXuatCsv(namDangChon: number): number[] {
   return out;
 }
 
+const PREFIX_ANH_CHUNG_TU = "/phieu-chi/chung-tu-anh/";
+
+function laDuongDanAnhChungTu(s?: string | null): boolean {
+  return Boolean(s?.includes(PREFIX_ANH_CHUNG_TU));
+}
+
+function chungTuAnhFullUrl(s?: string | null): string | null {
+  if (!laDuongDanAnhChungTu(s) || !s?.trim()) return null;
+  const p = s.trim().startsWith("/") ? s.trim() : `/${s.trim()}`;
+  return `${API_BASE}${p}`;
+}
+
 function StatMini({
   label,
   value,
@@ -157,6 +169,8 @@ export default function PhieuChiPage() {
   const [thangXuatCsv, setThangXuatCsv] = useState(thangISOHienTai);
   const [dangXuatCsv, setDangXuatCsv] = useState(false);
   const [show, setShow] = useState(false);
+  const anhChungTuInputRef = useRef<HTMLInputElement>(null);
+  const [dangTaiAnhChungTu, setDangTaiAnhChungTu] = useState(false);
   const [soTienNhap, setSoTienNhap] = useState("");
   const [editing, setEditing] = useState<PhieuChi | null>(null);
   const [form, setForm] = useState<PhieuChi>({
@@ -240,6 +254,26 @@ export default function PhieuChiPage() {
     start.setDate(start.getDate() - days + 1);
     setTuNgay(start.toISOString().slice(0, 10));
     setDenNgay(endStr);
+  };
+
+  const onChonAnhChungTu = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError("Vui lòng chọn file ảnh (JPEG, PNG, GIF hoặc WebP).");
+      return;
+    }
+    setError("");
+    setDangTaiAnhChungTu(true);
+    try {
+      const res = await phieuChiApi.taiLenAnhChungTu(file);
+      setForm((f) => ({ ...f, chungTuThamChieu: res.duongDan }));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Lỗi tải ảnh");
+    } finally {
+      setDangTaiAnhChungTu(false);
+    }
   };
 
   const openNew = () => {
@@ -327,16 +361,16 @@ export default function PhieuChiPage() {
     <div className="phieu-chi-page">
       <PageHeader
         title="Phiếu chi"
-        subtitle="Chi phí vận hành (theo ngày chi) — bổ sung cho doanh thu hóa đơn. Cột «Chứng từ» ghi tay số HĐ mua / phiếu nhập khi chưa có module nhập liên thông."
+        subtitle="Chi phí vận hành (theo ngày chi). Cột «Ảnh chứng từ»: tải ảnh hóa đơn mua / phiếu nhập (JPEG, PNG…)."
       >
-        <div className="d-flex flex-wrap align-items-stretch align-items-md-center gap-2 justify-content-md-end">
+        <div className="d-flex flex-wrap align-items-stretch align-items-md-center gap-3 justify-content-md-end">
           <div className="d-flex flex-column justify-content-center">
             <span className="small text-muted fw-semibold mb-1 d-md-none">
               Xuất file kế toán (CSV)
             </span>
-            <InputGroup className="phieu-chi-csv-inputgroup">
+            <div className="phieu-chi-csv-shell">
               <Form.Select
-                className="phieu-chi-csv-select-thang border-secondary-subtle"
+                className="phieu-chi-csv-select-thang"
                 value={String(thangSoXuatCsv)}
                 onChange={(e) => {
                   const t = Number(e.target.value);
@@ -353,7 +387,7 @@ export default function PhieuChiPage() {
                 ))}
               </Form.Select>
               <Form.Select
-                className="phieu-chi-csv-select-nam border-secondary-subtle"
+                className="phieu-chi-csv-select-nam"
                 value={String(namXuatCsv)}
                 onChange={(e) => {
                   const n = Number(e.target.value);
@@ -371,15 +405,14 @@ export default function PhieuChiPage() {
               </Form.Select>
               <Button
                 type="button"
-                variant="outline-secondary"
-                className="phieu-chi-csv-btn d-inline-flex align-items-center justify-content-center gap-2 text-nowrap"
+                className="btn-service-export phieu-chi-csv-btn d-inline-flex align-items-center justify-content-center gap-2 text-nowrap px-3"
                 disabled={dangXuatCsv}
                 onClick={() => void xuatCsvKeToan()}
               >
                 {dangXuatCsv ? (
                   <>
                     <span
-                      className="spinner-border spinner-border-sm"
+                      className="spinner-border spinner-border-sm text-white"
                       role="status"
                       aria-hidden
                     />
@@ -387,12 +420,12 @@ export default function PhieuChiPage() {
                   </>
                 ) : (
                   <>
-                    <i className="bi bi-file-earmark-arrow-down" aria-hidden />
-                    Xuất CSV
+                    <i className="bi bi-filetype-csv me-1" aria-hidden />
+                    Export CSV
                   </>
                 )}
               </Button>
-            </InputGroup>
+            </div>
           </div>
           <Button
             className="d-inline-flex align-items-center gap-2 rounded-pill px-3"
@@ -563,7 +596,7 @@ export default function PhieuChiPage() {
                 <tr>
                   <th>Ngày</th>
                   <th className="phieu-chi-col-loai">Loại</th>
-                  <th className="phieu-chi-th-chung-tu">Chứng từ</th>
+                  <th className="phieu-chi-th-chung-tu">Ảnh chứng từ</th>
                   <th>Mô tả</th>
                   <th className="text-end text-nowrap">Số tiền</th>
                   <th>Người tạo</th>
@@ -588,16 +621,40 @@ export default function PhieuChiPage() {
                         </Badge>
                       </td>
                       <td className="phieu-chi-td-chung-tu small text-muted">
-                        {p.chungTuThamChieu?.trim() ? (
-                          <span
-                            className="phieu-chi-chung-tu-text"
-                            title={p.chungTuThamChieu}
-                          >
-                            {p.chungTuThamChieu}
-                          </span>
-                        ) : (
-                          "—"
-                        )}
+                        {(() => {
+                          const src = chungTuAnhFullUrl(p.chungTuThamChieu);
+                          if (src) {
+                            return (
+                              <a
+                                href={src}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="d-inline-block"
+                                title="Mở ảnh"
+                              >
+                                <img
+                                  src={src}
+                                  alt=""
+                                  className="phieu-chi-chung-tu-thumb rounded-2 border"
+                                  width={56}
+                                  height={56}
+                                  loading="lazy"
+                                />
+                              </a>
+                            );
+                          }
+                          if (p.chungTuThamChieu?.trim()) {
+                            return (
+                              <span
+                                className="phieu-chi-chung-tu-text"
+                                title={p.chungTuThamChieu}
+                              >
+                                {p.chungTuThamChieu}
+                              </span>
+                            );
+                          }
+                          return "—";
+                        })()}
                       </td>
                       <td className="phieu-chi-desc">{p.moTa}</td>
                       <td className="text-end fw-semibold text-danger text-nowrap tabular-nums phieu-chi-so-tien">
@@ -710,41 +767,89 @@ export default function PhieuChiPage() {
             />
           </Form.Group>
           <Form.Group className="mb-3">
-            <Form.Label className="fw-semibold">Chứng từ tham chiếu</Form.Label>
-            <Form.Control
-              value={form.chungTuThamChieu ?? ""}
-              onChange={(e) =>
-                setForm({ ...form, chungTuThamChieu: e.target.value })
-              }
-              placeholder="VD: HĐ mua 0123, phiếu nhập kho NK-2026-05…"
-              className="rounded-3"
+            <Form.Label className="fw-semibold">Ảnh chứng từ tham chiếu</Form.Label>
+            <input
+              ref={anhChungTuInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp"
+              className="d-none"
+              onChange={(e) => void onChonAnhChungTu(e)}
             />
+            <div className="d-flex flex-wrap align-items-center gap-2">
+              <Button
+                type="button"
+                variant="outline-secondary"
+                size="sm"
+                className="rounded-3"
+                disabled={dangTaiAnhChungTu}
+                onClick={() => anhChungTuInputRef.current?.click()}
+              >
+                {dangTaiAnhChungTu ? (
+                  <>
+                    <span
+                      className="spinner-border spinner-border-sm me-1"
+                      role="status"
+                      aria-hidden
+                    />
+                    Đang tải…
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-image me-1" aria-hidden />
+                    Chọn ảnh
+                  </>
+                )}
+              </Button>
+              {laDuongDanAnhChungTu(form.chungTuThamChieu) ? (
+                <Button
+                  type="button"
+                  variant="link"
+                  className="text-danger text-decoration-none p-0 small"
+                  disabled={dangTaiAnhChungTu}
+                  onClick={() =>
+                    setForm((f) => ({ ...f, chungTuThamChieu: "" }))
+                  }
+                >
+                  Xóa ảnh
+                </Button>
+              ) : null}
+            </div>
+            {chungTuAnhFullUrl(form.chungTuThamChieu) ? (
+              <div className="mt-2">
+                <a
+                  href={chungTuAnhFullUrl(form.chungTuThamChieu)!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="d-inline-block"
+                >
+                  <img
+                    src={chungTuAnhFullUrl(form.chungTuThamChieu)!}
+                    alt="Xem trước chứng từ"
+                    className="phieu-chi-chung-tu-preview rounded-3 border"
+                  />
+                </a>
+              </div>
+            ) : null}
             <Form.Text className="text-muted">
-              Ghi tay số hóa đơn mua / phiếu nhập ngoài hệ thống — khi có module
-              nhập có thể nối tự động sau.
+              Tối đa 5 MB. Ảnh lưu trên máy chủ; CSV tháng vẫn ghi đường dẫn file.
             </Form.Text>
           </Form.Group>
           <Row className="g-3">
             <Col md={6}>
               <Form.Label className="fw-semibold">Số tiền (VNĐ) *</Form.Label>
-              <InputGroup className="phieu-chi-vnd-inputgroup">
-                <Form.Control
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="off"
-                  placeholder="Ví dụ: 1.500.000"
-                  value={soTienNhap}
-                  onChange={(e) => {
-                    const num = parseSoTienVnd(e.target.value);
-                    setSoTienNhap(formatSoTienNhap(num));
-                    setForm({ ...form, soTien: num });
-                  }}
-                  className="phieu-chi-vnd-input font-monospace rounded-start-3 rounded-end-0"
-                />
-                <InputGroup.Text className="rounded-end-3 rounded-start-0 border-start-0 bg-body-secondary text-muted fw-semibold small">
-                  đ
-                </InputGroup.Text>
-              </InputGroup>
+              <Form.Control
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="Ví dụ: 1.500.000"
+                value={soTienNhap}
+                onChange={(e) => {
+                  const num = parseSoTienVnd(e.target.value);
+                  setSoTienNhap(formatSoTienNhap(num));
+                  setForm({ ...form, soTien: num });
+                }}
+                className="phieu-chi-vnd-input font-monospace rounded-3"
+              />
               <Form.Text className="text-muted">
                 Chỉ nhập số; hệ thống tự thêm dấu phân cách hàng nghìn theo định dạng Việt Nam.
               </Form.Text>

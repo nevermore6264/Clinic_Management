@@ -340,6 +340,7 @@ html.app-ready body {
 .service-type-page .btn-service-export {
   background: linear-gradient(180deg, #16a34a 0%, #15803d 100%) !important;
   border: none !important;
+  border-radius: 10px !important;
   color: #fff !important;
   font-weight: 600;
   box-shadow: 0 6px 14px rgba(22, 163, 74, 0.24);
@@ -8736,34 +8737,78 @@ html.app-ready body {
   border-color: #e2e8f0;
 }
 
-.phieu-chi-page .phieu-chi-csv-inputgroup {
+.phieu-chi-page .phieu-chi-csv-shell {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
   width: 100%;
-  max-width: 22rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  max-width: 32rem;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.07);
+  overflow: hidden;
 }
 
 @media (min-width: 768px) {
-  .phieu-chi-page .phieu-chi-csv-inputgroup {
+  .phieu-chi-page .phieu-chi-csv-shell {
     width: auto;
   }
 }
 
-.phieu-chi-page .phieu-chi-csv-inputgroup .phieu-chi-csv-select-thang {
-  min-width: 7.25rem;
-  max-width: 9.5rem;
+.phieu-chi-page .phieu-chi-csv-shell .form-select {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
   font-variant-numeric: tabular-nums;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #334155;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  background-color: #fff;
+  cursor: pointer;
 }
 
-.phieu-chi-page .phieu-chi-csv-inputgroup .phieu-chi-csv-select-nam {
-  min-width: 5.5rem;
-  max-width: 7rem;
-  font-variant-numeric: tabular-nums;
+.phieu-chi-page .phieu-chi-csv-shell .phieu-chi-csv-select-thang {
+  /* Không dùng flex-basis: 0 + min-width: 0 — trình duyệt co cột Tháng về 0. */
+  flex: 1 1 auto;
+  min-width: 9.25rem;
+  width: auto;
+  max-width: 13rem;
+  border-right: 1px solid #e2e8f0 !important;
 }
 
-.phieu-chi-page .phieu-chi-csv-inputgroup .phieu-chi-csv-btn {
-  font-weight: 600;
-  padding-left: 0.9rem;
-  padding-right: 0.9rem;
+.phieu-chi-page .phieu-chi-csv-shell .phieu-chi-csv-select-nam {
+  flex: 0 0 auto;
+  min-width: 7.35rem;
+  width: auto;
+  border-right: 1px solid #e2e8f0 !important;
+}
+
+.phieu-chi-page .phieu-chi-csv-shell .form-select:focus {
+  position: relative;
+  z-index: 1;
+  outline: none !important;
+  box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.45) !important;
+}
+
+.phieu-chi-page .phieu-chi-csv-shell > .btn-service-export.phieu-chi-csv-btn {
+  border-radius: 0 !important;
+  align-self: stretch;
+  flex-shrink: 0;
+  box-shadow: none;
+}
+
+.phieu-chi-page .phieu-chi-csv-shell > .btn-service-export.phieu-chi-csv-btn:hover:not(:disabled) {
+  box-shadow: none;
+  filter: brightness(1.06);
+}
+
+.phieu-chi-page .phieu-chi-csv-shell > .btn-service-export.phieu-chi-csv-btn:disabled {
+  opacity: 0.72;
+  filter: grayscale(0.08);
 }
 
 .phieu-chi-page .phieu-chi-table-card {
@@ -8807,6 +8852,20 @@ html.app-ready body {
   -webkit-box-orient: vertical;
   overflow: hidden;
   word-break: break-word;
+}
+
+.phieu-chi-page .phieu-chi-chung-tu-thumb {
+  object-fit: cover;
+  vertical-align: middle;
+}
+
+.phieu-chi-modal .phieu-chi-chung-tu-preview {
+  display: block;
+  max-width: 100%;
+  max-height: 220px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .phieu-chi-page .phieu-chi-table thead th.phieu-chi-col-loai,
@@ -8879,13 +8938,8 @@ html.app-ready body {
   background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
 }
 
-.phieu-chi-modal .phieu-chi-vnd-inputgroup .form-control {
-  border-right: 0;
+.phieu-chi-modal .phieu-chi-vnd-input {
   min-height: calc(1.5em + 0.75rem + 2px);
-}
-
-.phieu-chi-modal .phieu-chi-vnd-inputgroup .input-group-text {
-  border-color: #dee2e6;
 }
 
 .phieu-chi-modal .phieu-chi-vnd-input:focus {

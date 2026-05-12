@@ -190,6 +190,7 @@ function chongLan(a1: string, a2: string, b1: string, b2: string): boolean {
 export default function LichLamViecBacSisPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const chiBsChiMinh = !!user && laBacSiChiXemLichLamViecCuaBanThan(user);
   const [doctors, setDoctors] = useState<BacSi[]>([]);
   const [doctorId, setDoctorId] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -215,6 +216,7 @@ export default function LichLamViecBacSisPage() {
     khungGioBatDau: "07:30",
     khungGioKetThuc: "11:30",
   });
+  const [loiNgoaiLe, setLoiNgoaiLe] = useState("");
 
   type XacNhanState = {
     tieuDe: string;
@@ -253,6 +255,15 @@ export default function LichLamViecBacSisPage() {
       router.replace("/bang-dieu-khien");
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (!user || !chiBsChiMinh) return;
+    if (user.maBacSi != null && user.maBacSi > 0) {
+      setDoctorId((prev) =>
+        prev === String(user.maBacSi) ? prev : String(user.maBacSi),
+      );
+    }
+  }, [user, chiBsChiMinh]);
 
   useEffect(() => {
     if (!user) return;
@@ -327,10 +338,6 @@ export default function LichLamViecBacSisPage() {
       cancelled = true;
     };
   }, [user, doctorId, date]);
-
-  const [loiNgoaiLe, setLoiNgoaiLe] = useState("");
-
-  const chiBsChiMinh = !!user && laBacSiChiXemLichLamViecCuaBanThan(user);
 
   const thuTrongTuanHomNay = useMemo(() => thuTuNgayIso(date), [date]);
 
@@ -603,8 +610,19 @@ export default function LichLamViecBacSisPage() {
     <div className="lich-lam-viec-bs-page">
       <PageHeader
         title="Lịch trực bác sĩ"
-        subtitle="Quản lý ca cố định theo tuần và các ngoại lệ trong ngày."
+        subtitle={
+          chiBsChiMinh
+            ? "Bạn chỉ xem và chỉnh lịch làm việc của chính mình (theo tài khoản đã gắn hồ sơ bác sĩ)."
+            : "Quản lý ca cố định theo tuần và các ngoại lệ trong ngày."
+        }
       />
+
+      {chiBsChiMinh && (user?.maBacSi == null || user.maBacSi < 1) && (
+        <Alert variant="warning" className="shadow-sm">
+          Tài khoản chưa gắn với hồ sơ bác sĩ trong hệ thống — không thể tải lịch làm việc. Vui lòng
+          liên hệ quản trị.
+        </Alert>
+      )}
 
       {error && (
         <Alert variant="danger" dismissible onClose={() => setError("")} className="shadow-sm">
@@ -624,18 +642,24 @@ export default function LichLamViecBacSisPage() {
               <Form.Label className="fw-semibold small text-uppercase text-muted">
                 Bác sĩ
               </Form.Label>
-              <Form.Select
-                value={doctorId}
-                onChange={(e) => setDoctorId(e.target.value)}
-                className="border-secondary-subtle"
-              >
-                <option value="">Chọn bác sĩ…</option>
-                {doctors.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.hoTen}
-                  </option>
-                ))}
-              </Form.Select>
+              {chiBsChiMinh ? (
+                <div className="form-control border-secondary-subtle bg-light text-body py-2">
+                  {tenBacSiChon ?? (user?.maBacSi ? `Mã #${user.maBacSi}` : "—")}
+                </div>
+              ) : (
+                <Form.Select
+                  value={doctorId}
+                  onChange={(e) => setDoctorId(e.target.value)}
+                  className="border-secondary-subtle"
+                >
+                  <option value="">Chọn bác sĩ…</option>
+                  {doctors.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.hoTen}
+                    </option>
+                  ))}
+                </Form.Select>
+              )}
             </Col>
             {doctorId ? (
               <Col md={4} lg={6} className="text-md-end">

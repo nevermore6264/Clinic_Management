@@ -194,8 +194,10 @@ const LICH_HEN_CAL_WEEKDAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"] as cons
 function AppointmentsPageInner() {
   const searchParams = useSearchParams();
   const maBenhNhanParam = searchParams.get("maBenhNhan");
-  const { user, loading } = useAuth();
+  const { user, loading, setUser } = useAuth();
   const router = useRouter();
+  const userRef = useRef(user);
+  userRef.current = user;
   const [list, setList] = useState<LichHen[]>([]);
   const listRef = useRef<LichHen[]>([]);
   const tuDongVangDaXuLy = useRef(new Set<number>());
@@ -276,6 +278,73 @@ function AppointmentsPageInner() {
     () => !!user && laChiTaiKhoanBacSiXemLichHomNay(user),
     [user],
   );
+
+  const userCoMaBacSiHopLe = useMemo(
+    () => !!(user?.maBacSi != null && user.maBacSi > 0),
+    [user],
+  );
+
+  const [homNayMaBacSiDuPhong, setHomNayMaBacSiDuPhong] = useState<
+    number | undefined
+  >(undefined);
+  const [homNayDaThuDuPhongMaBacSi, setHomNayDaThuDuPhongMaBacSi] =
+    useState(false);
+
+  useEffect(() => {
+    if (!chiBacSiHomNay || !user) {
+      setHomNayMaBacSiDuPhong(undefined);
+      setHomNayDaThuDuPhongMaBacSi(false);
+      return;
+    }
+    if (userCoMaBacSiHopLe) {
+      setHomNayMaBacSiDuPhong(undefined);
+      setHomNayDaThuDuPhongMaBacSi(true);
+      return;
+    }
+    setHomNayDaThuDuPhongMaBacSi(false);
+    let cancelled = false;
+    doctorsApi
+      .list()
+      .then((list) => {
+        if (cancelled) return;
+        const arr = Array.isArray(list) ? list : [];
+        const id =
+          arr.length === 1 &&
+          arr[0]?.id != null &&
+          Number(arr[0].id) > 0
+            ? Number(arr[0].id)
+            : undefined;
+        setHomNayMaBacSiDuPhong(id);
+        if (id != null) {
+          const prev = userRef.current;
+          if (prev && (prev.maBacSi == null || prev.maBacSi < 1)) {
+            setUser({ ...prev, maBacSi: id });
+          }
+          try {
+            const raw = localStorage.getItem("user");
+            if (raw) {
+              const parsed = JSON.parse(raw) as Record<string, unknown>;
+              if (parsed && typeof parsed === "object") {
+                localStorage.setItem(
+                  "user",
+                  JSON.stringify({ ...parsed, maBacSi: id }),
+                );
+              }
+            }
+          } catch {
+          }
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setHomNayMaBacSiDuPhong(undefined);
+      })
+      .finally(() => {
+        if (!cancelled) setHomNayDaThuDuPhongMaBacSi(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [chiBacSiHomNay, user, userCoMaBacSiHopLe, setUser]);
 
   const coCotChoQuaGio = useMemo(
     () => !!user && !chiTaiKhoanBn && laCoTuDongBaoVangLichHen(user),
@@ -359,7 +428,15 @@ function AppointmentsPageInner() {
       return;
     }
     if (chiBacSiHomNay) {
-      if (!user.maBacSi) {
+      if (!homNayDaThuDuPhongMaBacSi) {
+        setError("");
+        return;
+      }
+      const maBacSiTaiLich =
+        user.maBacSi != null && user.maBacSi > 0
+          ? user.maBacSi
+          : homNayMaBacSiDuPhong;
+      if (maBacSiTaiLich == null || maBacSiTaiLich < 1) {
         setError(
           "Tài khoản chưa liên kết hồ sơ bác sĩ. Vui lòng liên hệ quản trị.",
         );
@@ -368,7 +445,7 @@ function AppointmentsPageInner() {
       }
       const today = isoDateLocal(new Date());
       appointmentsApi
-        .byDoctor(user.maBacSi, today)
+        .byDoctor(maBacSiTaiLich, today)
         .then((rows) => {
           setError("");
           setList(Array.isArray(rows) ? rows : []);
@@ -383,7 +460,16 @@ function AppointmentsPageInner() {
         setList(r.content);
       })
       .catch((e) => setError(e.message));
-  }, [user, from, to, listTick, chiTaiKhoanBn, chiBacSiHomNay]);
+  }, [
+    user,
+    from,
+    to,
+    listTick,
+    chiTaiKhoanBn,
+    chiBacSiHomNay,
+    homNayDaThuDuPhongMaBacSi,
+    homNayMaBacSiDuPhong,
+  ]);
 
   useEffect(() => {
     listRef.current = list;

@@ -464,13 +464,34 @@ function AppointmentsPageInner() {
         .catch((e) => setError(e.message));
       return;
     }
-    appointmentsApi
-      .list(from, to, 0, 100)
-      .then((r) => {
-        setError("");
-        setList(r.content);
-      })
-      .catch((e) => setError(e.message));
+    let cancelled = false;
+    (async () => {
+      try {
+        const size = 100;
+        const merged: LichHen[] = [];
+        for (let page = 0; page < 100; page++) {
+          const r = await appointmentsApi.list(from, to, page, size);
+          if (cancelled) return;
+          merged.push(...(r.content ?? []));
+          const hetTrang =
+            r.last === true ||
+            (r.content?.length ?? 0) < size ||
+            (r.totalPages != null && page + 1 >= r.totalPages);
+          if (hetTrang) break;
+        }
+        if (!cancelled) {
+          setError("");
+          setList(merged);
+        }
+      } catch (e: unknown) {
+        if (!cancelled) {
+          setError(e instanceof Error ? e.message : "Lỗi tải lịch");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [
     user,
     from,

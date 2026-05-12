@@ -1,8 +1,8 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Table, Button, Card, Alert, Modal, Form, Badge } from "react-bootstrap";
+import { Table, Button, Card, Alert, Modal, Form, Badge, Pagination } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import {
@@ -18,6 +18,7 @@ import {
   coLoiDichVuForm,
   type DichVuFormErrors,
 } from "@/lib/validateDichVuForm";
+import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
 
 function tomTatLoiSuaDichVu(loi: DichVuFormErrors): string {
   return [loi.maLoaiDichVu, loi.ten, loi.gia].filter(Boolean).join(" · ");
@@ -53,6 +54,8 @@ export default function ServicesPage() {
   });
   const [themDichVuLoi, setThemDichVuLoi] = useState<DichVuFormErrors>({});
   const [suaDichVuLoi, setSuaDichVuLoi] = useState<DichVuFormErrors>({});
+  const [trang, setTrang] = useState(0);
+  const [kichThuocTrang, setKichThuocTrang] = useState(15);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -145,6 +148,20 @@ export default function ServicesPage() {
       .includes(tuKhoaTenDichVu.trim().toLocaleLowerCase());
     return khopLoai && Boolean(khopTen);
   });
+
+  const tongTrangDichVu = tongSoTrangClient(
+    danhSachDichVuLoc.length,
+    kichThuocTrang,
+  );
+  const dongTrangDichVu = useMemo(
+    () => catTrang(danhSachDichVuLoc, trang, kichThuocTrang),
+    [danhSachDichVuLoc, trang, kichThuocTrang],
+  );
+
+  useEffect(() => {
+    setTrang(0);
+  }, [boLocLoaiDichVu, tuKhoaTenDichVu, kichThuocTrang]);
+
   const dichVuCanXoa = list.find((item) => item.id === xoaId);
 
   const handleThemDichVu = async (e: React.FormEvent) => {
@@ -357,12 +374,27 @@ export default function ServicesPage() {
                 onChange={(e) => setTuKhoaTenDichVu(e.target.value)}
               />
             </Form.Group>
+            <Form.Group style={{ minWidth: "7rem" }}>
+              <Form.Select
+                aria-label="Số dòng mỗi trang"
+                value={kichThuocTrang}
+                onChange={(e) =>
+                  setKichThuocTrang(Number(e.target.value) || 15)
+                }
+              >
+                <option value={10}>10 / trang</option>
+                <option value={15}>15 / trang</option>
+                <option value={25}>25 / trang</option>
+                <option value={50}>50 / trang</option>
+              </Form.Select>
+            </Form.Group>
             <Button
               variant="secondary"
               className="align-self-center"
               onClick={() => {
                 setBoLocLoaiDichVu("");
                 setTuKhoaTenDichVu("");
+                setTrang(0);
               }}
             >
               <i className="bi bi-arrow-counterclockwise me-2" aria-hidden />
@@ -384,7 +416,7 @@ export default function ServicesPage() {
             </tr>
           </thead>
           <tbody>
-            {danhSachDichVuLoc.map((s) => (
+            {dongTrangDichVu.map((s) => (
               <Fragment key={s.id}>
                 <tr>
                 <td>
@@ -579,6 +611,29 @@ export default function ServicesPage() {
             ) : null}
           </tbody>
         </Table>
+        {danhSachDichVuLoc.length > 0 ? (
+          <Card.Footer className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
+            <div className="small text-muted">
+              {danhSachDichVuLoc.length} dịch vụ khớp lọc · trang {trang + 1}/
+              {tongTrangDichVu}
+            </div>
+            <Pagination className="mb-0 flex-wrap">
+              <Pagination.Prev
+                disabled={trang <= 0}
+                onClick={() => setTrang((p) => Math.max(0, p - 1))}
+              />
+              <Pagination.Item active className="user-select-none">
+                {trang + 1} / {tongTrangDichVu}
+              </Pagination.Item>
+              <Pagination.Next
+                disabled={trang >= tongTrangDichVu - 1}
+                onClick={() =>
+                  setTrang((p) => Math.min(tongTrangDichVu - 1, p + 1))
+                }
+              />
+            </Pagination>
+          </Card.Footer>
+        ) : null}
       </Card>
 
       <Modal

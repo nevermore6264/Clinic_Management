@@ -1,6 +1,7 @@
 package com.clinic.controller;
 
 import com.clinic.dto.PhieuChiDto;
+import com.clinic.dto.PhieuChiTongHopDto;
 import com.clinic.service.PhieuChiService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,14 @@ public class PhieuChiController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate denNgay,
             Pageable phanTrang) {
         return ResponseEntity.ok(phieuChiService.timTheoKhoang(tuNgay, denNgay, phanTrang));
+    }
+
+    @GetMapping("/tong-hop")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','THU_NGAN')")
+    public ResponseEntity<PhieuChiTongHopDto> tongHop(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tuNgay,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate denNgay) {
+        return ResponseEntity.ok(phieuChiService.tongHop(tuNgay, denNgay));
     }
 
     @GetMapping("/{id}")

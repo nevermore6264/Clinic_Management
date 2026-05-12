@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Table, Card, Form, Alert } from "react-bootstrap";
+import { Table, Card, Form, Alert, Pagination } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import { invoicesApi, type HoaDon } from "@/lib/api";
@@ -11,6 +11,7 @@ import { LoadingState } from "@/components/LoadingState";
 import { HoaDonStatusTag } from "@/components/HoaDonStatusTag";
 import { daysAgoLocalYmd, todayLocalYmd } from "@/lib/dateLocal";
 import { laBacSiKhongXemHoaDon, laChiTaiKhoanBenhNhan } from "@/lib/roles";
+import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
 
 function formatTaoLucPatient(t?: string) {
   if (!t) return "";
@@ -34,6 +35,12 @@ function InvoicesPageInner() {
   const [from, setFrom] = useState(() => daysAgoLocalYmd(30));
   const [to, setTo] = useState(todayLocalYmd);
   const [error, setError] = useState("");
+  const [trang, setTrang] = useState(0);
+  const [kichThuoc, setKichThuoc] = useState(20);
+  const [tongTrang, setTongTrang] = useState(1);
+  const [tongPhanTu, setTongPhanTu] = useState(0);
+  const [trangBn, setTrangBn] = useState(0);
+  const [kichThuocBn, setKichThuocBn] = useState(10);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -78,10 +85,18 @@ function InvoicesPageInner() {
       return;
     }
     invoicesApi
-      .list(from, to, 0, 100)
-      .then((r) => setList(r.content))
+      .list(from, to, trang, kichThuoc)
+      .then((r) => {
+        setList(r.content);
+        const tp = Math.max(1, r.totalPages ?? 1);
+        setTongTrang(tp);
+        setTongPhanTu(r.totalElements ?? 0);
+        if (trang >= tp) {
+          setTrang(0);
+        }
+      })
       .catch((e) => setError(e.message));
-  }, [user, from, to, chiTaiKhoanBn]);
+  }, [user, from, to, chiTaiKhoanBn, trang, kichThuoc]);
 
   const rowsHienThi = useMemo(
     () =>
@@ -92,6 +107,17 @@ function InvoicesPageInner() {
       ),
     [list, maBenhNhanParam],
   );
+
+  const dongBenhNhanTrang = useMemo(
+    () => catTrang(rowsHienThi, trangBn, kichThuocBn),
+    [rowsHienThi, trangBn, kichThuocBn],
+  );
+  const tongTrangBn = tongSoTrangClient(rowsHienThi.length, kichThuocBn);
+
+  useEffect(() => {
+    if (!chiTaiKhoanBn) return;
+    setTrangBn(0);
+  }, [from, to, maBenhNhanParam, chiTaiKhoanBn]);
 
   if (loading) return <LoadingState />;
   if (!user) return null;
@@ -162,7 +188,10 @@ function InvoicesPageInner() {
                   <Form.Control
                     type="date"
                     value={from}
-                    onChange={(e) => setFrom(e.target.value)}
+                    onChange={(e) => {
+                      setFrom(e.target.value);
+                      setTrangBn(0);
+                    }}
                   />
                 </Form.Group>
                 <Form.Group>
@@ -170,8 +199,25 @@ function InvoicesPageInner() {
                   <Form.Control
                     type="date"
                     value={to}
-                    onChange={(e) => setTo(e.target.value)}
+                    onChange={(e) => {
+                      setTo(e.target.value);
+                      setTrangBn(0);
+                    }}
                   />
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Số hóa đơn / trang</Form.Label>
+                  <Form.Select
+                    value={kichThuocBn}
+                    onChange={(e) => {
+                      setKichThuocBn(Number(e.target.value) || 10);
+                      setTrangBn(0);
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                  </Form.Select>
                 </Form.Group>
               </div>
             </>
@@ -182,7 +228,10 @@ function InvoicesPageInner() {
                 <Form.Control
                   type="date"
                   value={from}
-                  onChange={(e) => setFrom(e.target.value)}
+                  onChange={(e) => {
+                    setFrom(e.target.value);
+                    setTrang(0);
+                  }}
                 />
               </Form.Group>
               <Form.Group>
@@ -190,8 +239,25 @@ function InvoicesPageInner() {
                 <Form.Control
                   type="date"
                   value={to}
-                  onChange={(e) => setTo(e.target.value)}
+                  onChange={(e) => {
+                    setTo(e.target.value);
+                    setTrang(0);
+                  }}
                 />
+              </Form.Group>
+              <Form.Group>
+                <Form.Label>Số dòng / trang</Form.Label>
+                <Form.Select
+                  value={kichThuoc}
+                  onChange={(e) => {
+                    setKichThuoc(Number(e.target.value) || 20);
+                    setTrang(0);
+                  }}
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </Form.Select>
               </Form.Group>
             </div>
           )}
@@ -208,7 +274,8 @@ function InvoicesPageInner() {
               </Card.Body>
             </Card>
           ) : (
-            rowsHienThi.map((inv) => (
+            <>
+              {dongBenhNhanTrang.map((inv) => (
               <Card
                 key={inv.id}
                 className="patient-portal-invoice-card card--static border-0 shadow-sm"
@@ -255,7 +322,31 @@ function InvoicesPageInner() {
                   </div>
                 </Card.Body>
               </Card>
-            ))
+              ))}
+              {tongTrangBn > 1 ? (
+                <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3 px-1">
+                  <span className="small text-muted">
+                    Trang {trangBn + 1}/{tongTrangBn} · {rowsHienThi.length} hóa
+                    đơn
+                  </span>
+                  <Pagination className="mb-0 flex-wrap">
+                    <Pagination.Prev
+                      disabled={trangBn <= 0}
+                      onClick={() => setTrangBn((p) => Math.max(0, p - 1))}
+                    />
+                    <Pagination.Item active className="user-select-none">
+                      {trangBn + 1} / {tongTrangBn}
+                    </Pagination.Item>
+                    <Pagination.Next
+                      disabled={trangBn >= tongTrangBn - 1}
+                      onClick={() =>
+                        setTrangBn((p) => Math.min(tongTrangBn - 1, p + 1))
+                      }
+                    />
+                  </Pagination>
+                </div>
+              ) : null}
+            </>
           )}
         </div>
       ) : (
@@ -276,9 +367,11 @@ function InvoicesPageInner() {
                 {rowsHienThi.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="text-muted text-center py-4">
-                      {list.length === 0
+                      {tongPhanTu === 0
                         ? "Không có hóa đơn trong khoảng ngày đã chọn. Thử mở rộng Từ ngày / Đến ngày."
-                        : "Không có hóa đơn khớp bộ lọc (maBenhNhan)."}
+                        : maBenhNhanParam
+                          ? "Không có hóa đơn khớp bộ lọc (mã bệnh nhân)."
+                          : "Không có dòng trên trang này."}
                     </td>
                   </tr>
                 ) : (
@@ -306,6 +399,38 @@ function InvoicesPageInner() {
               </tbody>
             </Table>
           </div>
+          {tongPhanTu > 0 ? (
+            <Card.Footer className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
+              <div className="small text-muted">
+                Hiển thị {trang * kichThuoc + 1}–
+                {Math.min((trang + 1) * kichThuoc, tongPhanTu)} trong{" "}
+                {tongPhanTu} hóa đơn
+              </div>
+              <Pagination className="mb-0 flex-wrap">
+                <Pagination.First
+                  disabled={trang <= 0}
+                  onClick={() => setTrang(0)}
+                />
+                <Pagination.Prev
+                  disabled={trang <= 0}
+                  onClick={() => setTrang((p) => Math.max(0, p - 1))}
+                />
+                <Pagination.Item active className="user-select-none">
+                  {trang + 1} / {tongTrang}
+                </Pagination.Item>
+                <Pagination.Next
+                  disabled={trang >= tongTrang - 1}
+                  onClick={() =>
+                    setTrang((p) => Math.min(tongTrang - 1, p + 1))
+                  }
+                />
+                <Pagination.Last
+                  disabled={trang >= tongTrang - 1}
+                  onClick={() => setTrang(tongTrang - 1)}
+                />
+              </Pagination>
+            </Card.Footer>
+          ) : null}
         </Card>
       )}
     </div>

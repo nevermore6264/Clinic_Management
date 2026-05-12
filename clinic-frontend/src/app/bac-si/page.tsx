@@ -12,6 +12,7 @@ import {
   Modal,
   Row,
   Col,
+  Pagination,
   Table,
 } from "react-bootstrap";
 import Link from "next/link";
@@ -26,6 +27,7 @@ import {
 } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { notify } from "@/lib/notify";
+import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
 import DOMPurify from "dompurify";
 import "react-quill/dist/quill.snow.css";
 
@@ -144,6 +146,8 @@ export default function QuanLyBacSiPage() {
   const [quaTrinhCongTacSua, setQuaTrinhCongTacSua] = useState("");
   const [thanhTichDatDuocSua, setThanhTichDatDuocSua] = useState("");
   const [hoatDongSua, setHoatDongSua] = useState(true);
+  const [trang, setTrang] = useState(0);
+  const [kichThuocTrang, setKichThuocTrang] = useState(10);
 
   const napDuLieu = useCallback(async () => {
     try {
@@ -200,6 +204,16 @@ export default function QuanLyBacSiPage() {
     }
     return taiKhoanBsChuaGan;
   }, [taiKhoanBsChuaGan, taoMaNguoiDung, nguoiDung]);
+
+  const tongTrangBs = tongSoTrangClient(list.length, kichThuocTrang);
+  const dongTrangBs = useMemo(
+    () => catTrang(list, trang, kichThuocTrang),
+    [list, trang, kichThuocTrang],
+  );
+
+  useEffect(() => {
+    setTrang(0);
+  }, [list.length, kichThuocTrang]);
 
   const chuyenKhoaSauLoc = useMemo(() => {
     const q = taoLocCk.trim().toLowerCase();
@@ -481,6 +495,24 @@ export default function QuanLyBacSiPage() {
       {error ? <Alert variant="danger">{error}</Alert> : null}
 
       <Card>
+        <Card.Header className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-2">
+          <span className="small text-muted mb-0">
+            {list.length} bác sĩ · trang {trang + 1}/{tongTrangBs}
+          </span>
+          <Form.Select
+            size="sm"
+            style={{ maxWidth: "8rem" }}
+            value={kichThuocTrang}
+            onChange={(e) =>
+              setKichThuocTrang(Number(e.target.value) || 10)
+            }
+          >
+            <option value={5}>5 / trang</option>
+            <option value={10}>10 / trang</option>
+            <option value={20}>20 / trang</option>
+            <option value={50}>50 / trang</option>
+          </Form.Select>
+        </Card.Header>
         <Table responsive hover className="mb-0 align-middle">
           <thead>
             <tr>
@@ -496,7 +528,7 @@ export default function QuanLyBacSiPage() {
             </tr>
           </thead>
           <tbody>
-            {list.map((b) => (
+            {dongTrangBs.map((b) => (
               <tr key={b.id}>
                 <td>{b.hoTen ?? "—"}</td>
                 <td>
@@ -572,6 +604,25 @@ export default function QuanLyBacSiPage() {
             ) : null}
           </tbody>
         </Table>
+        {list.length > 0 ? (
+          <Card.Footer className="d-flex flex-wrap justify-content-end py-2">
+            <Pagination className="mb-0 flex-wrap">
+              <Pagination.Prev
+                disabled={trang <= 0}
+                onClick={() => setTrang((p) => Math.max(0, p - 1))}
+              />
+              <Pagination.Item active className="user-select-none">
+                {trang + 1} / {tongTrangBs}
+              </Pagination.Item>
+              <Pagination.Next
+                disabled={trang >= tongTrangBs - 1}
+                onClick={() =>
+                  setTrang((p) => Math.min(tongTrangBs - 1, p + 1))
+                }
+              />
+            </Pagination>
+          </Card.Footer>
+        ) : null}
       </Card>
 
       <Modal

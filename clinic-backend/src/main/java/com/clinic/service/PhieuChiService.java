@@ -1,6 +1,7 @@
 package com.clinic.service;
 
 import com.clinic.dto.PhieuChiDto;
+import com.clinic.dto.PhieuChiTongHopDto;
 import com.clinic.entity.PhieuChi;
 import com.clinic.repository.PhieuChiRepository;
 import com.clinic.security.NguoiDungChinhThuc;
@@ -14,13 +15,50 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class PhieuChiService {
 
     private final PhieuChiRepository phieuChiRepository;
+
+    @Transactional(readOnly = true)
+    public PhieuChiTongHopDto tongHop(LocalDate tuNgay, LocalDate denNgay) {
+        BigDecimal tong;
+        long dem;
+        List<Object[]> rows;
+        if (tuNgay != null && denNgay != null) {
+            tong = phieuChiRepository.tongTienTrongKhoang(tuNgay, denNgay);
+            dem = phieuChiRepository.demTrongKhoang(tuNgay, denNgay);
+            rows = phieuChiRepository.tongTienTheoLoaiTrongKhoang(tuNgay, denNgay);
+        } else {
+            tong = phieuChiRepository.tongTienToanBo();
+            dem = phieuChiRepository.demToanBo();
+            rows = phieuChiRepository.tongTienTheoLoaiToanBo();
+        }
+        if (tong == null) {
+            tong = BigDecimal.ZERO;
+        }
+        Map<String, BigDecimal> tienTheoLoai = new LinkedHashMap<>();
+        for (Object[] row : rows) {
+            if (row == null || row.length < 2 || row[0] == null) {
+                continue;
+            }
+            PhieuChi.LoaiPhieuChi loai = (PhieuChi.LoaiPhieuChi) row[0];
+            BigDecimal t = row[1] instanceof BigDecimal b ? b : BigDecimal.ZERO;
+            tienTheoLoai.put(loai.name(), t);
+        }
+        return PhieuChiTongHopDto.builder()
+                .soPhieu(dem)
+                .tongTien(tong)
+                .tienTheoLoai(tienTheoLoai)
+                .build();
+    }
 
     @Transactional(readOnly = true)
     public Page<PhieuChiDto> timTheoKhoang(LocalDate tuNgay, LocalDate denNgay, Pageable phanTrang) {

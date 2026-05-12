@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Table, Button, Form, Alert, Modal } from "react-bootstrap";
+import { Card, Table, Button, Form, Alert, Modal, Pagination } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
 import { patientsApi, usersApi, type BenhNhan, type ThongTinNguoiDungDto } from "@/lib/api";
+import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
 
 const ROLES = ["QUAN_TRI", "LE_TAN", "BAC_SI", "THU_NGAN", "BENH_NHAN"];
 
@@ -53,6 +54,8 @@ export default function UsersPage() {
     null | { loai: "khoa" | "mo"; nguoi: ThongTinNguoiDungDto }
   >(null);
   const [dangKhoa, setDangKhoa] = useState(false);
+  const [trang, setTrang] = useState(0);
+  const [kichThuocTrang, setKichThuocTrang] = useState(15);
 
   const loadUsers = () =>
     usersApi
@@ -225,6 +228,16 @@ export default function UsersPage() {
     return khopTuKhoa && khopTrangThai && khopVaiTro;
   });
 
+  const tongTrang = tongSoTrangClient(danhSachLoc.length, kichThuocTrang);
+  const dongTrang = useMemo(
+    () => catTrang(danhSachLoc, trang, kichThuocTrang),
+    [danhSachLoc, trang, kichThuocTrang],
+  );
+
+  useEffect(() => {
+    setTrang(0);
+  }, [tuKhoa, boLocTrangThai, boLocVaiTro, kichThuocTrang]);
+
   const exportCsv = () => {
     const rows = [
       ["Ten dang nhap", "Ho ten", "Email", "So dien thoai", "Vai tro", "Trang thai"],
@@ -279,14 +292,14 @@ export default function UsersPage() {
       <Card className="mb-3 card--static">
         <Card.Body className="py-3">
           <div className="row g-2">
-            <div className="col-md-5">
+            <div className="col-12 col-md-4">
               <Form.Control
                 placeholder="Tìm tên đăng nhập, họ tên, email, SĐT..."
                 value={tuKhoa}
                 onChange={(e) => setTuKhoa(e.target.value)}
               />
             </div>
-            <div className="col-md-3">
+            <div className="col-6 col-md-2">
               <Form.Select
                 value={boLocTrangThai}
                 onChange={(e) => setBoLocTrangThai(e.target.value)}
@@ -296,7 +309,7 @@ export default function UsersPage() {
                 <option value="bi-khoa">Đã khóa</option>
               </Form.Select>
             </div>
-            <div className="col-md-3">
+            <div className="col-6 col-md-2">
               <Form.Select value={boLocVaiTro} onChange={(e) => setBoLocVaiTro(e.target.value)}>
                 <option value="tat-ca">Tất cả vai trò</option>
                 {ROLES.map((r) => (
@@ -306,7 +319,20 @@ export default function UsersPage() {
                 ))}
               </Form.Select>
             </div>
-            <div className="col-md-1 d-flex align-items-center">
+            <div className="col-6 col-md-2">
+              <Form.Select
+                value={kichThuocTrang}
+                onChange={(e) =>
+                  setKichThuocTrang(Number(e.target.value) || 15)
+                }
+              >
+                <option value={10}>10 / trang</option>
+                <option value={15}>15 / trang</option>
+                <option value={25}>25 / trang</option>
+                <option value={50}>50 / trang</option>
+              </Form.Select>
+            </div>
+            <div className="col-6 col-md-2 d-flex align-items-stretch">
               <Button
                 variant="secondary"
                 className="w-100"
@@ -314,6 +340,7 @@ export default function UsersPage() {
                   setTuKhoa("");
                   setBoLocTrangThai("tat-ca");
                   setBoLocVaiTro("tat-ca");
+                  setTrang(0);
                 }}
               >
                 <i className="bi bi-arrow-counterclockwise me-2" aria-hidden />
@@ -335,7 +362,7 @@ export default function UsersPage() {
             </tr>
           </thead>
           <tbody>
-            {danhSachLoc.map((u) => (
+            {dongTrang.map((u) => (
               <tr key={u.id}>
                 <td>{u.tenDangNhap}</td>
                 <td>{u.hoTen || "—"}</td>
@@ -408,6 +435,29 @@ export default function UsersPage() {
             ) : null}
           </tbody>
         </Table>
+        {danhSachLoc.length > 0 ? (
+          <Card.Footer className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
+            <div className="small text-muted">
+              {danhSachLoc.length} tài khoản khớp lọc · trang {trang + 1}/
+              {tongTrang}
+            </div>
+            <Pagination className="mb-0 flex-wrap">
+              <Pagination.Prev
+                disabled={trang <= 0}
+                onClick={() => setTrang((p) => Math.max(0, p - 1))}
+              />
+              <Pagination.Item active className="user-select-none">
+                {trang + 1} / {tongTrang}
+              </Pagination.Item>
+              <Pagination.Next
+                disabled={trang >= tongTrang - 1}
+                onClick={() =>
+                  setTrang((p) => Math.min(tongTrang - 1, p + 1))
+                }
+              />
+            </Pagination>
+          </Card.Footer>
+        ) : null}
       </Card>
 
       {xacNhanKhoa ? (

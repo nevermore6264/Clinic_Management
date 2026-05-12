@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Alert, Button, Card, Table } from "react-bootstrap";
+import { Alert, Button, Card, Form, Pagination, Table } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
 import { thuocApi, type DonThuocChiTietBangKe } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
+import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
 
 export default function DonThuocPage() {
   const { user, loading } = useAuth();
@@ -14,6 +15,8 @@ export default function DonThuocPage() {
 
   const [error, setError] = useState("");
   const [rows, setRows] = useState<DonThuocChiTietBangKe[]>([]);
+  const [trang, setTrang] = useState(0);
+  const [kichThuoc, setKichThuoc] = useState(20);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -33,6 +36,16 @@ export default function DonThuocPage() {
       .catch((e) => setError(e instanceof Error ? e.message : "Lỗi"));
   }, [user]);
 
+  const tongTrang = tongSoTrangClient(rows.length, kichThuoc);
+  const dongTrang = useMemo(
+    () => catTrang(rows, trang, kichThuoc),
+    [rows, trang, kichThuoc],
+  );
+
+  useEffect(() => {
+    setTrang(0);
+  }, [rows.length, kichThuoc]);
+
   if (loading) return null;
   if (!user) return null;
   if (!user.cacVaiTro.includes("QUAN_TRI")) return null;
@@ -43,7 +56,22 @@ export default function DonThuocPage() {
         title="Đơn thuốc"
         subtitle="Chi tiết đơn thuốc theo hồ sơ khám."
       >
-        <div className="d-flex gap-2 flex-wrap">
+        <div className="d-flex gap-2 flex-wrap align-items-center">
+          <Form.Group className="mb-0">
+            <Form.Label className="small text-muted mb-1">Số dòng / trang</Form.Label>
+            <Form.Select
+              size="sm"
+              style={{ minWidth: "5.5rem" }}
+              value={kichThuoc}
+              onChange={(e) =>
+                setKichThuoc(Number(e.target.value) || 20)
+              }
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </Form.Select>
+          </Form.Group>
           <Link
             href="/thuoc"
             className="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-2"
@@ -78,7 +106,7 @@ export default function DonThuocPage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((d) => (
+                {dongTrang.map((d) => (
                   <tr key={d.maChiTiet}>
                     <td>{d.ngayHen ?? "—"}</td>
                     <td>{d.gioHen != null ? String(d.gioHen).slice(0, 5) : "—"}</td>
@@ -111,6 +139,28 @@ export default function DonThuocPage() {
               </tbody>
             </Table>
           </div>
+          {rows.length > 0 ? (
+            <Card.Footer className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
+              <div className="small text-muted">
+                Trang {trang + 1}/{tongTrang} · {rows.length} dòng
+              </div>
+              <Pagination className="mb-0 flex-wrap">
+                <Pagination.Prev
+                  disabled={trang <= 0}
+                  onClick={() => setTrang((p) => Math.max(0, p - 1))}
+                />
+                <Pagination.Item active className="user-select-none">
+                  {trang + 1} / {tongTrang}
+                </Pagination.Item>
+                <Pagination.Next
+                  disabled={trang >= tongTrang - 1}
+                  onClick={() =>
+                    setTrang((p) => Math.min(tongTrang - 1, p + 1))
+                  }
+                />
+              </Pagination>
+            </Card.Footer>
+          ) : null}
         </Card.Body>
       </Card>
     </div>

@@ -55,6 +55,16 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
   }
 }
 
+export interface TrangSpring<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  last?: boolean;
+  first?: boolean;
+}
+
 export const authApi = {
   doiMatKhau: (matKhauHienTai: string, matKhauMoi: string) =>
     api<void>("/xac-thuc/doi-mat-khau", {
@@ -128,9 +138,7 @@ export const benhNhanApi = {
     }
     if (loc?.gioiTinh) q.set("gioiTinh", loc.gioiTinh);
     if (loc?.nhomMau) q.set("nhomMau", loc.nhomMau);
-    return api<{ content: BenhNhan[]; totalElements: number }>(
-      `/benh-nhan?${q.toString()}`,
-    );
+    return api<TrangSpring<BenhNhan>>(`/benh-nhan?${q.toString()}`);
   },
   timKiem: (ten: string) =>
     api<BenhNhan[]>(`/benh-nhan/tim-kiem?ten=${encodeURIComponent(ten)}`),
@@ -231,7 +239,7 @@ export const loaiDichVuApi = {
 
 export const lichHenApi = {
   danhSach: (tuNgay: string, denNgay: string, page = 0, size = 20) =>
-    api<{ content: LichHen[]; totalElements: number }>(
+    api<TrangSpring<LichHen>>(
       `/lich-hen?tuNgay=${tuNgay}&denNgay=${denNgay}&page=${page}&size=${size}`,
     ),
   theoBenhNhan: (maBenhNhan: number) =>
@@ -310,18 +318,18 @@ export const thuocApi = {
     sort?: string;
   }) => {
     const q = new URLSearchParams();
-    if (params.tuKhoa?.trim()) q.set("tuKhoa", params.tuKhoa.trim());
+    if (params.tuKhoa) q.set("tuKhoa", params.tuKhoa);
     if (params.trangThai) q.set("trangThai", params.trangThai);
-    if (params.donVi?.trim()) q.set("donVi", params.donVi.trim());
-    if (params.dangBaoChe?.trim()) q.set("dangBaoChe", params.dangBaoChe.trim());
-    if (params.duongDung?.trim()) q.set("duongDung", params.duongDung.trim());
-    if (params.hangSanXuat?.trim()) q.set("hangSanXuat", params.hangSanXuat.trim());
-    if (params.nuocSanXuat?.trim()) q.set("nuocSanXuat", params.nuocSanXuat.trim());
-    if (params.tonThap) q.set("tonThap", "true");
-    if (params.hanTu?.trim()) q.set("hanTu", params.hanTu.trim());
-    if (params.hanDen?.trim()) q.set("hanDen", params.hanDen.trim());
-    if (params.giaBanTu?.trim()) q.set("giaBanTu", params.giaBanTu.trim());
-    if (params.giaBanDen?.trim()) q.set("giaBanDen", params.giaBanDen.trim());
+    if (params.donVi) q.set("donVi", params.donVi);
+    if (params.dangBaoChe) q.set("dangBaoChe", params.dangBaoChe);
+    if (params.duongDung) q.set("duongDung", params.duongDung);
+    if (params.hangSanXuat) q.set("hangSanXuat", params.hangSanXuat);
+    if (params.nuocSanXuat) q.set("nuocSanXuat", params.nuocSanXuat);
+    if (params.tonThap === true) q.set("tonThap", "true");
+    if (params.hanTu) q.set("hanTu", params.hanTu);
+    if (params.hanDen) q.set("hanDen", params.hanDen);
+    if (params.giaBanTu) q.set("giaBanTu", params.giaBanTu);
+    if (params.giaBanDen) q.set("giaBanDen", params.giaBanDen);
     q.set("page", String(params.page ?? 0));
     q.set("size", String(params.size ?? 20));
     q.set("sort", params.sort ?? "tenThuoc,asc");
@@ -339,12 +347,27 @@ export const thuocApi = {
   xoa: (id: number) => api<void>(`/thuoc/${id}`, { method: "DELETE" }),
 };
 
+export interface PhieuChiTongHop {
+  soPhieu: number;
+  tongTien: number;
+  tienTheoLoai: Record<string, number>;
+}
+
 export const phieuChiApi = {
   danhSach: (tuNgay?: string, denNgay?: string, page = 0, size = 20) => {
     let q = `/phieu-chi?page=${page}&size=${size}`;
     if (tuNgay) q += `&tuNgay=${tuNgay}`;
     if (denNgay) q += `&denNgay=${denNgay}`;
-    return api<{ content: PhieuChi[]; totalElements: number }>(q);
+    return api<TrangSpring<PhieuChi>>(q);
+  },
+  tongHop: (tuNgay?: string, denNgay?: string) => {
+    const p = new URLSearchParams();
+    if (tuNgay) p.set("tuNgay", tuNgay);
+    if (denNgay) p.set("denNgay", denNgay);
+    const qs = p.toString();
+    return api<PhieuChiTongHop>(
+      qs ? `/phieu-chi/tong-hop?${qs}` : "/phieu-chi/tong-hop",
+    );
   },
   layTheoMa: (id: number) => api<PhieuChi>(`/phieu-chi/${id}`),
   tao: (data: Partial<PhieuChi>) =>
@@ -359,7 +382,7 @@ export const phieuChiApi = {
 
 export const hoaDonApi = {
   danhSach: (tuNgay: string, denNgay: string, page = 0, size = 20) =>
-    api<{ content: HoaDon[]; totalElements: number }>(
+    api<TrangSpring<HoaDon>>(
       `/hoa-don?tuNgay=${tuNgay}&denNgay=${denNgay}&page=${page}&size=${size}`,
     ),
   theoBenhNhan: (maBenhNhan: number) =>
@@ -457,7 +480,7 @@ export const cauHinhNhacLichApi = {
 
 export const nhatKyHeThongApi = {
   danhSach: (tuNgay: string, denNgay: string, page = 0, size = 20) =>
-    api<{ content: NhatKyHeThongEntry[]; totalElements: number }>(
+    api<TrangSpring<NhatKyHeThongEntry>>(
       `/nhat-ky-he-thong?tuNgay=${tuNgay}&denNgay=${denNgay}&page=${page}&size=${size}`,
     ),
 };
@@ -945,7 +968,6 @@ export interface Thuoc {
   hoatDong?: boolean;
 }
 
-/** Trang kết quả GET /thuoc/tim-kiem (Spring Data Page) */
 export interface ThuocTrangTraCuu {
   content: Thuoc[];
   totalElements: number;

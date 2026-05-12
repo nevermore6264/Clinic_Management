@@ -12,10 +12,15 @@ import {
   Row,
   Col,
   Badge,
+  Pagination,
 } from "react-bootstrap";
 import type { CSSProperties } from "react";
 import { useAuth } from "@/lib/useAuth";
-import { phieuChiApi, type PhieuChi } from "@/lib/api";
+import {
+  phieuChiApi,
+  type PhieuChi,
+  type PhieuChiTongHop,
+} from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
 
 const LOAI_OPTIONS = [
@@ -87,7 +92,10 @@ export default function PhieuChiPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [list, setList] = useState<PhieuChi[]>([]);
-  const [total, setTotal] = useState(0);
+  const [trang, setTrang] = useState(0);
+  const [kichThuocTrang, setKichThuocTrang] = useState(20);
+  const [tongTrang, setTongTrang] = useState(1);
+  const [tongHop, setTongHop] = useState<PhieuChiTongHop | null>(null);
   const [tuNgay, setTuNgay] = useState(monthStartISO);
   const [denNgay, setDenNgay] = useState(todayISO);
   const [error, setError] = useState("");
@@ -110,33 +118,39 @@ export default function PhieuChiPage() {
   }, [user, loading, router, allowed]);
 
   const load = useCallback(() => {
-    phieuChiApi
-      .danhSach(tuNgay, denNgay, 0, 500)
-      .then((p) => {
+    Promise.all([
+      phieuChiApi.danhSach(tuNgay, denNgay, trang, kichThuocTrang),
+      phieuChiApi.tongHop(tuNgay, denNgay),
+    ])
+      .then(([p, th]) => {
         setList(p.content);
-        setTotal(p.totalElements);
+        const tp = Math.max(1, p.totalPages ?? 1);
+        setTongTrang(tp);
+        setTongHop(th);
+        if (trang >= tp) {
+          setTrang(0);
+        }
       })
       .catch((e) => setError(e.message));
-  }, [tuNgay, denNgay]);
+  }, [tuNgay, denNgay, trang, kichThuocTrang]);
 
   useEffect(() => {
     if (!allowed) return;
     load();
-  }, [user, tuNgay, denNgay, allowed, load]);
+  }, [user, allowed, load]);
 
-  const tongChi = useMemo(
-    () => list.reduce((s, p) => s + (Number(p.soTien) || 0), 0),
-    [list],
-  );
+  const tongSoPhieu = tongHop?.soPhieu ?? 0;
+  const tongChi = Number(tongHop?.tongTien ?? 0);
 
   const chiTheoLoai = useMemo(() => {
+    const raw = tongHop?.tienTheoLoai;
+    if (!raw) return {} as Record<string, number>;
     const m: Record<string, number> = {};
-    for (const p of list) {
-      const k = p.loai ?? "KHAC";
-      m[k] = (m[k] ?? 0) + (Number(p.soTien) || 0);
+    for (const [k, v] of Object.entries(raw)) {
+      m[k] = Number(v) || 0;
     }
     return m;
-  }, [list]);
+  }, [tongHop]);
 
   const topLoaiLabel = useMemo(() => {
     let max = 0;
@@ -153,6 +167,7 @@ export default function PhieuChiPage() {
   }, [chiTheoLoai]);
 
   const applyPreset = (preset: "month" | "7d" | "30d") => {
+    setTrang(0);
     const end = new Date();
     const endStr = end.toISOString().slice(0, 10);
     if (preset === "month") {
@@ -249,11 +264,11 @@ export default function PhieuChiPage() {
           <Col xs={6} md={4}>
             <StatMini
               label="Số phiếu"
-              value={String(total)}
+              value={String(tongSoPhieu)}
               hint={
-                total > list.length
-                  ? `Hiển thị ${list.length}/${total} (giới hạn 500 dòng)`
-                  : `${list.length} phiếu`
+                tongSoPhieu > 0
+                  ? `Trang ${trang + 1}/${tongTrang} · ${list.length} dòng/trang`
+                  : "Chưa có phiếu"
               }
               icon="bi-receipt-cutoff"
               accent="#0d9488"
@@ -265,9 +280,11 @@ export default function PhieuChiPage() {
             <StatMini
               label="Trung bình / phiếu"
               value={
-                list.length ? fmtMoney(Math.round(tongChi / list.length)) : "—"
+                tongSoPhieu > 0
+                  ? fmtMoney(Math.round(tongChi / tongSoPhieu))
+                  : "—"
               }
-              hint={list.length ? "Trong khoảng ngày đã chọn" : "—"}
+              hint={tongSoPhieu > 0 ? "Trong khoảng ngày đã chọn" : "—"}
               icon="bi-calculator"
               accent="#2563eb"
               iconBg="rgba(96, 165, 250, 0.22)"
@@ -314,7 +331,10 @@ export default function PhieuChiPage() {
               <Form.Control
                 type="date"
                 value={tuNgay}
-                onChange={(e) => setTuNgay(e.target.value)}
+                onChange={(e) => {
+                  setTuNgay(e.target.value);
+                  setTrang(0);
+                }}
                 className="phieu-chi-date"
               />
             </div>
@@ -325,7 +345,10 @@ export default function PhieuChiPage() {
               <Form.Control
                 type="date"
                 value={denNgay}
-                onChange={(e) => setDenNgay(e.target.value)}
+                onChange={(e) => {
+                  setDenNgay(e.target.value);
+                  setTrang(0);
+                }}
                 className="phieu-chi-date"
               />
             </div>
@@ -342,8 +365,25 @@ export default function PhieuChiPage() {
           </div>
           <div className="small text-muted mt-3 mb-0">
             <i className="bi bi-info-circle me-1" aria-hidden />
-            {total} bản ghi khớp khoảng thời gian · tổng hiển thị{" "}
+            {tongSoPhieu} bản ghi khớp khoảng thời gian · tổng chi{" "}
             <strong className="text-body">{fmtMoney(tongChi)}</strong>
+            {" · "}
+            <span className="text-nowrap">
+              Số dòng/trang{" "}
+              <Form.Select
+                size="sm"
+                className="d-inline-block w-auto ms-1"
+                value={kichThuocTrang}
+                onChange={(e) => {
+                  setKichThuocTrang(Number(e.target.value) || 20);
+                  setTrang(0);
+                }}
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </Form.Select>
+            </span>
           </div>
         </Card.Body>
       </Card>
@@ -355,7 +395,7 @@ export default function PhieuChiPage() {
       )}
 
       <Card className="border-0 shadow-sm overflow-hidden phieu-chi-table-card">
-        {list.length === 0 ? (
+        {tongSoPhieu === 0 ? (
           <Card.Body className="text-center py-5 px-4">
             <div className="phieu-chi-empty-icon mx-auto mb-3">
               <i className="bi bi-inboxes" aria-hidden />
@@ -435,8 +475,45 @@ export default function PhieuChiPage() {
                     </tr>
                   );
                 })}
+                {list.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center text-muted py-4">
+                      Không có dòng trên trang này.
+                    </td>
+                  </tr>
+                ) : null}
               </tbody>
             </Table>
+            {tongSoPhieu > 0 ? (
+              <Card.Footer className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
+                <div className="small text-muted">
+                  Trang {trang + 1} / {tongTrang}
+                </div>
+                <Pagination className="mb-0 flex-wrap">
+                  <Pagination.First
+                    disabled={trang <= 0}
+                    onClick={() => setTrang(0)}
+                  />
+                  <Pagination.Prev
+                    disabled={trang <= 0}
+                    onClick={() => setTrang((p) => Math.max(0, p - 1))}
+                  />
+                  <Pagination.Item active className="user-select-none">
+                    {trang + 1} / {tongTrang}
+                  </Pagination.Item>
+                  <Pagination.Next
+                    disabled={trang >= tongTrang - 1}
+                    onClick={() =>
+                      setTrang((p) => Math.min(tongTrang - 1, p + 1))
+                    }
+                  />
+                  <Pagination.Last
+                    disabled={trang >= tongTrang - 1}
+                    onClick={() => setTrang(tongTrang - 1)}
+                  />
+                </Pagination>
+              </Card.Footer>
+            ) : null}
           </div>
         )}
       </Card>

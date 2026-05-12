@@ -9,6 +9,7 @@ import {
   Card,
   Form,
   Modal,
+  Pagination,
   Table,
 } from "react-bootstrap";
 import Link from "next/link";
@@ -20,6 +21,7 @@ import {
 } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { notify } from "@/lib/notify";
+import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
 
 export default function ServiceTypesPage() {
   const { user, loading } = useAuth();
@@ -35,6 +37,8 @@ export default function ServiceTypesPage() {
   const [mucCanXoa, setMucCanXoa] = useState<LoaiDichVu | null>(null);
   const [dangXoa, setDangXoa] = useState(false);
   const [loaiXemDichVu, setLoaiXemDichVu] = useState<LoaiDichVu | null>(null);
+  const [trang, setTrang] = useState(0);
+  const [kichThuocTrang, setKichThuocTrang] = useState(15);
 
   const napDuLieu = async () => {
     try {
@@ -62,6 +66,16 @@ export default function ServiceTypesPage() {
     if (!loaiXemDichVu) return [];
     return danhSachDichVu.filter((d) => d.maLoaiDichVu === loaiXemDichVu.id);
   }, [danhSachDichVu, loaiXemDichVu]);
+
+  const tongTrangLoai = tongSoTrangClient(list.length, kichThuocTrang);
+  const dongTrangLoai = useMemo(
+    () => catTrang(list, trang, kichThuocTrang),
+    [list, trang, kichThuocTrang],
+  );
+
+  useEffect(() => {
+    setTrang(0);
+  }, [list.length, kichThuocTrang]);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -282,6 +296,23 @@ export default function ServiceTypesPage() {
       {error ? <Alert variant="danger">{error}</Alert> : null}
 
       <Card>
+        <Card.Header className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-2">
+          <span className="small text-muted mb-0">
+            {list.length} loại · trang {trang + 1}/{tongTrangLoai}
+          </span>
+          <Form.Select
+            size="sm"
+            style={{ maxWidth: "8rem" }}
+            value={kichThuocTrang}
+            onChange={(e) =>
+              setKichThuocTrang(Number(e.target.value) || 15)
+            }
+          >
+            <option value={10}>10 / trang</option>
+            <option value={15}>15 / trang</option>
+            <option value={25}>25 / trang</option>
+          </Form.Select>
+        </Card.Header>
         <Table responsive hover className="mb-0">
           <thead>
             <tr>
@@ -291,7 +322,7 @@ export default function ServiceTypesPage() {
             </tr>
           </thead>
           <tbody>
-            {list.map((item) => (
+            {dongTrangLoai.map((item) => (
               <tr key={item.id}>
                 <td>
                   {dangSuaId === item.id ? (
@@ -392,6 +423,25 @@ export default function ServiceTypesPage() {
             ) : null}
           </tbody>
         </Table>
+        {list.length > 0 ? (
+          <Card.Footer className="d-flex flex-wrap justify-content-end py-2">
+            <Pagination className="mb-0 flex-wrap">
+              <Pagination.Prev
+                disabled={trang <= 0}
+                onClick={() => setTrang((p) => Math.max(0, p - 1))}
+              />
+              <Pagination.Item active className="user-select-none">
+                {trang + 1} / {tongTrangLoai}
+              </Pagination.Item>
+              <Pagination.Next
+                disabled={trang >= tongTrangLoai - 1}
+                onClick={() =>
+                  setTrang((p) => Math.min(tongTrangLoai - 1, p + 1))
+                }
+              />
+            </Pagination>
+          </Card.Footer>
+        ) : null}
       </Card>
 
       <Modal

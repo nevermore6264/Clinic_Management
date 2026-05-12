@@ -2,6 +2,7 @@ package com.clinic.service;
 
 import com.clinic.dto.DichVuDto;
 import com.clinic.entity.DichVu;
+import com.clinic.repository.ChuyenKhoaRepository;
 import com.clinic.repository.DichVuRepository;
 import com.clinic.repository.LoaiDichVuRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class XuLyDichVuService {
 
     private final DichVuRepository dichVuRepository;
     private final LoaiDichVuRepository loaiDichVuRepository;
+    private final ChuyenKhoaRepository chuyenKhoaRepository;
     private final NhatKyHeThongService nhatKyHeThongService;
 
     @Transactional(readOnly = true)
@@ -68,6 +70,7 @@ public class XuLyDichVuService {
         return "ten=" + dv.getTen()
                 + ";gia=" + dv.getGia()
                 + ";maLoaiDichVu=" + (dv.getLoaiDichVu() != null ? dv.getLoaiDichVu().getId() : null)
+                + ";maChuyenKhoa=" + (dv.getChuyenKhoa() != null ? dv.getChuyenKhoa().getId() : null)
                 + ";hoatDong=" + dv.isHoatDong();
     }
 
@@ -79,6 +82,12 @@ public class XuLyDichVuService {
             dv.setLoaiDichVu(loaiDichVuRepository.findById(dto.getMaLoaiDichVu())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy loại dịch vụ: " + dto.getMaLoaiDichVu())));
         }
+        if (dto.getMaChuyenKhoa() != null) {
+            dv.setChuyenKhoa(chuyenKhoaRepository.findById(dto.getMaChuyenKhoa())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy chuyên khoa: " + dto.getMaChuyenKhoa())));
+        } else {
+            dv.setChuyenKhoa(null);
+        }
         dv.setHoatDong(dto.isHoatDong());
     }
 
@@ -87,6 +96,8 @@ public class XuLyDichVuService {
         dto.setId(dv.getId());
         dto.setMaLoaiDichVu(dv.getLoaiDichVu() != null ? dv.getLoaiDichVu().getId() : null);
         dto.setTenLoaiDichVu(dv.getLoaiDichVu() != null ? dv.getLoaiDichVu().getTenLoaiDichVu() : null);
+        dto.setMaChuyenKhoa(dv.getChuyenKhoa() != null ? dv.getChuyenKhoa().getId() : null);
+        dto.setTenChuyenKhoa(dv.getChuyenKhoa() != null ? dv.getChuyenKhoa().getTenChuyenKhoa() : null);
         dto.setTen(dv.getTen());
         dto.setMoTa(dv.getMoTa());
         dto.setGia(dv.getGia());

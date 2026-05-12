@@ -9,6 +9,8 @@ public class DichVuDto {
     private Long id;
     private Long maLoaiDichVu;
     private String tenLoaiDichVu;
+    private Long maChuyenKhoa;
+    private String tenChuyenKhoa;
     private String ten;
     private String moTa;
     private BigDecimal gia;

@@ -913,6 +913,8 @@ export interface DichVu {
   id: number;
   maLoaiDichVu?: number;
   tenLoaiDichVu?: string;
+  maChuyenKhoa?: number | null;
+  tenChuyenKhoa?: string | null;
   ten: string;
   moTa?: string;
   gia: number;

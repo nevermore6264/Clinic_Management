@@ -626,6 +626,11 @@ function AppointmentsPageInner() {
     );
   }, [benhNhanDuocChon, locBenhNhan]);
 
+  const dichVuDaChon = useMemo(() => {
+    if (!serviceId) return undefined;
+    return services.find((x) => String(x.id) === serviceId);
+  }, [serviceId, services]);
+
   const bacSiCoCaTheoNgay = useMemo(() => {
     const today = isoDateLocal(new Date());
     const laHomNay = appointmentDate === today;
@@ -652,26 +657,46 @@ function AppointmentsPageInner() {
 
   const bacSiSauLoc = useMemo(() => {
     const q = locBacSi.trim().toLowerCase();
-    const ds = doctors.filter((d) => {
+    let ds = doctors.filter((d) => {
       if (!appointmentDate || isDangTaiCaKham) return false;
       return bacSiCoCaTheoNgay[d.id] === true;
     });
+    const maDvCk = dichVuDaChon?.maChuyenKhoa;
+    if (maDvCk != null && !Number.isNaN(Number(maDvCk))) {
+      ds = ds.filter((d) => Number(d.maChuyenKhoa) === Number(maDvCk));
+    }
     if (!q) return ds;
     return ds.filter((d) => {
       const ck = (d.tenChuyenKhoa ?? d.chuyenMon ?? "").toLowerCase();
       return (d.hoTen ?? "").toLowerCase().includes(q) || ck.includes(q);
     });
-  }, [doctors, locBacSi, bacSiCoCaTheoNgay, appointmentDate, isDangTaiCaKham]);
+  }, [
+    doctors,
+    locBacSi,
+    bacSiCoCaTheoNgay,
+    appointmentDate,
+    isDangTaiCaKham,
+    dichVuDaChon,
+  ]);
 
   const dichVuSauLoc = useMemo(() => {
     const q = locDichVu.trim().toLowerCase();
-    if (!q) return services;
-    return services.filter((s) => {
+    const maCkHienTai = locChuyenKhoaId ? Number(locChuyenKhoaId) : undefined;
+    let base = services;
+    if (maCkHienTai != null && !Number.isNaN(maCkHienTai)) {
+      base = services.filter(
+        (s) =>
+          s.maChuyenKhoa == null ||
+          Number(s.maChuyenKhoa) === maCkHienTai,
+      );
+    }
+    if (!q) return base;
+    return base.filter((s) => {
       const ten = (s.ten ?? "").toLowerCase();
       const gia = s.gia != null ? String(s.gia) : "";
       return ten.includes(q) || gia.includes(q);
     });
-  }, [services, locDichVu]);
+  }, [services, locDichVu, locChuyenKhoaId]);
 
   const chonBenhNhanLabel = useMemo(() => {
     if (!patientId) return "— Chọn bệnh nhân —";
@@ -692,9 +717,10 @@ function AppointmentsPageInner() {
     if (!serviceId) return "— Chọn dịch vụ —";
     const s = services.find((x) => String(x.id) === serviceId);
     if (!s) return "— Chọn dịch vụ —";
-    return s.gia != null
-      ? `${s.ten} — ${s.gia.toLocaleString("vi-VN")}đ`
-      : s.ten;
+    const g =
+      s.gia != null ? ` — ${s.gia.toLocaleString("vi-VN")}đ` : "";
+    const ck = s.tenChuyenKhoa ? ` [${s.tenChuyenKhoa}]` : "";
+    return `${s.ten}${ck}${g}`;
   }, [serviceId, services]);
 
   const slotsDaChon = useMemo(() => {
@@ -948,6 +974,15 @@ function AppointmentsPageInner() {
       cancelled = true;
     };
   }, [showDatLich, appointmentDate, locChuyenKhoaId]);
+
+  useEffect(() => {
+    if (!serviceId || !locChuyenKhoaId) return;
+    const s = services.find((x) => String(x.id) === serviceId);
+    if (!s || s.maChuyenKhoa == null) return;
+    if (Number(s.maChuyenKhoa) !== Number(locChuyenKhoaId)) {
+      setServiceId("");
+    }
+  }, [locChuyenKhoaId, serviceId, services]);
 
   useEffect(() => {
     if (!showDatLich || !appointmentDate) return;
@@ -1677,14 +1712,14 @@ function AppointmentsPageInner() {
             )}
             <div className="lich-hen-dat-lich__grid">
               {chiTaiKhoanBn ? (
-              <Form.Group className="mb-3">
+              <Form.Group className="mb-3 lich-hen-dat-lich__span-2">
                 <Form.Label id="label-dat-bn">Bệnh nhân</Form.Label>
                 <div className="form-control-plaintext py-1" aria-labelledby="label-dat-bn">
                   {chonBenhNhanLabel}
                 </div>
               </Form.Group>
             ) : (
-              <Form.Group className="mb-3">
+              <Form.Group className="mb-3 lich-hen-dat-lich__span-2">
                 <Form.Label className="required" id="label-dat-bn">
                   Bệnh nhân
                 </Form.Label>
@@ -1742,8 +1777,7 @@ function AppointmentsPageInner() {
                 </Dropdown>
               </Form.Group>
             )}
-            <Form.Group className="mb-3">
-              <Form.Label className="required">Ngày khám</Form.Label>
+            <Form.Group className="mb-3 lich-hen-dat-lich__span-2">
               <Form.Control
                 type="date"
                 min={todayStr}
@@ -1762,7 +1796,7 @@ function AppointmentsPageInner() {
               </Form.Text>
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label id="label-loc-ck-dat-lich">Chuyên khoa (lọc bác sĩ)</Form.Label>
+              <Form.Label id="label-loc-ck-dat-lich">Chuyên khoa</Form.Label>
               <Form.Select
                 aria-labelledby="label-loc-ck-dat-lich"
                 value={locChuyenKhoaId}
@@ -1771,7 +1805,6 @@ function AppointmentsPageInner() {
                   setDoctorId("");
                   setAppointmentTime("");
                 }}
-                className="mb-3"
               >
                 <option value="">Tất cả chuyên khoa</option>
                 {chuyenKhoa.map((ck) => (
@@ -1780,6 +1813,82 @@ function AppointmentsPageInner() {
                   </option>
                 ))}
               </Form.Select>
+              <Form.Text className="text-muted">
+                Lọc dịch vụ và ca làm việc theo chuyên khoa. Đổi chuyên khoa sẽ bỏ chọn bác sĩ và giờ; dịch vụ
+                chỉ thuộc chuyên khoa khác cũng bị bỏ chọn.
+              </Form.Text>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label className="required" id="label-dat-dv">
+                Dịch vụ
+              </Form.Label>
+              <Dropdown className="bac-si-ck-dropdown w-100">
+                <Dropdown.Toggle
+                  variant="outline-secondary"
+                  id="dropdown-dat-dich-vu"
+                  className="w-100 text-start d-flex justify-content-between align-items-center"
+                  aria-labelledby="label-dat-dv"
+                >
+                  <span className="text-truncate me-2 flex-grow-1">
+                    {chonDichVuLabel}
+                  </span>
+                </Dropdown.Toggle>
+                <Dropdown.Menu className="bac-si-ck-dropdown__menu w-100 shadow-sm pt-2 px-2 pb-2">
+                  <Form.Control
+                    size="sm"
+                    type="search"
+                    placeholder="Tìm trong danh sách…"
+                    value={locDichVu}
+                    onChange={(e) => setLocDichVu(e.target.value)}
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                    autoComplete="off"
+                    aria-label="Lọc dịch vụ"
+                    className="mb-2"
+                  />
+                  <div
+                    className="bac-si-ck-dropdown__list border rounded"
+                    style={{ maxHeight: 220, overflowY: "auto" }}
+                  >
+                    {dichVuSauLoc.length === 0 ? (
+                      <div className="px-2 py-3 text-muted small text-center">
+                        {services.length === 0
+                          ? "Chưa có dịch vụ trong hệ thống."
+                          : locChuyenKhoaId
+                            ? "Không có dịch vụ phù hợp chuyên khoa đã chọn (hoặc không khớp tìm kiếm)."
+                            : "Không có kết quả khớp bộ lọc."}
+                      </div>
+                    ) : (
+                      dichVuSauLoc.map((s) => (
+                        <Dropdown.Item
+                          key={s.id}
+                          active={String(s.id) === serviceId}
+                          onClick={() => {
+                            setServiceId(String(s.id));
+                            setLocDichVu("");
+                            if (
+                              s.maChuyenKhoa != null &&
+                              !Number.isNaN(Number(s.maChuyenKhoa))
+                            ) {
+                              setLocChuyenKhoaId(String(s.maChuyenKhoa));
+                              setDoctorId("");
+                              setAppointmentTime("");
+                            }
+                          }}
+                        >
+                          {s.ten}
+                          {s.tenChuyenKhoa ? ` [${s.tenChuyenKhoa}]` : ""} —{" "}
+                          {s.gia != null
+                            ? `${s.gia.toLocaleString("vi-VN")}đ`
+                            : "—"}
+                        </Dropdown.Item>
+                      ))
+                    )}
+                  </div>
+                </Dropdown.Menu>
+              </Dropdown>
+            </Form.Group>
+            <Form.Group className="mb-3 lich-hen-dat-lich__span-2">
               <Form.Label className="required" id="label-dat-bs">
                 Bác sĩ
               </Form.Label>
@@ -1824,7 +1933,9 @@ function AppointmentsPageInner() {
                             ? "Đang tải…"
                             : doctors.length === 0
                               ? "Chưa có bác sĩ trong hệ thống."
-                              : "Không có bác sĩ nào có ca làm việc trong ngày này."}
+                              : dichVuDaChon?.maChuyenKhoa != null
+                                ? "Không có bác sĩ phù hợp dịch vụ / chuyên khoa hoặc chưa có ca trong ngày này."
+                                : "Không có bác sĩ nào có ca làm việc trong ngày này."}
                       </div>
                     ) : (
                       bacSiSauLoc.map((d) => (
@@ -1847,66 +1958,7 @@ function AppointmentsPageInner() {
                 </Dropdown.Menu>
               </Dropdown>
             </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label className="required" id="label-dat-dv">
-                Dịch vụ
-              </Form.Label>
-              <Dropdown className="bac-si-ck-dropdown w-100">
-                <Dropdown.Toggle
-                  variant="outline-secondary"
-                  id="dropdown-dat-dich-vu"
-                  className="w-100 text-start d-flex justify-content-between align-items-center"
-                  aria-labelledby="label-dat-dv"
-                >
-                  <span className="text-truncate me-2 flex-grow-1">
-                    {chonDichVuLabel}
-                  </span>
-                </Dropdown.Toggle>
-                <Dropdown.Menu className="bac-si-ck-dropdown__menu w-100 shadow-sm pt-2 px-2 pb-2">
-                  <Form.Control
-                    size="sm"
-                    type="search"
-                    placeholder="Tìm trong danh sách…"
-                    value={locDichVu}
-                    onChange={(e) => setLocDichVu(e.target.value)}
-                    onClick={(e) => e.stopPropagation()}
-                    onKeyDown={(e) => e.stopPropagation()}
-                    autoComplete="off"
-                    aria-label="Lọc dịch vụ"
-                    className="mb-2"
-                  />
-                  <div
-                    className="bac-si-ck-dropdown__list border rounded"
-                    style={{ maxHeight: 220, overflowY: "auto" }}
-                  >
-                    {dichVuSauLoc.length === 0 ? (
-                      <div className="px-2 py-3 text-muted small text-center">
-                        {services.length === 0
-                          ? "Chưa có dịch vụ trong hệ thống."
-                          : "Không có kết quả khớp bộ lọc."}
-                      </div>
-                    ) : (
-                      dichVuSauLoc.map((s) => (
-                        <Dropdown.Item
-                          key={s.id}
-                          active={String(s.id) === serviceId}
-                          onClick={() => {
-                            setServiceId(String(s.id));
-                            setLocDichVu("");
-                          }}
-                        >
-                          {s.ten} —{" "}
-                          {s.gia != null
-                            ? `${s.gia.toLocaleString("vi-VN")}đ`
-                            : "—"}
-                        </Dropdown.Item>
-                      ))
-                    )}
-                  </div>
-                </Dropdown.Menu>
-              </Dropdown>
-            </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3 lich-hen-dat-lich__span-2">
               <Form.Label className="required">Giờ khám</Form.Label>
               <Dropdown className="bac-si-ck-dropdown w-100">
                 <Dropdown.Toggle

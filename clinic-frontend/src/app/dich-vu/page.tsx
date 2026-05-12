@@ -6,8 +6,10 @@ import { Table, Button, Card, Alert, Modal, Form, Pagination } from "react-boots
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import {
+  chuyenKhoaApi,
   serviceTypesApi,
   servicesApi,
+  type ChuyenKhoa,
   type DichVu,
   type LoaiDichVu,
 } from "@/lib/api";
@@ -29,6 +31,7 @@ export default function ServicesPage() {
   const router = useRouter();
   const [list, setList] = useState<DichVu[]>([]);
   const [loaiDichVu, setLoaiDichVu] = useState<LoaiDichVu[]>([]);
+  const [chuyenKhoa, setChuyenKhoa] = useState<ChuyenKhoa[]>([]);
   const [error, setError] = useState("");
   const [hienModal, setHienModal] = useState(false);
   const [modalLoai, setModalLoai] = useState<"them-dich-vu" | "loai-dich-vu">(
@@ -47,6 +50,7 @@ export default function ServicesPage() {
   const [tuKhoaTenDichVu, setTuKhoaTenDichVu] = useState("");
   const [form, setForm] = useState<Partial<DichVu>>({
     maLoaiDichVu: undefined,
+    maChuyenKhoa: undefined,
     ten: "",
     moTa: "",
     gia: 0,
@@ -65,12 +69,14 @@ export default function ServicesPage() {
 
   const napDuLieu = async () => {
     try {
-      const [danhSachDichVu, danhSachLoai] = await Promise.all([
+      const [danhSachDichVu, danhSachLoai, danhSachCk] = await Promise.all([
         servicesApi.list(),
         serviceTypesApi.list(),
+        chuyenKhoaApi.danhSach(),
       ]);
       setList(danhSachDichVu);
       setLoaiDichVu(danhSachLoai);
+      setChuyenKhoa(danhSachCk ?? []);
       setForm((prev) => ({
         ...prev,
         maLoaiDichVu:
@@ -175,11 +181,16 @@ export default function ServicesPage() {
         ...form,
         ten: form.ten?.trim(),
         moTa: form.moTa?.trim() || "",
+        maChuyenKhoa:
+          form.maChuyenKhoa != null && !Number.isNaN(Number(form.maChuyenKhoa))
+            ? Number(form.maChuyenKhoa)
+            : undefined,
       });
       setThemDichVuLoi({});
       setHienModal(false);
       setForm({
         maLoaiDichVu: loaiDichVu.length > 0 ? loaiDichVu[0].id : undefined,
+        maChuyenKhoa: undefined,
         ten: "",
         moTa: "",
         gia: 0,
@@ -227,6 +238,7 @@ export default function ServicesPage() {
       "STT",
       "Mã dịch vụ",
       "Loại dịch vụ",
+      "Chuyên khoa",
       "Tên dịch vụ",
       "Mô tả",
       "Đơn giá (VNĐ)",
@@ -237,6 +249,7 @@ export default function ServicesPage() {
         i + 1,
         item.id,
         item.tenLoaiDichVu || "Chưa phân loại",
+        item.tenChuyenKhoa || "",
         item.ten || "",
         item.moTa || "",
         item.gia ?? 0,
@@ -270,6 +283,7 @@ export default function ServicesPage() {
     setSuaDichVuLoi({});
     setFormSua({
       maLoaiDichVu: item.maLoaiDichVu,
+      maChuyenKhoa: item.maChuyenKhoa,
       ten: item.ten || "",
       moTa: item.moTa || "",
       gia: item.gia ?? 0,
@@ -295,6 +309,11 @@ export default function ServicesPage() {
     try {
       await servicesApi.update(id, {
         maLoaiDichVu: formSua.maLoaiDichVu,
+        maChuyenKhoa:
+          formSua.maChuyenKhoa != null &&
+          !Number.isNaN(Number(formSua.maChuyenKhoa))
+            ? Number(formSua.maChuyenKhoa)
+            : undefined,
         ten: (formSua.ten ?? "").trim(),
         moTa: formSua.moTa || "",
         gia: formSua.gia,
@@ -394,6 +413,7 @@ export default function ServicesPage() {
           <thead>
             <tr>
               <th>Loại dịch vụ</th>
+              <th>Chuyên khoa</th>
               <th>Tên dịch vụ</th>
               <th>Mô tả</th>
               <th>Đơn giá</th>
@@ -435,6 +455,36 @@ export default function ServicesPage() {
                     </Form.Select>
                   ) : (
                     s.tenLoaiDichVu || "Chưa phân loại"
+                  )}
+                </td>
+                <td>
+                  {dangSuaId === s.id ? (
+                    <Form.Select
+                      size="sm"
+                      aria-label="Chuyên khoa"
+                      title="Chuyên khoa"
+                      value={
+                        formSua.maChuyenKhoa != null
+                          ? String(formSua.maChuyenKhoa)
+                          : ""
+                      }
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setFormSua({
+                          ...formSua,
+                          maChuyenKhoa: v ? Number(v) : undefined,
+                        });
+                      }}
+                    >
+                      <option value="">— Chung —</option>
+                      {chuyenKhoa.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.tenChuyenKhoa}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  ) : (
+                    s.tenChuyenKhoa || "—"
                   )}
                 </td>
                 <td>
@@ -582,7 +632,7 @@ export default function ServicesPage() {
               </tr>
               {dangSuaId === s.id && coLoiDichVuForm(suaDichVuLoi) ? (
                 <tr className="service-edit-error-strip" aria-live="polite">
-                  <td colSpan={6}>
+                  <td colSpan={7}>
                     <div className="service-edit-inline-msg" role="alert">
                       <i
                         className="bi bi-exclamation-circle-fill flex-shrink-0"
@@ -597,7 +647,7 @@ export default function ServicesPage() {
             ))}
             {danhSachDichVuLoc.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center text-muted py-4">
+                <td colSpan={7} className="text-center text-muted py-4">
                   Không có dịch vụ phù hợp với bộ lọc hiện tại.
                 </td>
               </tr>
@@ -724,6 +774,29 @@ export default function ServicesPage() {
                 <Form.Control.Feedback type="invalid" className="d-block">
                   {themDichVuLoi.maLoaiDichVu}
                 </Form.Control.Feedback>
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Chuyên khoa (tuỳ chọn)</Form.Label>
+                <Form.Select
+                  aria-label="Chuyên khoa khi đặt lịch"
+                  value={
+                    form.maChuyenKhoa != null ? String(form.maChuyenKhoa) : ""
+                  }
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setForm({
+                      ...form,
+                      maChuyenKhoa: v ? Number(v) : undefined,
+                    });
+                  }}
+                >
+                  <option value="">— Dùng được với mọi chuyên khoa —</option>
+                  {chuyenKhoa.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.tenChuyenKhoa}
+                    </option>
+                  ))}
+                </Form.Select>
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label className="required">Tên dịch vụ</Form.Label>

@@ -29,6 +29,10 @@ public class DichVu {
     @JoinColumn(name = "ma_loai_dich_vu")
     private LoaiDichVu loaiDichVu;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ma_chuyen_khoa")
+    private ChuyenKhoa chuyenKhoa;
+
     @Column(name = "mo_ta")
     private String moTa;
 

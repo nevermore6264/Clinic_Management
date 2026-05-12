@@ -6,8 +6,10 @@ import { Card, Form, Button, Alert } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import {
+  chuyenKhoaApi,
   serviceTypesApi,
   servicesApi,
+  type ChuyenKhoa,
   type DichVu,
   type LoaiDichVu,
 } from "@/lib/api";
@@ -26,6 +28,7 @@ export default function EditServicePage() {
   const [error, setError] = useState("");
   const [form, setForm] = useState<Partial<DichVu>>({});
   const [loaiDichVu, setLoaiDichVu] = useState<LoaiDichVu[]>([]);
+  const [chuyenKhoa, setChuyenKhoa] = useState<ChuyenKhoa[]>([]);
   const [danhSachDichVu, setDanhSachDichVu] = useState<DichVu[]>([]);
   const [fieldErrors, setFieldErrors] = useState<DichVuFormErrors>({});
 
@@ -44,10 +47,11 @@ export default function EditServicePage() {
 
   useEffect(() => {
     if (!user?.cacVaiTro.includes("QUAN_TRI")) return;
-    Promise.all([serviceTypesApi.list(), servicesApi.list()])
-      .then(([loai, dichVu]) => {
+    Promise.all([serviceTypesApi.list(), servicesApi.list(), chuyenKhoaApi.danhSach()])
+      .then(([loai, dichVu, ck]) => {
         setLoaiDichVu(loai);
         setDanhSachDichVu(dichVu);
+        setChuyenKhoa(ck ?? []);
       })
       .catch((e: unknown) =>
         setError(e instanceof Error ? e.message : "Không tải được loại dịch vụ"),
@@ -65,6 +69,10 @@ export default function EditServicePage() {
         ...form,
         ten: form.ten?.trim(),
         moTa: form.moTa?.trim() || "",
+        maChuyenKhoa:
+          form.maChuyenKhoa != null && !Number.isNaN(Number(form.maChuyenKhoa))
+            ? Number(form.maChuyenKhoa)
+            : undefined,
       });
       setFieldErrors({});
       router.push("/dich-vu");
@@ -112,6 +120,34 @@ export default function EditServicePage() {
               <Form.Control.Feedback type="invalid" className="d-block">
                 {fieldErrors.maLoaiDichVu}
               </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Chuyên khoa (tuỳ chọn)</Form.Label>
+              <Form.Select
+                value={
+                  form.maChuyenKhoa != null
+                    ? String(form.maChuyenKhoa)
+                    : ""
+                }
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setForm({
+                    ...form,
+                    maChuyenKhoa: v ? Number(v) : undefined,
+                  });
+                }}
+                aria-label="Chuyên khoa áp dụng khi đặt lịch"
+              >
+                <option value="">— Dùng được với mọi chuyên khoa —</option>
+                {chuyenKhoa.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.tenChuyenKhoa}
+                  </option>
+                ))}
+              </Form.Select>
+              <Form.Text className="text-muted">
+                Gắn chuyên khoa để màn đặt lịch lọc dịch vụ và bác sĩ nhất quán.
+              </Form.Text>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label className="required">Tên dịch vụ</Form.Label>

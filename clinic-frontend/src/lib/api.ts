@@ -254,9 +254,10 @@ export const lichHenApi = {
       method: "PUT",
       body: JSON.stringify(data),
     }),
-  capNhatTrangThai: (id: number, trangThai: string) =>
+  capNhatTrangThai: (id: number, trangThai: string, opts?: ApiOptions) =>
     api<LichHen>(`/lich-hen/${id}/trang-thai?trangThai=${trangThai}`, {
       method: "PATCH",
+      ...opts,
     }),
   lichSuTrangThai: (id: number) =>
     api<LichSuTrangThaiLichHen[]>(`/lich-hen/${id}/lich-su-trang-thai`),

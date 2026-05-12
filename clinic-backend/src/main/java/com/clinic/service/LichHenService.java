@@ -65,9 +65,6 @@ public class LichHenService {
                 .map(this::sangDto).collect(Collectors.toList());
     }
 
-    /**
-     * Bác sĩ không kèm quản trị / lễ tân / thu ngân chỉ được gọi API với đúng mã bác sĩ của tài khoản mình.
-     */
     private void yeuCauDuocTruyCapLichTheoBacSi(Long maBacSi) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !(auth.getPrincipal() instanceof NguoiDungChinhThuc chuThe)) {

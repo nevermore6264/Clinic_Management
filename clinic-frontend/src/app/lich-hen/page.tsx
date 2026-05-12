@@ -1,6 +1,13 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Table,
@@ -35,7 +42,11 @@ import {
   LICH_HEN_STATUS_LABEL as STATUS_LABEL,
   metaTrangThaiLichHen,
 } from "@/lib/lichHenStatus";
-import { laChiTaiKhoanBenhNhan, laChiTaiKhoanBacSiXemLichHomNay } from "@/lib/roles";
+import {
+  laChiTaiKhoanBenhNhan,
+  laChiTaiKhoanBacSiXemLichHomNay,
+  laCoTuDongBaoVangLichHen,
+} from "@/lib/roles";
 import { consumeLandingBookingDraft } from "@/lib/landingBookingDraft";
 import {
   GIAI_DOAN_LICH_HEN_LABEL,
@@ -68,6 +79,58 @@ type SlotThongTin = {
 function normalizeTime(value?: string): string {
   if (!value) return "00:00";
   return value.slice(0, 5);
+}
+
+const MS_15_PHUT = 15 * 60 * 1000;
+
+function thoiDiemGioHenMs(ngayHen: string, gioHen?: string | null): number {
+  const t = normalizeTime(gioHen ?? "00:00");
+  const [y, m, d] = ngayHen.split("-").map(Number);
+  if (!y || !m || !d) return NaN;
+  const [hh, mm] = t.split(":").map(Number);
+  if (Number.isNaN(hh) || Number.isNaN(mm)) return NaN;
+  return new Date(y, m - 1, d, hh, mm, 0, 0).getTime();
+}
+
+function noiDungCotChoQuaGioHen(a: LichHen, dongHo: number) {
+  void dongHo;
+  if (a.trangThai !== "DA_DAT" || !a.ngayHen || !a.gioHen) {
+    return <span className="text-muted small">—</span>;
+  }
+  const t0 = thoiDiemGioHenMs(a.ngayHen, a.gioHen);
+  if (Number.isNaN(t0)) {
+    return <span className="text-muted small">—</span>;
+  }
+  const now = Date.now();
+  const hanBaoVang = t0 + MS_15_PHUT;
+  if (now <= t0) {
+    const sec = Math.max(0, Math.ceil((t0 - now) / 1000));
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return (
+      <span className="text-secondary small">
+        Đến giờ hẹn: {m}:{pad2(s)}
+      </span>
+    );
+  }
+  if (now < hanBaoVang) {
+    const secTre = Math.floor((now - t0) / 1000);
+    const mTre = Math.floor(secTre / 60);
+    const sTre = secTre % 60;
+    const secConLai = Math.max(0, Math.ceil((hanBaoVang - now) / 1000));
+    const mCl = Math.floor(secConLai / 60);
+    const sCl = secConLai % 60;
+    return (
+      <span className="text-warning small fw-semibold">
+        Trễ {mTre}:{pad2(sTre)} — còn {mCl}:{pad2(sCl)} đến báo vắng
+      </span>
+    );
+  }
+  return (
+    <span className="text-danger small fw-semibold">
+      Quá 15p — tự báo vắng…
+    </span>
+  );
 }
 
 function pad2(n: number) {
@@ -134,6 +197,8 @@ function AppointmentsPageInner() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [list, setList] = useState<LichHen[]>([]);
+  const listRef = useRef<LichHen[]>([]);
+  const tuDongVangDaXuLy = useRef(new Set<number>());
   const [from, setFrom] = useState(() => new Date().toISOString().slice(0, 10));
   const [to, setTo] = useState(() => {
     const d = new Date();
@@ -142,6 +207,7 @@ function AppointmentsPageInner() {
   });
   const [error, setError] = useState("");
   const [listTick, setListTick] = useState(0);
+  const [dongHoBang, setDongHoBang] = useState(0);
 
   const [showDatLich, setShowDatLich] = useState(false);
   const [patients, setPatients] = useState<BenhNhan[]>([]);
@@ -209,6 +275,11 @@ function AppointmentsPageInner() {
   const chiBacSiHomNay = useMemo(
     () => !!user && laChiTaiKhoanBacSiXemLichHomNay(user),
     [user],
+  );
+
+  const coCotChoQuaGio = useMemo(
+    () => !!user && !chiTaiKhoanBn && laCoTuDongBaoVangLichHen(user),
+    [user, chiTaiKhoanBn],
   );
 
   const openDatLichModal = useCallback(() => {
@@ -287,11 +358,95 @@ function AppointmentsPageInner() {
         .catch((e) => setError(e.message));
       return;
     }
+    if (chiBacSiHomNay) {
+      if (!user.maBacSi) {
+        setError(
+          "Tài khoản chưa liên kết hồ sơ bác sĩ. Vui lòng liên hệ quản trị.",
+        );
+        setList([]);
+        return;
+      }
+      const today = isoDateLocal(new Date());
+      appointmentsApi
+        .byDoctor(user.maBacSi, today)
+        .then((rows) => {
+          setError("");
+          setList(Array.isArray(rows) ? rows : []);
+        })
+        .catch((e) => setError(e.message));
+      return;
+    }
     appointmentsApi
       .list(from, to, 0, 100)
-      .then((r) => setList(r.content))
+      .then((r) => {
+        setError("");
+        setList(r.content);
+      })
       .catch((e) => setError(e.message));
-  }, [user, from, to, listTick, chiTaiKhoanBn]);
+  }, [user, from, to, listTick, chiTaiKhoanBn, chiBacSiHomNay]);
+
+  useEffect(() => {
+    listRef.current = list;
+  }, [list]);
+
+  useEffect(() => {
+    if (!coCotChoQuaGio) return;
+    const id = window.setInterval(() => setDongHoBang((n) => n + 1), 1000);
+    return () => window.clearInterval(id);
+  }, [coCotChoQuaGio]);
+
+  useEffect(() => {
+    if (!user || !laCoTuDongBaoVangLichHen(user)) return;
+
+    const chayTuDongBaoVang = () => {
+      const rows = listRef.current;
+      const now = Date.now();
+      const canGui: number[] = [];
+      for (const a of rows) {
+        if (!a.id || a.trangThai !== "DA_DAT") continue;
+        if (!a.ngayHen || !a.gioHen) continue;
+        const t0 = thoiDiemGioHenMs(a.ngayHen, a.gioHen);
+        if (Number.isNaN(t0)) continue;
+        if (now <= t0 + MS_15_PHUT) continue;
+        if (tuDongVangDaXuLy.current.has(a.id)) continue;
+        canGui.push(a.id);
+      }
+      if (canGui.length === 0) return;
+      for (const id of canGui) tuDongVangDaXuLy.current.add(id);
+      void Promise.all(
+        canGui.map((id) =>
+          appointmentsApi
+            .updateStatus(id, "VANG", { notifySuccess: false })
+            .then(() => {
+              setList((prev) =>
+                prev.map((x) =>
+                  x.id === id ? { ...x, trangThai: "VANG" } : x,
+                ),
+              );
+              return true as const;
+            })
+            .catch(() => {
+              tuDongVangDaXuLy.current.delete(id);
+              return false as const;
+            }),
+        ),
+      ).then((ketQua) => {
+        const n = ketQua.filter(Boolean).length;
+        if (n > 0) {
+          notify.info(
+            n === 1
+              ? "Đã tự động chuyển 1 lịch sang « Không đến » (quá 15 phút sau giờ hẹn, chưa tiếp nhận)."
+              : `Đã tự động chuyển ${n} lịch sang « Không đến » (quá 15 phút sau giờ hẹn, chưa tiếp nhận).`,
+            "Báo vắng tự động",
+          );
+        }
+      });
+    };
+
+    chayTuDongBaoVang();
+    const timer = window.setInterval(chayTuDongBaoVang, 3000);
+    return () => window.clearInterval(timer);
+  }, [user]);
 
   useEffect(() => {
     if (!showDatLich || !user) return;
@@ -534,7 +689,7 @@ function AppointmentsPageInner() {
   );
 
   const todayStr = isoDateLocal(new Date());
-  const bangColSpan = chiTaiKhoanBn ? 6 : 7;
+  const bangColSpan = chiTaiKhoanBn ? 6 : coCotChoQuaGio ? 8 : 7;
 
   const handleDatLichSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -721,11 +876,19 @@ function AppointmentsPageInner() {
       className={`lich-hen-page${chiTaiKhoanBn ? " patient-portal-lichen" : ""}`}
     >
       <PageHeader
-        title={chiTaiKhoanBn ? "Lịch khám của bạn" : "Lịch khám"}
+        title={
+          chiTaiKhoanBn
+            ? "Lịch khám của bạn"
+            : chiBacSiHomNay
+              ? "Lịch khám hôm nay"
+              : "Lịch khám"
+        }
         subtitle={
           chiTaiKhoanBn
             ? "Xem lịch đã đặt, theo dõi trạng thái và đặt thêm lịch mới khi bạn cần."
-            : "Lọc ngày, tìm bác sĩ, trạng thái — xem và mở chi tiết từng lượt khám."
+            : chiBacSiHomNay
+              ? "Chỉ hiển thị lượt khám trong ngày hôm nay. Đặt hoặc chỉnh lịch qua tài khoản lễ tân hoặc quản trị."
+              : "Lọc ngày, tìm bác sĩ, trạng thái — xem và mở chi tiết từng lượt khám."
         }
       >
         <div className="d-flex flex-wrap gap-2 align-items-center">
@@ -747,7 +910,7 @@ function AppointmentsPageInner() {
               </Link>
             </>
           )}
-          {!chiTaiKhoanBn && (
+          {!chiTaiKhoanBn && !chiBacSiHomNay && (
             <Button
               className="btn-service-export d-inline-flex align-items-center gap-2"
               onClick={handleExportCsv}
@@ -756,14 +919,16 @@ function AppointmentsPageInner() {
               Export CSV
             </Button>
           )}
-          <Button
-            variant="primary"
-            className="d-inline-flex align-items-center gap-2 rounded-pill px-3"
-            onClick={openDatLichModal}
-          >
-            <i className="bi bi-plus-lg" aria-hidden />
-            Đặt lịch mới
-          </Button>
+          {!chiBacSiHomNay && (
+            <Button
+              variant="primary"
+              className="d-inline-flex align-items-center gap-2 rounded-pill px-3"
+              onClick={openDatLichModal}
+            >
+              <i className="bi bi-plus-lg" aria-hidden />
+              Đặt lịch mới
+            </Button>
+          )}
         </div>
       </PageHeader>
       {error && (
@@ -907,6 +1072,40 @@ function AppointmentsPageInner() {
                 </div>
               </div>
             </>
+          ) : chiBacSiHomNay ? (
+            <div className="d-flex flex-wrap gap-3 align-items-end">
+              <div className="text-muted small mb-2 mb-sm-0">
+                <span className="fw-semibold text-body">Ngày xem:</span>{" "}
+                {new Date(`${from}T12:00:00`).toLocaleDateString("vi-VN", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </div>
+              <Form.Group style={{ minWidth: "12rem" }}>
+                <Form.Label>Trạng thái</Form.Label>
+                <Form.Select
+                  value={locTrangThaiBang}
+                  onChange={(e) => {
+                    setLocTrangThaiBang(e.target.value);
+                    setLocGiaiDoan("");
+                  }}
+                  aria-label="Lọc theo trạng thái"
+                >
+                  <option value="">Tất cả trạng thái</option>
+                  {(
+                    Object.keys(STATUS_LABEL) as Array<
+                      keyof typeof STATUS_LABEL
+                    >
+                  ).map((key) => (
+                    <option key={key} value={key}>
+                      {STATUS_LABEL[key]}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+            </div>
           ) : (
             <div className="d-flex flex-wrap gap-3 align-items-end justify-content-between">
               <div className="d-flex flex-wrap gap-3 align-items-end flex-grow-1">
@@ -1011,7 +1210,7 @@ function AppointmentsPageInner() {
           ) : null}
         </Card.Body>
       </Card>
-      {viewMode === "lich" ? (
+      {viewMode === "lich" && !chiBacSiHomNay ? (
         <Card
           className={`card--static border-0 shadow-sm overflow-hidden lich-hen-cal-card${
             chiTaiKhoanBn ? " patient-portal-lichen__cal-shell" : ""
@@ -1224,6 +1423,11 @@ function AppointmentsPageInner() {
                   {!chiTaiKhoanBn && <th>Bệnh nhân</th>}
                   <th>Bác sĩ</th>
                   <th>Dịch vụ</th>
+                  {coCotChoQuaGio ? (
+                    <th className="text-nowrap" style={{ minWidth: "11rem" }}>
+                      Chờ so với giờ hẹn
+                    </th>
+                  ) : null}
                   <th>Trạng thái</th>
                   <th></th>
                 </tr>
@@ -1236,6 +1440,11 @@ function AppointmentsPageInner() {
                     {!chiTaiKhoanBn && <td>{a.tenBenhNhan}</td>}
                     <td>{a.tenBacSi}</td>
                     <td>{a.tenDichVu}</td>
+                    {coCotChoQuaGio ? (
+                      <td className="text-nowrap small">
+                        {noiDungCotChoQuaGioHen(a, dongHoBang)}
+                      </td>
+                    ) : null}
                     <td>
                       <Badge bg="secondary">
                         {STATUS_LABEL[a.trangThai || ""] || a.trangThai}

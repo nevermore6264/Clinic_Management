@@ -23,10 +23,6 @@ public class AutoVangLichHenService {
     private final LichHenRepository lichHenRepository;
     private final LichSuTrangThaiLichHenRepository lichSuTrangThaiLichHenRepository;
 
-    /**
-     * Tự động chuyển lịch quá giờ tới trạng thái VANG nếu bệnh nhân chưa được đưa vào luồng khám.
-     * Chạy mỗi ngày lúc 12:00 theo giờ hệ thống.
-     */
     @Scheduled(cron = "0 0 12 * * *")
     @Transactional
     public void chuyenTrangThaiQuaHanSangVang() {

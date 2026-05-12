@@ -35,8 +35,20 @@ export function laChiTaiKhoanBacSiXemLichHomNay(
   if (!laNhanVien(user) || !user?.cacVaiTro?.length) return false;
   const r = user.cacVaiTro;
   if (!r.includes("BAC_SI")) return false;
-  if (r.includes("QUAN_TRI") || r.includes("LE_TAN") || r.includes("THU_NGAN")) {
+  if (
+    r.includes("QUAN_TRI") ||
+    r.includes("LE_TAN") ||
+    r.includes("THU_NGAN")
+  ) {
     return false;
   }
   return true;
+}
+
+export function laCoTuDongBaoVangLichHen(
+  user: Pick<NguoiDung, "cacVaiTro"> | null,
+): boolean {
+  if (!laNhanVien(user) || !user?.cacVaiTro?.length) return false;
+  const r = user.cacVaiTro;
+  return r.includes("QUAN_TRI") || r.includes("LE_TAN") || r.includes("BAC_SI");
 }

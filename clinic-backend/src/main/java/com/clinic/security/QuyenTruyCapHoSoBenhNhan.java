@@ -38,9 +38,6 @@ public class QuyenTruyCapHoSoBenhNhan {
                 });
     }
 
-    /**
-     * Bác sĩ không kèm quản trị/lễ tân: được xem hồ sơ nhưng không cập nhật hồ sơ bệnh nhân qua API.
-     */
     public boolean laBacSiChiDocBenhNhan() {
         if (!laNhanVien()) {
             return false;

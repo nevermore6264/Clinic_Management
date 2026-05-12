@@ -47,47 +47,26 @@ function hienThiGioiTinh(ma?: string) {
 
 function TagGioiTinh({ ma }: { ma?: string }) {
   if (!ma) return <span className="text-muted">—</span>;
-  const cfg =
-    ma === "NAM"
-      ? {
-          label: "Nam",
-          className:
-            "bg-primary-subtle text-primary-emphasis border border-primary-subtle",
-        }
-      : ma === "NU"
-        ? {
-            label: "Nữ",
-            className:
-              "bg-danger-subtle text-danger-emphasis border border-danger-subtle",
-          }
-        : ma === "KHAC"
-          ? {
-              label: "Khác",
-              className:
-                "bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle",
-            }
-          : null;
-  if (!cfg)
-    return (
-      <span className="badge rounded-pill bg-light text-dark border">{ma}</span>
-    );
+  const v =
+    ma === "NAM" ? "nam" : ma === "NU" ? "nu" : ma === "KHAC" ? "khac" : "unknown";
+  const label =
+    ma === "NAM" ? "Nam" : ma === "NU" ? "Nữ" : ma === "KHAC" ? "Khác" : ma;
   return (
-    <span className={`badge rounded-pill ${cfg.className}`}>{cfg.label}</span>
+    <span className={`benh-nhan-chip benh-nhan-chip--gioi benh-nhan-chip--gioi-${v}`}>
+      {label}
+    </span>
   );
 }
 
 function TagNhomMau({ nhom }: { nhom?: string }) {
   if (!nhom) return <span className="text-muted">—</span>;
-  const map: Record<string, string> = {
-    A: "bg-danger-subtle text-danger-emphasis border border-danger-subtle",
-    B: "bg-primary-subtle text-primary-emphasis border border-primary-subtle",
-    AB: "bg-success-subtle text-success-emphasis border border-success-subtle",
-    O: "bg-warning-subtle text-warning-emphasis border border-warning-subtle",
-  };
-  const cls =
-    map[nhom] ??
-    "bg-secondary-subtle text-secondary-emphasis border border-secondary-subtle";
-  return <span className={`badge rounded-pill ${cls}`}>{nhom}</span>;
+  const key = nhom.trim().toUpperCase();
+  const slug = ["A", "B", "AB", "O"].includes(key) ? key.toLowerCase() : "khac";
+  return (
+    <span className={`benh-nhan-chip benh-nhan-chip--mau benh-nhan-chip--mau-${slug}`}>
+      {nhom}
+    </span>
+  );
 }
 
 function BenhNhanPageInner() {
@@ -437,7 +416,7 @@ function BenhNhanPageInner() {
   const chiDocBenhNhanStaff = laBacSiChiDocBenhNhan(user);
 
   return (
-    <div>
+    <div className="benh-nhan-page">
       <PageHeader
         title={chiTaiKhoanBn ? "Hồ sơ của tôi" : "Bệnh nhân"}
         subtitle={
@@ -547,11 +526,11 @@ function BenhNhanPageInner() {
                               </h2>
                               <div className="d-flex flex-wrap align-items-center gap-2 mt-2">
                                 {patientSelfProfile.hoatDong === false ? (
-                                  <span className="badge bg-secondary">
+                                  <span className="benh-nhan-chip benh-nhan-chip--trang-thai benh-nhan-chip--an">
                                     Hồ sơ đã ẩn
                                   </span>
                                 ) : (
-                                  <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+                                  <span className="benh-nhan-chip benh-nhan-chip--trang-thai benh-nhan-chip--hoat-dong">
                                     Đang hoạt động
                                   </span>
                                 )}
@@ -759,7 +738,7 @@ function BenhNhanPageInner() {
       )}
 
       {!chiTaiKhoanBn && (
-        <Card className="mb-3 card--static border-0 shadow-sm">
+        <Card className="mb-3 benh-nhan-filters card--static border-0 shadow-sm">
           <Card.Body className="p-3">
             <Row className="g-2">
               <Col md={6} lg={3}>
@@ -831,10 +810,10 @@ function BenhNhanPageInner() {
       )}
 
       {!chiTaiKhoanBn && (
-        <Card className="card--static border-0 shadow-sm overflow-hidden">
+        <Card className="benh-nhan-table-card card--static border-0 shadow-sm overflow-hidden">
           <div className="table-responsive">
-            <Table responsive hover className="mb-0 align-middle">
-              <thead>
+            <Table responsive hover className="mb-0 align-middle benh-nhan-table">
+              <thead className="benh-nhan-thead">
                 <tr>
                   <th>Họ tên</th>
                   <th>Ngày sinh</th>
@@ -901,33 +880,39 @@ function BenhNhanPageInner() {
                     </td>
                     <td>
                       {p.hoatDong === false ? (
-                        <span className="badge bg-secondary">Đã ẩn</span>
+                        <span className="benh-nhan-chip benh-nhan-chip--trang-thai benh-nhan-chip--an">
+                          Đã ẩn
+                        </span>
                       ) : (
-                        <span className="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+                        <span className="benh-nhan-chip benh-nhan-chip--trang-thai benh-nhan-chip--hoat-dong">
                           Hoạt động
                         </span>
                       )}
                     </td>
                     <td className="text-end text-nowrap">
-                      <Button
-                        size="sm"
-                        variant={chiDocBenhNhanStaff ? "outline-primary" : "primary"}
-                        className="me-1 btn-action-edit"
-                        onClick={() => p.id != null && openEditModal(p.id)}
-                      >
-                        <i
-                          className={`bi ${chiDocBenhNhanStaff ? "bi-eye" : "bi-pencil"} me-1`}
-                          aria-hidden
-                        />
-                        {chiDocBenhNhanStaff ? "Chi tiết" : "Sửa"}
-                      </Button>
-                      <Link
-                        href={`/lich-hen?maBenhNhan=${p.id}`}
-                        className="btn btn-sm btn-info btn-action-calendar"
-                      >
-                        <i className="bi bi-calendar3 me-1" aria-hidden />
-                        Lịch
-                      </Link>
+                      <div className="benh-nhan-table-actions">
+                        <Button
+                          size="sm"
+                          variant={
+                            chiDocBenhNhanStaff ? "outline-primary" : "primary"
+                          }
+                          className="btn-action-edit benh-nhan-table-action-btn d-inline-flex align-items-center justify-content-center gap-1"
+                          onClick={() => p.id != null && openEditModal(p.id)}
+                        >
+                          <i
+                            className={`bi ${chiDocBenhNhanStaff ? "bi-eye" : "bi-pencil-square"}`}
+                            aria-hidden
+                          />
+                          {chiDocBenhNhanStaff ? "Chi tiết" : "Sửa"}
+                        </Button>
+                        <Link
+                          href={`/lich-hen?maBenhNhan=${p.id}`}
+                          className="btn btn-sm btn-action-calendar benh-nhan-btn-lich benh-nhan-table-action-btn d-inline-flex align-items-center justify-content-center gap-1 text-decoration-none"
+                        >
+                          <i className="bi bi-calendar3" aria-hidden />
+                          Lịch
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -16,7 +16,6 @@ import {
   Alert,
   Modal,
   Button,
-  ButtonGroup,
   Dropdown,
 } from "react-bootstrap";
 import Link from "next/link";
@@ -1318,12 +1317,16 @@ function AppointmentsPageInner() {
               </div>
               <Form.Group className="mb-0">
                 <Form.Label className="d-block">Hiển thị</Form.Label>
-                <ButtonGroup aria-label="Chế độ xem lịch khám">
+                <div
+                  className="d-flex gap-2 flex-wrap align-items-center"
+                  role="group"
+                  aria-label="Chế độ xem lịch khám"
+                >
                   <Button
                     type="button"
                     variant={viewMode === "bang" ? "primary" : "outline-primary"}
                     size="sm"
-                    className="d-inline-flex align-items-center gap-1"
+                    className="d-inline-flex align-items-center gap-1 rounded-3"
                     onClick={() => setViewMode("bang")}
                   >
                     <i className="bi bi-list-ul" aria-hidden />
@@ -1333,7 +1336,7 @@ function AppointmentsPageInner() {
                     type="button"
                     variant={viewMode === "lich" ? "primary" : "outline-primary"}
                     size="sm"
-                    className="d-inline-flex align-items-center gap-1"
+                    className="d-inline-flex align-items-center gap-1 rounded-3"
                     onClick={() => {
                       setViewMode("lich");
                       const b = monthBoundsFromYm(from.slice(0, 7));
@@ -1344,7 +1347,7 @@ function AppointmentsPageInner() {
                     <i className="bi bi-calendar3" aria-hidden />
                     Lịch tháng
                   </Button>
-                </ButtonGroup>
+                </div>
               </Form.Group>
             </div>
           )}

@@ -9344,3 +9344,174 @@ html.app-ready body {
   outline: 2px solid rgba(37, 99, 235, 0.45);
   outline-offset: 2px;
 }
+
+.benh-nhan-page .benh-nhan-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.65rem;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.benh-nhan-page .benh-nhan-chip--gioi-nam {
+  color: #1d4ed8;
+  background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: rgba(37, 99, 235, 0.28);
+}
+
+.benh-nhan-page .benh-nhan-chip--gioi-nu {
+  color: #9d174d;
+  background: linear-gradient(180deg, #fdf2f8 0%, #fce7f3 100%);
+  border-color: rgba(219, 39, 119, 0.28);
+}
+
+.benh-nhan-page .benh-nhan-chip--gioi-khac {
+  color: #475569;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-color: rgba(100, 116, 139, 0.35);
+}
+
+.benh-nhan-page .benh-nhan-chip--gioi-unknown {
+  color: #334155;
+  background: #fff;
+  border-color: #e2e8f0;
+}
+
+.benh-nhan-page .benh-nhan-chip--mau-a {
+  color: #b91c1c;
+  background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.benh-nhan-page .benh-nhan-chip--mau-b {
+  color: #1d4ed8;
+  background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: rgba(37, 99, 235, 0.28);
+}
+
+.benh-nhan-page .benh-nhan-chip--mau-ab {
+  color: #047857;
+  background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: rgba(5, 150, 105, 0.28);
+}
+
+.benh-nhan-page .benh-nhan-chip--mau-o {
+  color: #b45309;
+  background: linear-gradient(180deg, #fffbeb 0%, #fef3c7 100%);
+  border-color: rgba(217, 119, 6, 0.35);
+}
+
+.benh-nhan-page .benh-nhan-chip--mau-khac {
+  color: #475569;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  border-color: rgba(100, 116, 139, 0.35);
+}
+
+.benh-nhan-page .benh-nhan-chip--trang-thai.benh-nhan-chip--hoat-dong {
+  color: #047857;
+  background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%);
+  border-color: rgba(5, 150, 105, 0.35);
+}
+
+.benh-nhan-page .benh-nhan-chip--trang-thai.benh-nhan-chip--an {
+  color: #475569;
+  background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+  border-color: rgba(100, 116, 139, 0.4);
+}
+
+.benh-nhan-page .benh-nhan-filters .form-select,
+.benh-nhan-page .benh-nhan-filters .form-control {
+  border-radius: 0.65rem;
+  border-color: #e2e8f0;
+  font-size: 0.9rem;
+}
+
+.benh-nhan-page .benh-nhan-filters .form-select:focus,
+.benh-nhan-page .benh-nhan-filters .form-control:focus {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12);
+}
+
+.benh-nhan-page .benh-nhan-table-card {
+  background: #fff;
+}
+
+.benh-nhan-page .benh-nhan-thead th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  font-weight: 700;
+  border-bottom-width: 2px;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  padding-top: 0.85rem;
+  padding-bottom: 0.85rem;
+  white-space: nowrap;
+}
+
+.benh-nhan-page .benh-nhan-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.benh-nhan-page .benh-nhan-table tbody tr:hover {
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.benh-nhan-page .benh-nhan-table-actions {
+  display: inline-flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.benh-nhan-page .benh-nhan-table-actions > .benh-nhan-table-action-btn,
+.benh-nhan-page .benh-nhan-table-actions > a.benh-nhan-table-action-btn {
+  min-height: 34px;
+  min-width: 6.75rem;
+  padding: 0.35rem 0.85rem !important;
+  border-radius: var(--clinic-radius-sm, 10px) !important;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  box-sizing: border-box;
+}
+
+.benh-nhan-page .benh-nhan-table-actions .benh-nhan-table-action-btn .bi,
+.benh-nhan-page .benh-nhan-table-actions a.benh-nhan-table-action-btn .bi {
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.benh-nhan-page a.benh-nhan-btn-lich.btn-action-calendar {
+  text-decoration: none !important;
+  vertical-align: middle;
+  transition:
+    transform 0.14s ease,
+    filter 0.14s ease,
+    box-shadow 0.14s ease;
+}
+
+.benh-nhan-page a.benh-nhan-btn-lich.btn-action-calendar:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  color: #fff !important;
+  box-shadow: 0 6px 16px rgba(2, 132, 199, 0.32);
+}
+
+.benh-nhan-page a.benh-nhan-btn-lich.btn-action-calendar:focus-visible {
+  outline: none;
+  color: #fff !important;
+  box-shadow:
+    0 6px 16px rgba(2, 132, 199, 0.32),
+    0 0 0 3px rgba(14, 165, 233, 0.4) !important;
+}

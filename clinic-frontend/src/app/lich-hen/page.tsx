@@ -92,6 +92,22 @@ function thoiDiemGioHenMs(ngayHen: string, gioHen?: string | null): number {
   return new Date(y, m - 1, d, hh, mm, 0, 0).getTime();
 }
 
+/** Khoảng thời gian (số giây) → chuỗi tiếng Việt; không dùng m:ss (dễ nhầm với giờ:phút). */
+function formatKhoangThoiGianBangTiengViet(tongGiay: number): string {
+  const s = Math.max(0, Math.floor(tongGiay));
+  if (s === 0) return "0 giây";
+  const ngay = Math.floor(s / 86400);
+  const gio = Math.floor((s % 86400) / 3600);
+  const phut = Math.floor((s % 3600) / 60);
+  const giay = s % 60;
+  const parts: string[] = [];
+  if (ngay > 0) parts.push(`${ngay} ngày`);
+  if (gio > 0) parts.push(`${gio} giờ`);
+  if (phut > 0) parts.push(`${phut} phút`);
+  if (giay > 0 || parts.length === 0) parts.push(`${giay} giây`);
+  return parts.join(" ");
+}
+
 function noiDungCotChoQuaGioHen(a: LichHen, dongHo: number) {
   void dongHo;
   if (a.trangThai !== "DA_DAT" || !a.ngayHen || !a.gioHen) {
@@ -105,24 +121,19 @@ function noiDungCotChoQuaGioHen(a: LichHen, dongHo: number) {
   const hanBaoVang = t0 + MS_15_PHUT;
   if (now <= t0) {
     const sec = Math.max(0, Math.ceil((t0 - now) / 1000));
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
     return (
       <span className="text-secondary small">
-        Đến giờ hẹn: {m}:{pad2(s)}
+        Đến giờ hẹn · còn {formatKhoangThoiGianBangTiengViet(sec)}
       </span>
     );
   }
   if (now < hanBaoVang) {
     const secTre = Math.floor((now - t0) / 1000);
-    const mTre = Math.floor(secTre / 60);
-    const sTre = secTre % 60;
     const secConLai = Math.max(0, Math.ceil((hanBaoVang - now) / 1000));
-    const mCl = Math.floor(secConLai / 60);
-    const sCl = secConLai % 60;
     return (
       <span className="text-warning small fw-semibold">
-        Trễ {mTre}:{pad2(sTre)} — còn {mCl}:{pad2(sCl)} đến báo vắng
+        Trễ {formatKhoangThoiGianBangTiengViet(secTre)} — còn{" "}
+        {formatKhoangThoiGianBangTiengViet(secConLai)} đến báo vắng
       </span>
     );
   }

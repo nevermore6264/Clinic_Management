@@ -44,7 +44,6 @@ public class HoaDonService {
         return sangDto(hd);
     }
 
-    /** Dùng nội bộ (webhook PayOS) — không kiểm tra JWT. */
     @Transactional(readOnly = true)
     public HoaDonDto layTheoMaNoiBo(Long ma) {
         HoaDon hd = hoaDonRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn: " + ma));

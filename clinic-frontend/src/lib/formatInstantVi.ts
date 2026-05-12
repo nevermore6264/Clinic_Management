@@ -2,7 +2,6 @@ function pad2(n: number): string {
   return String(n).padStart(2, "0");
 }
 
-/** Chuỗi yyyy-mm-dd (hoặc ISO có T) → dd/mm/yyyy */
 export function formatNgayDdMmYyyy(ymd?: string | null): string {
   if (ymd == null || ymd === "") return "—";
   const raw = String(ymd).trim();
@@ -13,7 +12,6 @@ export function formatNgayDdMmYyyy(ymd?: string | null): string {
   return `${d}/${mo}/${y}`;
 }
 
-/** yyyy-mm-dd → «Thứ ba, 12/05/2026» */
 export function formatNgayDdMmYyyyCoThu(ymd?: string | null): string {
   if (!ymd) return "—";
   const datePart = ymd.includes("T") ? ymd.split("T")[0]! : ymd;
@@ -29,7 +27,6 @@ export function formatNgayDdMmYyyyCoThu(ymd?: string | null): string {
   return `${cap}, ${formatNgayDdMmYyyy(datePart)}`;
 }
 
-/** yyyy-mm (tháng lịch) → «Tháng 05/2026» */
 export function formatThangMmYyyyLabel(ym: string): string {
   const m = /^(\d{4})-(\d{2})$/.exec(ym.trim());
   if (!m) return ym;

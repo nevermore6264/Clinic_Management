@@ -18,7 +18,6 @@ import { formatInstantVi } from "@/lib/formatInstantVi";
 import { laBacSiKhongXemHoaDon } from "@/lib/roles";
 import { LoadingState } from "@/components/LoadingState";
 
-/** PayOS trả `qrCode` là payload EMV VietQR (chuỗi số), không phải ảnh base64. */
 function payOsQrLaNguonAnh(qr: string): boolean {
   const t = qr.trim();
   if (!t) return false;

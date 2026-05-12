@@ -14,7 +14,12 @@ import {
 } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
+import { formatNgayDdMmYyyy } from "@/lib/formatInstantVi";
 import { thuocApi, type Thuoc } from "@/lib/api";
+import {
+  formatVndInputMoneyUnit,
+  parseVndInputMoney,
+} from "@/lib/moneyVnd";
 
 const BUOC_THUOC = [
   {
@@ -197,12 +202,10 @@ export default function ThuocPage() {
         return;
       }
     }
-    if (
-      (form.giaNhap ?? 0) > 0 &&
-      (form.giaBan ?? 0) > 0 &&
-      (form.giaBan ?? 0) < (form.giaNhap ?? 0)
-    ) {
-      setModalError("Giá bán nên lớn hơn hoặc bằng giá nhập.");
+    const gn = form.giaNhap ?? 0;
+    const gb = form.giaBan ?? 0;
+    if (gn > 0 && gb <= gn) {
+      setModalError("Giá nhập phải nhỏ hơn giá bán.");
       return;
     }
     try {
@@ -240,12 +243,10 @@ export default function ThuocPage() {
         setModalError("Tồn kho và mức tồn tối thiểu không được âm.");
         return;
       }
-      if (
-        (form.giaNhap ?? 0) > 0 &&
-        (form.giaBan ?? 0) > 0 &&
-        (form.giaBan ?? 0) < (form.giaNhap ?? 0)
-      ) {
-        setModalError("Giá bán nên lớn hơn hoặc bằng giá nhập.");
+      const gn = form.giaNhap ?? 0;
+      const gb = form.giaBan ?? 0;
+      if (gn > 0 && gb <= gn) {
+        setModalError("Giá nhập phải nhỏ hơn giá bán.");
         return;
       }
     }
@@ -338,7 +339,7 @@ export default function ThuocPage() {
         t.donVi ?? "",
         String(t.tonKho ?? 0),
         String(t.mucTonToiThieu ?? 0),
-        t.hanSuDung ?? "",
+        t.hanSuDung?.trim() ? formatNgayDdMmYyyy(t.hanSuDung) : "",
         String(t.giaBan ?? 0),
         t.hoatDong ? "Dang dung" : "Ngung",
       ]),
@@ -452,8 +453,12 @@ export default function ThuocPage() {
                 <td>{t.duongDung || "—"}</td>
                 <td>{t.donVi || "—"}</td>
                 <td>{t.tonKho ?? 0}</td>
-                <td>{t.hanSuDung || "—"}</td>
-                <td>{t.giaBan?.toLocaleString("vi-VN")}đ</td>
+                <td>{formatNgayDdMmYyyy(t.hanSuDung)}</td>
+                <td>
+                  {(t.giaBan ?? 0) === 0
+                    ? "—"
+                    : formatVndInputMoneyUnit(t.giaBan)}
+                </td>
                 <td>
                   {(t.tonKho ?? 0) <= (t.mucTonToiThieu ?? 0) ? (
                     <span className="thuoc-status-tag thuoc-status-tag--warning">
@@ -766,24 +771,38 @@ export default function ThuocPage() {
               <Form.Group className="mb-2">
                 <Form.Label>Giá nhập</Form.Label>
                 <Form.Control
-                  type="number"
-                  min={0}
-                  placeholder="0"
-                  value={form.giaNhap ?? ""}
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="Ví dụ: 12.000 VNĐ"
+                  value={
+                    (form.giaNhap ?? 0) === 0
+                      ? ""
+                      : formatVndInputMoneyUnit(form.giaNhap)
+                  }
                   onChange={(e) =>
-                    setForm({ ...form, giaNhap: Number(e.target.value) || 0 })
+                    setForm({
+                      ...form,
+                      giaNhap: parseVndInputMoney(e.target.value),
+                    })
                   }
                 />
               </Form.Group>
               <Form.Group className="mb-2">
                 <Form.Label>Giá bán</Form.Label>
                 <Form.Control
-                  type="number"
-                  min={0}
-                  placeholder="0"
-                  value={form.giaBan ?? ""}
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="Ví dụ: 15.000 VNĐ"
+                  value={
+                    (form.giaBan ?? 0) === 0
+                      ? ""
+                      : formatVndInputMoneyUnit(form.giaBan)
+                  }
                   onChange={(e) =>
-                    setForm({ ...form, giaBan: Number(e.target.value) || 0 })
+                    setForm({
+                      ...form,
+                      giaBan: parseVndInputMoney(e.target.value),
+                    })
                   }
                 />
               </Form.Group>

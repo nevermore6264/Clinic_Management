@@ -178,9 +178,10 @@ public class ThuocService {
         if (dto.getGiaBan() != null && dto.getGiaBan().compareTo(BigDecimal.ZERO) < 0) {
             throw new RuntimeException("Giá bán không được âm.");
         }
-        if (dto.getGiaNhap() != null && dto.getGiaBan() != null
-                && dto.getGiaBan().compareTo(dto.getGiaNhap()) < 0) {
-            throw new RuntimeException("Giá bán phải lớn hơn hoặc bằng giá nhập.");
+        BigDecimal gn = dto.getGiaNhap() != null ? dto.getGiaNhap() : BigDecimal.ZERO;
+        BigDecimal gb = dto.getGiaBan() != null ? dto.getGiaBan() : BigDecimal.ZERO;
+        if (gn.compareTo(BigDecimal.ZERO) > 0 && gb.compareTo(gn) <= 0) {
+            throw new RuntimeException("Giá nhập phải nhỏ hơn giá bán.");
         }
         if (dto.getTonKho() != null && dto.getTonKho() < 0) {
             throw new RuntimeException("Tồn kho không được âm.");

@@ -14,7 +14,6 @@ import {
   Card,
   Form,
   Alert,
-  Badge,
   Modal,
   Button,
   ButtonGroup,
@@ -1570,7 +1569,9 @@ function AppointmentsPageInner() {
                 </tr>
               </thead>
               <tbody>
-                {danhSachLoc.map((a) => (
+                {danhSachLoc.map((a) => {
+                  const metaBang = metaTrangThaiLichHen(a.trangThai);
+                  return (
                   <tr key={a.id}>
                     <td>{formatNgayDdMmYyyy(a.ngayHen)}</td>
                     <td>{formatGioHen(a.gioHen)}</td>
@@ -1583,9 +1584,12 @@ function AppointmentsPageInner() {
                       </td>
                     ) : null}
                     <td>
-                      <Badge bg="secondary">
-                        {STATUS_LABEL[a.trangThai || ""] || a.trangThai}
-                      </Badge>
+                      <span
+                        className={`lich-hen-status-tag lich-hen-status-tag--${metaBang.slug}`}
+                      >
+                        <i className={`bi ${metaBang.icon}`} aria-hidden />
+                        {metaBang.label}
+                      </span>
                     </td>
                     <td className="text-end">
                       <Link
@@ -1597,7 +1601,8 @@ function AppointmentsPageInner() {
                       </Link>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
                 {danhSachLoc.length === 0 ? (
                   <tr>
                     <td

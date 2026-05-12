@@ -7,14 +7,10 @@ import java.util.HexFormat;
 import java.util.Map;
 import java.util.TreeMap;
 
-/**
- * Chữ ký HMAC SHA256 theo tài liệu PayOS (tạo link & webhook).
- */
 public final class PayOsKyTu {
 
     private PayOsKyTu() {}
 
-    /** Chuỗi ký khi tạo payment-requests: amount&cancelUrl&description&orderCode&returnUrl (đã sắp alphabet). */
     public static String kyTaoLinkThanhToan(
             int amount,
             String cancelUrl,
@@ -40,9 +36,6 @@ public final class PayOsKyTu {
         }
     }
 
-    /**
-     * Webhook: ký trên object data — key sắp alphabet, value null → rỗng, số → chuỗi không .0.
-     */
     public static String kyWebhookData(Map<String, String> dataSorted, String checksumKey) {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> e : dataSorted.entrySet()) {
@@ -52,7 +45,6 @@ public final class PayOsKyTu {
         return hmacSha256Hex(sb.toString(), checksumKey);
     }
 
-    /** Xác thực chữ ký payload webhook (object data). */
     public static boolean chuKyWebhookHopLe(com.fasterxml.jackson.databind.JsonNode data, String signatureHex, String checksumKey) {
         if (signatureHex == null || signatureHex.isBlank() || data == null || !data.isObject()) {
             return false;

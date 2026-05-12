@@ -5,9 +5,6 @@ import lombok.*;
 
 import java.time.Instant;
 
-/**
- * Ánh xạ orderCode PayOS → hóa đơn (webhook xác định hóa đơn cần ghi nhận thanh toán).
- */
 @Entity
 @Table(name = "pay_os_don_hang")
 @Getter
@@ -27,7 +24,6 @@ public class PayOsDonHang {
     @Column(name = "order_code", nullable = false, unique = true)
     private Integer orderCode;
 
-    /** Số tiền (VNĐ) gửi PayOS */
     @Column(name = "so_tien_vnd", nullable = false)
     private Integer soTienVnd;
 

@@ -93,7 +93,7 @@ export default function PhieuChiPage() {
   const router = useRouter();
   const [list, setList] = useState<PhieuChi[]>([]);
   const [trang, setTrang] = useState(0);
-  const [kichThuocTrang, setKichThuocTrang] = useState(20);
+  const KICH_THUOC_TRANG = 20;
   const [tongTrang, setTongTrang] = useState(1);
   const [tongHop, setTongHop] = useState<PhieuChiTongHop | null>(null);
   const [tuNgay, setTuNgay] = useState(monthStartISO);
@@ -119,7 +119,7 @@ export default function PhieuChiPage() {
 
   const load = useCallback(() => {
     Promise.all([
-      phieuChiApi.danhSach(tuNgay, denNgay, trang, kichThuocTrang),
+      phieuChiApi.danhSach(tuNgay, denNgay, trang, KICH_THUOC_TRANG),
       phieuChiApi.tongHop(tuNgay, denNgay),
     ])
       .then(([p, th]) => {
@@ -132,7 +132,7 @@ export default function PhieuChiPage() {
         }
       })
       .catch((e) => setError(e.message));
-  }, [tuNgay, denNgay, trang, kichThuocTrang]);
+  }, [tuNgay, denNgay, trang]);
 
   useEffect(() => {
     if (!allowed) return;
@@ -367,23 +367,6 @@ export default function PhieuChiPage() {
             <i className="bi bi-info-circle me-1" aria-hidden />
             {tongSoPhieu} bản ghi khớp khoảng thời gian · tổng chi{" "}
             <strong className="text-body">{fmtMoney(tongChi)}</strong>
-            {" · "}
-            <span className="text-nowrap">
-              Số dòng/trang{" "}
-              <Form.Select
-                size="sm"
-                className="d-inline-block w-auto ms-1"
-                value={kichThuocTrang}
-                onChange={(e) => {
-                  setKichThuocTrang(Number(e.target.value) || 20);
-                  setTrang(0);
-                }}
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </Form.Select>
-            </span>
           </div>
         </Card.Body>
       </Card>

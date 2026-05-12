@@ -136,7 +136,7 @@ export default function ThuocPage() {
   const [tuKhoa, setTuKhoa] = useState("");
   const [tuKhoaTim, setTuKhoaTim] = useState("");
   const [boLocTrangThai, setBoLocTrangThai] = useState("tat-ca");
-  const [kichThuocTrang, setKichThuocTrang] = useState(20);
+  const KICH_THUOC_TRANG = 20;
   const [trang, setTrang] = useState(0);
   const [sapXep, setSapXep] = useState("tenThuoc,asc");
   const [exportingCsv, setExportingCsv] = useState(false);
@@ -160,7 +160,7 @@ export default function ThuocPage() {
 
   useEffect(() => {
     setTrang(0);
-  }, [tuKhoaTim, boLocTrangThai, kichThuocTrang, sapXep]);
+  }, [tuKhoaTim, boLocTrangThai, sapXep]);
 
   const load = useCallback(async () => {
     if (!user?.cacVaiTro.includes("QUAN_TRI")) return;
@@ -170,7 +170,7 @@ export default function ThuocPage() {
         tuKhoa: tuKhoaTim.trim() || undefined,
         trangThai: boLocTrangThai,
         page: trang,
-        size: kichThuocTrang,
+        size: KICH_THUOC_TRANG,
         sort: sapXep,
       });
       setPhanTrang(r);
@@ -186,7 +186,6 @@ export default function ThuocPage() {
     tuKhoaTim,
     boLocTrangThai,
     trang,
-    kichThuocTrang,
     sapXep,
   ]);
 
@@ -451,7 +450,7 @@ export default function ThuocPage() {
                 <option value="ngung">Ngừng</option>
               </Form.Select>
             </Col>
-            <Col xs={6} md={4} lg={2}>
+            <Col xs={6} md={4} lg={3}>
               <Form.Label className="small text-muted mb-1">Sắp xếp</Form.Label>
               <Form.Select
                 value={sapXep}
@@ -467,23 +466,7 @@ export default function ThuocPage() {
                 <option value="tonKho,desc">Tồn nhiều nhất</option>
               </Form.Select>
             </Col>
-            <Col xs={6} md={3} lg={1}>
-              <Form.Label className="small text-muted mb-1">
-                Số bản ghi / Trang
-              </Form.Label>
-              <Form.Select
-                value={kichThuocTrang}
-                onChange={(e) =>
-                  setKichThuocTrang(Number(e.target.value) || 20)
-                }
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </Form.Select>
-            </Col>
-            <Col xs={6} md={3} lg={1} className="d-flex align-items-end">
+            <Col xs={12} md={6} lg={3} className="d-flex align-items-end">
               <Button
                 variant="outline-secondary"
                 className="btn-clinic-clear-filter w-100"
@@ -491,7 +474,6 @@ export default function ThuocPage() {
                   setTuKhoa("");
                   setTuKhoaTim("");
                   setBoLocTrangThai("tat-ca");
-                  setKichThuocTrang(20);
                   setSapXep("tenThuoc,asc");
                 }}
               >

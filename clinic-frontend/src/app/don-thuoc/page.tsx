@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Alert, Button, Card, Form, Pagination, Table } from "react-bootstrap";
+import { Alert, Card, Pagination, Table } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
 import { thuocApi, type DonThuocChiTietBangKe } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
@@ -16,7 +16,7 @@ export default function DonThuocPage() {
   const [error, setError] = useState("");
   const [rows, setRows] = useState<DonThuocChiTietBangKe[]>([]);
   const [trang, setTrang] = useState(0);
-  const [kichThuoc, setKichThuoc] = useState(20);
+  const KICH_THUOC = 20;
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -36,15 +36,15 @@ export default function DonThuocPage() {
       .catch((e) => setError(e instanceof Error ? e.message : "Lỗi"));
   }, [user]);
 
-  const tongTrang = tongSoTrangClient(rows.length, kichThuoc);
+  const tongTrang = tongSoTrangClient(rows.length, KICH_THUOC);
   const dongTrang = useMemo(
-    () => catTrang(rows, trang, kichThuoc),
-    [rows, trang, kichThuoc],
+    () => catTrang(rows, trang, KICH_THUOC),
+    [rows, trang],
   );
 
   useEffect(() => {
     setTrang(0);
-  }, [rows.length, kichThuoc]);
+  }, [rows.length]);
 
   if (loading) return null;
   if (!user) return null;
@@ -57,21 +57,6 @@ export default function DonThuocPage() {
         subtitle="Chi tiết đơn thuốc theo hồ sơ khám."
       >
         <div className="d-flex gap-2 flex-wrap align-items-center">
-          <Form.Group className="mb-0">
-            <Form.Label className="small text-muted mb-1">Số dòng / trang</Form.Label>
-            <Form.Select
-              size="sm"
-              style={{ minWidth: "5.5rem" }}
-              value={kichThuoc}
-              onChange={(e) =>
-                setKichThuoc(Number(e.target.value) || 20)
-              }
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </Form.Select>
-          </Form.Group>
           <Link
             href="/thuoc"
             className="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-2"

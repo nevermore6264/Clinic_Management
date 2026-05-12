@@ -35,7 +35,7 @@ export default function ChuyenKhoaPage() {
     null,
   );
   const [trang, setTrang] = useState(0);
-  const [kichThuocTrang, setKichThuocTrang] = useState(15);
+  const KICH_THUOC_TRANG = 15;
 
   const napDuLieu = async () => {
     try {
@@ -74,15 +74,15 @@ export default function ChuyenKhoaPage() {
       );
   }, [bacSi, chuyenKhoaXemBacSi]);
 
-  const tongTrangCk = tongSoTrangClient(list.length, kichThuocTrang);
+  const tongTrangCk = tongSoTrangClient(list.length, KICH_THUOC_TRANG);
   const dongTrangCk = useMemo(
-    () => catTrang(list, trang, kichThuocTrang),
-    [list, trang, kichThuocTrang],
+    () => catTrang(list, trang, KICH_THUOC_TRANG),
+    [list, trang],
   );
 
   useEffect(() => {
     setTrang(0);
-  }, [list.length, kichThuocTrang]);
+  }, [list.length]);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -253,21 +253,6 @@ export default function ChuyenKhoaPage() {
       {error ? <Alert variant="danger">{error}</Alert> : null}
 
       <Card>
-        <Card.Header className="d-flex flex-wrap align-items-center justify-content-end gap-2 py-2">
-          <Form.Select
-            size="sm"
-            aria-label="Số dòng mỗi trang"
-            style={{ maxWidth: "8rem" }}
-            value={kichThuocTrang}
-            onChange={(e) =>
-              setKichThuocTrang(Number(e.target.value) || 15)
-            }
-          >
-            <option value={10}>10 / trang</option>
-            <option value={15}>15 / trang</option>
-            <option value={25}>25 / trang</option>
-          </Form.Select>
-        </Card.Header>
         <Table responsive hover className="mb-0">
           <thead>
             <tr>

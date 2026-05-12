@@ -15,7 +15,7 @@ export default function NhatKyHeThongsPage() {
   const [to, setTo] = useState(todayLocalYmd);
   const [error, setError] = useState("");
   const [trang, setTrang] = useState(0);
-  const [kichThuoc, setKichThuoc] = useState(20);
+  const KICH_THUOC = 20;
   const [tongTrang, setTongTrang] = useState(1);
   const [tongPhanTu, setTongPhanTu] = useState(0);
 
@@ -27,7 +27,7 @@ export default function NhatKyHeThongsPage() {
   useEffect(() => {
     if (!user?.cacVaiTro.includes("QUAN_TRI")) return;
     auditLogsApi
-      .list(from, to, trang, kichThuoc)
+      .list(from, to, trang, KICH_THUOC)
       .then((r) => {
         setList(r.content);
         const tp = Math.max(1, r.totalPages ?? 1);
@@ -38,7 +38,7 @@ export default function NhatKyHeThongsPage() {
         }
       })
       .catch((e) => setError(e.message));
-  }, [user, from, to, trang, kichThuoc]);
+  }, [user, from, to, trang]);
 
   if (!user?.cacVaiTro.includes("QUAN_TRI")) return null;
 
@@ -74,21 +74,6 @@ export default function NhatKyHeThongsPage() {
                   setTrang(0);
                 }}
               />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Số dòng / trang</Form.Label>
-              <Form.Select
-                value={kichThuoc}
-                onChange={(e) => {
-                  setKichThuoc(Number(e.target.value) || 20);
-                  setTrang(0);
-                }}
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
-              </Form.Select>
             </Form.Group>
           </div>
         </Card.Body>
@@ -141,8 +126,8 @@ export default function NhatKyHeThongsPage() {
         {tongPhanTu > 0 ? (
           <Card.Footer className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
             <div className="small text-muted">
-              Hiển thị {trang * kichThuoc + 1}–
-              {Math.min((trang + 1) * kichThuoc, tongPhanTu)} trong {tongPhanTu}{" "}
+              Hiển thị {trang * KICH_THUOC + 1}–
+              {Math.min((trang + 1) * KICH_THUOC, tongPhanTu)} trong {tongPhanTu}{" "}
               bản ghi khớp lọc · trang {trang + 1}/{tongTrang}
             </div>
             <Pagination className="mb-0 flex-wrap">

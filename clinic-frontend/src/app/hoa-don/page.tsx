@@ -36,11 +36,11 @@ function InvoicesPageInner() {
   const [to, setTo] = useState(todayLocalYmd);
   const [error, setError] = useState("");
   const [trang, setTrang] = useState(0);
-  const [kichThuoc, setKichThuoc] = useState(20);
+  const KICH_THUOC = 20;
   const [tongTrang, setTongTrang] = useState(1);
   const [tongPhanTu, setTongPhanTu] = useState(0);
   const [trangBn, setTrangBn] = useState(0);
-  const [kichThuocBn, setKichThuocBn] = useState(10);
+  const KICH_THUOC_BN = 10;
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -85,7 +85,7 @@ function InvoicesPageInner() {
       return;
     }
     invoicesApi
-      .list(from, to, trang, kichThuoc)
+      .list(from, to, trang, KICH_THUOC)
       .then((r) => {
         setList(r.content);
         const tp = Math.max(1, r.totalPages ?? 1);
@@ -96,7 +96,7 @@ function InvoicesPageInner() {
         }
       })
       .catch((e) => setError(e.message));
-  }, [user, from, to, chiTaiKhoanBn, trang, kichThuoc]);
+  }, [user, from, to, chiTaiKhoanBn, trang]);
 
   const rowsHienThi = useMemo(
     () =>
@@ -109,10 +109,10 @@ function InvoicesPageInner() {
   );
 
   const dongBenhNhanTrang = useMemo(
-    () => catTrang(rowsHienThi, trangBn, kichThuocBn),
-    [rowsHienThi, trangBn, kichThuocBn],
+    () => catTrang(rowsHienThi, trangBn, KICH_THUOC_BN),
+    [rowsHienThi, trangBn],
   );
-  const tongTrangBn = tongSoTrangClient(rowsHienThi.length, kichThuocBn);
+  const tongTrangBn = tongSoTrangClient(rowsHienThi.length, KICH_THUOC_BN);
 
   useEffect(() => {
     if (!chiTaiKhoanBn) return;
@@ -205,20 +205,6 @@ function InvoicesPageInner() {
                     }}
                   />
                 </Form.Group>
-                <Form.Group>
-                  <Form.Label>Số hóa đơn / trang</Form.Label>
-                  <Form.Select
-                    value={kichThuocBn}
-                    onChange={(e) => {
-                      setKichThuocBn(Number(e.target.value) || 10);
-                      setTrangBn(0);
-                    }}
-                  >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                  </Form.Select>
-                </Form.Group>
               </div>
             </>
           ) : (
@@ -244,20 +230,6 @@ function InvoicesPageInner() {
                     setTrang(0);
                   }}
                 />
-              </Form.Group>
-              <Form.Group>
-                <Form.Label>Số dòng / trang</Form.Label>
-                <Form.Select
-                  value={kichThuoc}
-                  onChange={(e) => {
-                    setKichThuoc(Number(e.target.value) || 20);
-                    setTrang(0);
-                  }}
-                >
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
-                  <option value={50}>50</option>
-                </Form.Select>
               </Form.Group>
             </div>
           )}
@@ -402,8 +374,8 @@ function InvoicesPageInner() {
           {tongPhanTu > 0 ? (
             <Card.Footer className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
               <div className="small text-muted">
-                Hiển thị {trang * kichThuoc + 1}–
-                {Math.min((trang + 1) * kichThuoc, tongPhanTu)} trong{" "}
+                Hiển thị {trang * KICH_THUOC + 1}–
+                {Math.min((trang + 1) * KICH_THUOC, tongPhanTu)} trong{" "}
                 {tongPhanTu} hóa đơn khớp lọc · trang {trang + 1}/{tongTrang}
               </div>
               <Pagination className="mb-0 flex-wrap">

@@ -55,7 +55,7 @@ export default function UsersPage() {
   >(null);
   const [dangKhoa, setDangKhoa] = useState(false);
   const [trang, setTrang] = useState(0);
-  const [kichThuocTrang, setKichThuocTrang] = useState(15);
+  const KICH_THUOC_TRANG = 15;
 
   const loadUsers = () =>
     usersApi
@@ -228,15 +228,15 @@ export default function UsersPage() {
     return khopTuKhoa && khopTrangThai && khopVaiTro;
   });
 
-  const tongTrang = tongSoTrangClient(danhSachLoc.length, kichThuocTrang);
+  const tongTrang = tongSoTrangClient(danhSachLoc.length, KICH_THUOC_TRANG);
   const dongTrang = useMemo(
-    () => catTrang(danhSachLoc, trang, kichThuocTrang),
-    [danhSachLoc, trang, kichThuocTrang],
+    () => catTrang(danhSachLoc, trang, KICH_THUOC_TRANG),
+    [danhSachLoc, trang],
   );
 
   useEffect(() => {
     setTrang(0);
-  }, [tuKhoa, boLocTrangThai, boLocVaiTro, kichThuocTrang]);
+  }, [tuKhoa, boLocTrangThai, boLocVaiTro]);
 
   const exportCsv = () => {
     const rows = [
@@ -319,20 +319,7 @@ export default function UsersPage() {
                 ))}
               </Form.Select>
             </div>
-            <div className="col-6 col-md-2">
-              <Form.Select
-                value={kichThuocTrang}
-                onChange={(e) =>
-                  setKichThuocTrang(Number(e.target.value) || 15)
-                }
-              >
-                <option value={10}>10 / trang</option>
-                <option value={15}>15 / trang</option>
-                <option value={25}>25 / trang</option>
-                <option value={50}>50 / trang</option>
-              </Form.Select>
-            </div>
-            <div className="col-6 col-md-2 d-flex align-items-stretch">
+            <div className="col-12 col-md-4 d-flex align-items-stretch">
               <Button
                 variant="outline-secondary"
                 className="btn-clinic-clear-filter w-100"

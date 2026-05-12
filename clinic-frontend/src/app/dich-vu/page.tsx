@@ -55,7 +55,7 @@ export default function ServicesPage() {
   const [themDichVuLoi, setThemDichVuLoi] = useState<DichVuFormErrors>({});
   const [suaDichVuLoi, setSuaDichVuLoi] = useState<DichVuFormErrors>({});
   const [trang, setTrang] = useState(0);
-  const [kichThuocTrang, setKichThuocTrang] = useState(15);
+  const KICH_THUOC_TRANG = 15;
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -151,16 +151,16 @@ export default function ServicesPage() {
 
   const tongTrangDichVu = tongSoTrangClient(
     danhSachDichVuLoc.length,
-    kichThuocTrang,
+    KICH_THUOC_TRANG,
   );
   const dongTrangDichVu = useMemo(
-    () => catTrang(danhSachDichVuLoc, trang, kichThuocTrang),
-    [danhSachDichVuLoc, trang, kichThuocTrang],
+    () => catTrang(danhSachDichVuLoc, trang, KICH_THUOC_TRANG),
+    [danhSachDichVuLoc, trang],
   );
 
   useEffect(() => {
     setTrang(0);
-  }, [boLocLoaiDichVu, tuKhoaTenDichVu, kichThuocTrang]);
+  }, [boLocLoaiDichVu, tuKhoaTenDichVu]);
 
   const dichVuCanXoa = list.find((item) => item.id === xoaId);
 
@@ -373,20 +373,6 @@ export default function ServicesPage() {
                 value={tuKhoaTenDichVu}
                 onChange={(e) => setTuKhoaTenDichVu(e.target.value)}
               />
-            </Form.Group>
-            <Form.Group style={{ minWidth: "7rem" }}>
-              <Form.Select
-                aria-label="Số dòng mỗi trang"
-                value={kichThuocTrang}
-                onChange={(e) =>
-                  setKichThuocTrang(Number(e.target.value) || 15)
-                }
-              >
-                <option value={10}>10 / trang</option>
-                <option value={15}>15 / trang</option>
-                <option value={25}>25 / trang</option>
-                <option value={50}>50 / trang</option>
-              </Form.Select>
             </Form.Group>
             <Button
               variant="outline-secondary"

@@ -147,7 +147,7 @@ export default function QuanLyBacSiPage() {
   const [thanhTichDatDuocSua, setThanhTichDatDuocSua] = useState("");
   const [hoatDongSua, setHoatDongSua] = useState(true);
   const [trang, setTrang] = useState(0);
-  const [kichThuocTrang, setKichThuocTrang] = useState(10);
+  const KICH_THUOC_TRANG = 10;
 
   const napDuLieu = useCallback(async () => {
     try {
@@ -205,15 +205,15 @@ export default function QuanLyBacSiPage() {
     return taiKhoanBsChuaGan;
   }, [taiKhoanBsChuaGan, taoMaNguoiDung, nguoiDung]);
 
-  const tongTrangBs = tongSoTrangClient(list.length, kichThuocTrang);
+  const tongTrangBs = tongSoTrangClient(list.length, KICH_THUOC_TRANG);
   const dongTrangBs = useMemo(
-    () => catTrang(list, trang, kichThuocTrang),
-    [list, trang, kichThuocTrang],
+    () => catTrang(list, trang, KICH_THUOC_TRANG),
+    [list, trang],
   );
 
   useEffect(() => {
     setTrang(0);
-  }, [list.length, kichThuocTrang]);
+  }, [list.length]);
 
   const chuyenKhoaSauLoc = useMemo(() => {
     const q = taoLocCk.trim().toLowerCase();
@@ -495,22 +495,6 @@ export default function QuanLyBacSiPage() {
       {error ? <Alert variant="danger">{error}</Alert> : null}
 
       <Card>
-        <Card.Header className="d-flex flex-wrap align-items-center justify-content-end gap-2 py-2">
-          <Form.Select
-            size="sm"
-            aria-label="Số dòng mỗi trang"
-            style={{ maxWidth: "8rem" }}
-            value={kichThuocTrang}
-            onChange={(e) =>
-              setKichThuocTrang(Number(e.target.value) || 10)
-            }
-          >
-            <option value={5}>5 / trang</option>
-            <option value={10}>10 / trang</option>
-            <option value={20}>20 / trang</option>
-            <option value={50}>50 / trang</option>
-          </Form.Select>
-        </Card.Header>
         <Table responsive hover className="mb-0 align-middle">
           <thead>
             <tr>

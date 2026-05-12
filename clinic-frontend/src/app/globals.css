@@ -8772,7 +8772,6 @@ html.app-ready body {
 }
 
 .phieu-chi-page .phieu-chi-csv-shell .phieu-chi-csv-select-thang {
-  /* Không dùng flex-basis: 0 + min-width: 0 — trình duyệt co cột Tháng về 0. */
   flex: 1 1 auto;
   min-width: 9.25rem;
   width: auto;

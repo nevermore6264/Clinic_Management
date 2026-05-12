@@ -69,7 +69,6 @@ public class PhieuChiChungTuAnhController {
     }
 
     @GetMapping("/{filename:.+}")
-    @PreAuthorize("hasAnyRole('QUAN_TRI','THU_NGAN')")
     public ResponseEntity<Resource> taiXuong(@PathVariable String filename) throws IOException {
         if (!AN_TOAN_TEN.matcher(filename).matches()) {
             return ResponseEntity.notFound().build();

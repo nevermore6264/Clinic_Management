@@ -14,7 +14,10 @@ type ApiOptions = RequestInit & {
   notifyError?: boolean;
 };
 
-export async function api<T>(path: string, options: ApiOptions = {}): Promise<T> {
+export async function api<T>(
+  path: string,
+  options: ApiOptions = {},
+): Promise<T> {
   const token = getToken();
   const {
     notifySuccess = true,
@@ -283,9 +286,7 @@ export const hoSoKhamApi = {
       const msg = e instanceof Error ? e.message : String(e);
       if (/\b404\b/i.test(msg)) return null;
       if (typeof window !== "undefined") {
-        notify.error(
-          msg.length > 160 ? "Không tải được hồ sơ khám." : msg,
-        );
+        notify.error(msg.length > 160 ? "Không tải được hồ sơ khám." : msg);
       }
       throw e;
     }
@@ -335,7 +336,8 @@ export const thuocApi = {
     q.set("sort", params.sort ?? "tenThuoc,asc");
     return api<ThuocTrangTraCuu>(`/thuoc/tim-kiem?${q.toString()}`);
   },
-  bangKeDonThuoc: () => api<DonThuocChiTietBangKe[]>("/thuoc/bang-ke-don-thuoc"),
+  bangKeDonThuoc: () =>
+    api<DonThuocChiTietBangKe[]>("/thuoc/bang-ke-don-thuoc"),
   layTheoMa: (id: number) => api<Thuoc>(`/thuoc/${id}`),
   tao: (data: Partial<Thuoc>) =>
     api<Thuoc>("/thuoc", { method: "POST", body: JSON.stringify(data) }),
@@ -408,9 +410,7 @@ export const phieuChiApi = {
       try {
         const j = (await res.json()) as { message?: string };
         if (j.message) msg = j.message;
-      } catch {
-        /* ignore */
-      }
+      } catch {}
       throw new Error(msg);
     }
     return res.json() as Promise<{
@@ -431,10 +431,10 @@ export const hoaDonApi = {
     api<HoaDon[]>(`/hoa-don/benh-nhan/${maBenhNhan}`),
   layTheoMa: (id: number) => api<HoaDon>(`/hoa-don/${id}`),
   tao: (maLichHen: number, chiTiet: { maDichVu: number; soLuong?: number }[]) =>
-    api<HoaDon>(
-      `/hoa-don?maLichHen=${maLichHen}`,
-      { method: "POST", body: JSON.stringify(chiTiet) },
-    ),
+    api<HoaDon>(`/hoa-don?maLichHen=${maLichHen}`, {
+      method: "POST",
+      body: JSON.stringify(chiTiet),
+    }),
   themThanhToan: (
     maHoaDon: number,
     data: { soTien: number; phuongThuc?: string; maThamChieu?: string },
@@ -501,7 +501,6 @@ export const bangDieuKhienApi = {
   thongKe: () => api<ThongKeBangDieuKhien>("/bang-dieu-khien/thong-ke"),
 };
 
-
 export const dashboardApi = {
   stats: () => bangDieuKhienApi.thongKe(),
 };
@@ -567,9 +566,7 @@ export async function apiUploadChatFile(
     try {
       const j = (await res.json()) as { message?: string };
       if (j.message) msg = j.message;
-    } catch {
-      
-    }
+    } catch {}
     throw new Error(msg);
   }
   return res.json() as Promise<TroChuyenTaiLenResponse>;
@@ -645,7 +642,6 @@ export const lichLamViecCoDinhApi = {
       { method: "POST" },
     ),
 };
-
 
 export const patientsApi = {
   ...benhNhanApi,
@@ -879,7 +875,6 @@ export const doctorSchedulesApi = {
 };
 
 export type ReminderConfig = CauHinhNhacLich;
-
 
 export interface BenhNhan {
   id?: number;

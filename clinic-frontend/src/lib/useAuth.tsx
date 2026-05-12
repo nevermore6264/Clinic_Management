@@ -16,7 +16,6 @@ export interface NguoiDung {
   cacVaiTro: string[];
   maNguoiDung: number;
   maBenhNhan?: number;
-  /** Mã bản ghi bác sĩ (bac_si.id) khi tài khoản liên kết bác sĩ */
   maBacSi?: number;
 }
 

@@ -6,7 +6,6 @@ import type { BenhNhan } from "@/lib/api";
 type Props = {
   form: Partial<BenhNhan>;
   setForm: React.Dispatch<React.SetStateAction<Partial<BenhNhan>>>;
-  /** Chỉ xem: vô hiệu hóa toàn bộ trường (ví dụ vai trò bác sĩ thuần). */
   chiDoc?: boolean;
 };
 

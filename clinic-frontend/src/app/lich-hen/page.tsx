@@ -35,7 +35,7 @@ import {
   LICH_HEN_STATUS_LABEL as STATUS_LABEL,
   metaTrangThaiLichHen,
 } from "@/lib/lichHenStatus";
-import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
+import { laChiTaiKhoanBenhNhan, laChiTaiKhoanBacSiXemLichHomNay } from "@/lib/roles";
 import { consumeLandingBookingDraft } from "@/lib/landingBookingDraft";
 import {
   GIAI_DOAN_LICH_HEN_LABEL,
@@ -186,6 +186,7 @@ function AppointmentsPageInner() {
   }, [maBenhNhanParam]);
 
   useEffect(() => {
+    if (user && laChiTaiKhoanBacSiXemLichHomNay(user)) return;
     const draft = consumeLandingBookingDraft();
     if (!draft) return;
     resetDatLichForm();
@@ -198,17 +199,23 @@ function AppointmentsPageInner() {
       "Từ landing",
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- một lần khi mount; có draft thì mở modal
-  }, []);
+  }, [user, resetDatLichForm]);
 
   const chiTaiKhoanBn = useMemo(
     () => !!user && laChiTaiKhoanBenhNhan(user),
     [user],
   );
 
+  const chiBacSiHomNay = useMemo(
+    () => !!user && laChiTaiKhoanBacSiXemLichHomNay(user),
+    [user],
+  );
+
   const openDatLichModal = useCallback(() => {
+    if (user && laChiTaiKhoanBacSiXemLichHomNay(user)) return;
     resetDatLichForm();
     setShowDatLich(true);
-  }, [resetDatLichForm]);
+  }, [resetDatLichForm, user]);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -216,6 +223,7 @@ function AppointmentsPageInner() {
 
   useEffect(() => {
     if (searchParams.get("datLich") !== "1" || !user) return;
+    if (laChiTaiKhoanBacSiXemLichHomNay(user)) return;
     resetDatLichForm();
     setShowDatLich(true);
     const bn = searchParams.get("maBenhNhan");
@@ -235,6 +243,7 @@ function AppointmentsPageInner() {
   }, [user, chiTaiKhoanBn, maBenhNhanParam, router]);
 
   useEffect(() => {
+    if (user && laChiTaiKhoanBacSiXemLichHomNay(user)) return;
     const tu = searchParams.get("tuNgay");
     const den = searchParams.get("denNgay");
     const tt = searchParams.get("trangThai");
@@ -252,7 +261,15 @@ function AppointmentsPageInner() {
     } else {
       setLocGiaiDoan("");
     }
-  }, [searchParams]);
+  }, [searchParams, user]);
+
+  useEffect(() => {
+    if (!user || !laChiTaiKhoanBacSiXemLichHomNay(user)) return;
+    const t = isoDateLocal(new Date());
+    setFrom(t);
+    setTo(t);
+    setViewMode("bang");
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;

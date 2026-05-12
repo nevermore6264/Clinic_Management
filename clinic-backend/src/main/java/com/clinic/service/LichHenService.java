@@ -60,8 +60,31 @@ public class LichHenService {
 
     @Transactional(readOnly = true)
     public List<LichHenDto> timTheoBacSiVaNgay(Long maBacSi, LocalDate ngay) {
+        yeuCauDuocTruyCapLichTheoBacSi(maBacSi);
         return lichHenRepository.findByBacSiIdAndNgayHenOrderByGioHen(maBacSi, ngay).stream()
                 .map(this::sangDto).collect(Collectors.toList());
+    }
+
+    /**
+     * Bác sĩ không kèm quản trị / lễ tân / thu ngân chỉ được gọi API với đúng mã bác sĩ của tài khoản mình.
+     */
+    private void yeuCauDuocTruyCapLichTheoBacSi(Long maBacSi) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof NguoiDungChinhThuc chuThe)) {
+            return;
+        }
+        Set<String> vaiTro = chuThe.layCacTenVaiTro();
+        if (vaiTro.contains("QUAN_TRI") || vaiTro.contains("LE_TAN") || vaiTro.contains("THU_NGAN")) {
+            return;
+        }
+        if (!vaiTro.contains("BAC_SI")) {
+            return;
+        }
+        BacSi bs = bacSiRepository.findByNguoiDung_Id(chuThe.getMaNguoiDung())
+                .orElseThrow(() -> new AccessDeniedException("Tài khoản chưa liên kết hồ sơ bác sĩ."));
+        if (!bs.getId().equals(maBacSi)) {
+            throw new AccessDeniedException("Chỉ được xem lịch của chính mình.");
+        }
     }
 
     @Transactional(readOnly = true)

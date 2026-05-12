@@ -18,4 +18,6 @@ public class DangNhapPhanHoi {
     private Set<String> cacVaiTro;
     private Long maNguoiDung;
     private Long maBenhNhan;
+    /** Mã bản ghi bác sĩ (bảng bac_si) nếu tài khoản liên kết bác sĩ. */
+    private Long maBacSi;
 }

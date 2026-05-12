@@ -38,6 +38,24 @@ public class QuyenTruyCapHoSoBenhNhan {
                 });
     }
 
+    /**
+     * Bác sĩ không kèm quản trị/lễ tân: được xem hồ sơ nhưng không cập nhật hồ sơ bệnh nhân qua API.
+     */
+    public boolean laBacSiChiDocBenhNhan() {
+        if (!laNhanVien()) {
+            return false;
+        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof NguoiDungChinhThuc u)) {
+            return false;
+        }
+        Set<String> roles = u.layCacTenVaiTro();
+        if (!roles.contains(VaiTro.BAC_SI.name())) {
+            return false;
+        }
+        return !roles.contains(VaiTro.QUAN_TRI.name()) && !roles.contains(VaiTro.LE_TAN.name());
+    }
+
     public Optional<Long> layMaBenhNhanLienKetVoiTaiKhoan() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !(auth.getPrincipal() instanceof NguoiDungChinhThuc u)) {

@@ -8901,7 +8901,6 @@ html.app-ready body {
   background-color: rgba(255, 255, 255, 0.92) !important;
 }
 
-/* Ca ngoại lệ — nút Thêm/Đóng form, Nghỉ cả ngày, Đóng trong form */
 .lich-lam-viec-bs-page .lich-bs-btn-ngoai-le-them.btn-primary {
   font-weight: 600;
   border: none !important;

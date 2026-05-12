@@ -6,9 +6,11 @@ import type { BenhNhan } from "@/lib/api";
 type Props = {
   form: Partial<BenhNhan>;
   setForm: React.Dispatch<React.SetStateAction<Partial<BenhNhan>>>;
+  /** Chỉ xem: vô hiệu hóa toàn bộ trường (ví dụ vai trò bác sĩ thuần). */
+  chiDoc?: boolean;
 };
 
-export function PatientRecordFormFields({ form, setForm }: Props) {
+export function PatientRecordFormFields({ form, setForm, chiDoc = false }: Props) {
   return (
     <>
       <section className="patient-create-modal__section">
@@ -21,6 +23,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
             value={form.hoTen || ""}
             onChange={(e) => setForm((f) => ({ ...f, hoTen: e.target.value }))}
             placeholder="VD: Nguyễn Văn A"
+            disabled={chiDoc}
           />
         </Form.Group>
         <div className="row g-2">
@@ -34,6 +37,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
                 title="Chọn ngày sinh"
                 value={form.ngaySinh || ""}
                 onChange={(e) => setForm((f) => ({ ...f, ngaySinh: e.target.value }))}
+                disabled={chiDoc}
               />
             </Form.Group>
           </div>
@@ -46,6 +50,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
                 value={form.soDienThoai || ""}
                 onChange={(e) => setForm((f) => ({ ...f, soDienThoai: e.target.value }))}
                 placeholder="0xxx xxx xxx"
+                disabled={chiDoc}
               />
             </Form.Group>
           </div>
@@ -57,6 +62,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
               <Form.Select
                 value={form.gioiTinh || ""}
                 onChange={(e) => setForm((f) => ({ ...f, gioiTinh: e.target.value }))}
+                disabled={chiDoc}
               >
                 <option value="">— Chọn —</option>
                 <option value="NAM">Nam</option>
@@ -74,6 +80,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
                 value={form.soCccd || ""}
                 onChange={(e) => setForm((f) => ({ ...f, soCccd: e.target.value }))}
                 placeholder="Số căn cước"
+                disabled={chiDoc}
               />
             </Form.Group>
           </div>
@@ -85,6 +92,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
               <Form.Select
                 value={form.nhomMau || ""}
                 onChange={(e) => setForm((f) => ({ ...f, nhomMau: e.target.value }))}
+                disabled={chiDoc}
               >
                 <option value="">— Chọn —</option>
                 <option value="A">A</option>
@@ -103,6 +111,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
                 value={form.ngheNghiep || ""}
                 onChange={(e) => setForm((f) => ({ ...f, ngheNghiep: e.target.value }))}
                 placeholder="VD: Kỹ sư"
+                disabled={chiDoc}
               />
             </Form.Group>
           </div>
@@ -116,6 +125,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
                 value={form.thuDienTu || ""}
                 onChange={(e) => setForm((f) => ({ ...f, thuDienTu: e.target.value }))}
                 placeholder="email@example.com"
+                disabled={chiDoc}
               />
             </Form.Group>
           </div>
@@ -134,6 +144,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
                 value={form.nguoiLienHe || ""}
                 onChange={(e) => setForm((f) => ({ ...f, nguoiLienHe: e.target.value }))}
                 placeholder="Họ tên người thân"
+                disabled={chiDoc}
               />
             </Form.Group>
           </div>
@@ -148,6 +159,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
                   setForm((f) => ({ ...f, soDienThoaiLienHe: e.target.value }))
                 }
                 placeholder="0xxx xxx xxx"
+                disabled={chiDoc}
               />
             </Form.Group>
           </div>
@@ -164,6 +176,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
                     hoatDong: e.target.value !== "an",
                   }))
                 }
+                disabled={chiDoc}
               >
                 <option value="hoat-dong">Hoạt động (hiển thị trong danh sách)</option>
                 <option value="an">Ẩn (chỉ tìm thấy khi tra cứu)</option>
@@ -183,6 +196,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
             value={form.diaChi || ""}
             onChange={(e) => setForm((f) => ({ ...f, diaChi: e.target.value }))}
             placeholder="Số nhà, đường, phường/xã, tỉnh/thành..."
+            disabled={chiDoc}
           />
         </Form.Group>
         <div className="row g-2">
@@ -197,6 +211,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
                 value={form.tienSuBenh || ""}
                 onChange={(e) => setForm((f) => ({ ...f, tienSuBenh: e.target.value }))}
                 placeholder="Bệnh mãn tính, phẫu thuật trước đây..."
+                disabled={chiDoc}
               />
             </Form.Group>
           </div>
@@ -209,6 +224,7 @@ export function PatientRecordFormFields({ form, setForm }: Props) {
                 value={form.diUng || ""}
                 onChange={(e) => setForm((f) => ({ ...f, diUng: e.target.value }))}
                 placeholder="Thuốc, thực phẩm, môi trường..."
+                disabled={chiDoc}
               />
             </Form.Group>
           </div>

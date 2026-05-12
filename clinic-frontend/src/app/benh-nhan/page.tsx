@@ -24,7 +24,7 @@ import {
 } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
 import { LoadingState } from "@/components/LoadingState";
-import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
+import { laBacSiChiDocBenhNhan, laChiTaiKhoanBenhNhan } from "@/lib/roles";
 import {
   PatientRecordFormFields,
   emptyPatientForm,
@@ -356,6 +356,7 @@ function BenhNhanPageInner() {
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (user && laBacSiChiDocBenhNhan(user)) return;
     if (editId == null) return;
     if (!editForm.hoTen?.trim()) {
       setEditError("Họ tên là bắt buộc.");
@@ -433,6 +434,7 @@ function BenhNhanPageInner() {
 
   const chiTaiKhoanBn = laChiTaiKhoanBenhNhan(user);
   const chiTaiKhoanBnLienKet = chiTaiKhoanBn && user.maBenhNhan != null;
+  const chiDocBenhNhanStaff = laBacSiChiDocBenhNhan(user);
 
   return (
     <div>
@@ -441,10 +443,12 @@ function BenhNhanPageInner() {
         subtitle={
           chiTaiKhoanBn
             ? "Xem và cập nhật thông tin liên hệ của bạn."
-            : "Danh sách hồ sơ đang hoạt động. Tìm theo tên hoặc mở chi tiết để chỉnh sửa."
+            : chiDocBenhNhanStaff
+              ? "Danh sách hồ sơ. Bạn chỉ xem được thông tin; thêm hoặc sửa hồ sơ do lễ tân hoặc quản trị thực hiện."
+              : "Danh sách hồ sơ đang hoạt động. Tìm theo tên hoặc mở chi tiết để chỉnh sửa."
         }
       >
-        {!chiTaiKhoanBn && (
+        {!chiTaiKhoanBn && !chiDocBenhNhanStaff && (
           <div className="d-flex gap-2">
             <Button className="btn-service-export" onClick={exportCsv}>
               <i className="bi bi-filetype-csv me-2" aria-hidden />
@@ -909,12 +913,15 @@ function BenhNhanPageInner() {
                     <td className="text-end text-nowrap">
                       <Button
                         size="sm"
-                        variant="primary"
+                        variant={chiDocBenhNhanStaff ? "outline-primary" : "primary"}
                         className="me-1 btn-action-edit"
                         onClick={() => p.id != null && openEditModal(p.id)}
                       >
-                        <i className="bi bi-pencil me-1" aria-hidden />
-                        Sửa
+                        <i
+                          className={`bi ${chiDocBenhNhanStaff ? "bi-eye" : "bi-pencil"} me-1`}
+                          aria-hidden
+                        />
+                        {chiDocBenhNhanStaff ? "Chi tiết" : "Sửa"}
                       </Button>
                       <Link
                         href={`/lich-hen?maBenhNhan=${p.id}`}
@@ -1034,12 +1041,18 @@ function BenhNhanPageInner() {
             </div>
             <div className="min-w-0 flex-grow-1">
               <Modal.Title as="h5" className="patient-create-modal__title mb-1">
-                Cập nhật bệnh nhân
+                {chiDocBenhNhanStaff ? "Chi tiết bệnh nhân" : "Cập nhật bệnh nhân"}
               </Modal.Title>
               <p className="patient-create-modal__subtitle mb-0">
-                Chỉnh sửa hồ sơ và lưu.{" "}
-                <span className="text-danger fw-semibold">Họ tên</span> là bắt
-                buộc.
+                {chiDocBenhNhanStaff ? (
+                  "Chỉ xem thông tin hồ sơ và lịch sử khám (không chỉnh sửa)."
+                ) : (
+                  <>
+                    Chỉnh sửa hồ sơ và lưu.{" "}
+                    <span className="text-danger fw-semibold">Họ tên</span> là bắt
+                    buộc.
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -1069,6 +1082,7 @@ function BenhNhanPageInner() {
                 <PatientRecordFormFields
                   form={editForm}
                   setForm={setEditForm}
+                  chiDoc={chiDocBenhNhanStaff}
                 />
                 {visitHistory.length > 0 && (
                   <section className="patient-create-modal__section mt-1">
@@ -1127,58 +1141,71 @@ function BenhNhanPageInner() {
             )}
           </Modal.Body>
           <Modal.Footer className="patient-create-modal__footer clinic-modal-footer-actions d-flex flex-wrap gap-2 justify-content-end align-items-center">
-            <Button
-              type="button"
-              className="btn-modal-dismiss"
-              onClick={closeEditModal}
-              disabled={editSubmitting}
-            >
-              <i className="bi bi-x-lg me-2" aria-hidden />
-              Hủy
-            </Button>
-            {editForm.hoatDong === false ? (
+            {chiDocBenhNhanStaff ? (
               <Button
                 type="button"
-                variant="outline-success"
-                disabled={editLoading || editSubmitting}
-                onClick={() => setShowConfirmHienThiLai(true)}
+                className="btn-modal-dismiss"
+                onClick={closeEditModal}
               >
-                <i className="bi bi-eye me-2" aria-hidden />
-                Hiển thị lại hồ sơ
+                <i className="bi bi-x-lg me-2" aria-hidden />
+                Đóng
               </Button>
             ) : (
-              <Button
-                type="button"
-                variant="outline-danger"
-                disabled={editLoading || editSubmitting}
-                onClick={() => setShowConfirmAnHoSo(true)}
-              >
-                <i className="bi bi-eye-slash me-2" aria-hidden />
-                Ẩn hồ sơ
-              </Button>
+              <>
+                <Button
+                  type="button"
+                  className="btn-modal-dismiss"
+                  onClick={closeEditModal}
+                  disabled={editSubmitting}
+                >
+                  <i className="bi bi-x-lg me-2" aria-hidden />
+                  Hủy
+                </Button>
+                {editForm.hoatDong === false ? (
+                  <Button
+                    type="button"
+                    variant="outline-success"
+                    disabled={editLoading || editSubmitting}
+                    onClick={() => setShowConfirmHienThiLai(true)}
+                  >
+                    <i className="bi bi-eye me-2" aria-hidden />
+                    Hiển thị lại hồ sơ
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline-danger"
+                    disabled={editLoading || editSubmitting}
+                    onClick={() => setShowConfirmAnHoSo(true)}
+                  >
+                    <i className="bi bi-eye-slash me-2" aria-hidden />
+                    Ẩn hồ sơ
+                  </Button>
+                )}
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="px-4"
+                  disabled={editLoading || editSubmitting}
+                >
+                  {editSubmitting ? (
+                    <>
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden
+                      />
+                      Đang lưu…
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-check2-circle me-2" aria-hidden />
+                      Lưu
+                    </>
+                  )}
+                </Button>
+              </>
             )}
-            <Button
-              type="submit"
-              variant="primary"
-              className="px-4"
-              disabled={editLoading || editSubmitting}
-            >
-              {editSubmitting ? (
-                <>
-                  <span
-                    className="spinner-border spinner-border-sm me-2"
-                    role="status"
-                    aria-hidden
-                  />
-                  Đang lưu…
-                </>
-              ) : (
-                <>
-                  <i className="bi bi-check2-circle me-2" aria-hidden />
-                  Lưu
-                </>
-              )}
-            </Button>
           </Modal.Footer>
         </Form>
       </Modal>

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Form, Button, Alert } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
 import { patientsApi, type BenhNhan } from "@/lib/api";
+import { laBacSiChiDocBenhNhan } from "@/lib/roles";
+import { LoadingState } from "@/components/LoadingState";
 
 export default function NewPatientPage() {
   const { user, loading } = useAuth();
@@ -27,6 +29,17 @@ export default function NewPatientPage() {
     hoatDong: true,
   });
 
+  useEffect(() => {
+    if (loading || !user) return;
+    if (laBacSiChiDocBenhNhan(user)) {
+      router.replace("/benh-nhan");
+    }
+  }, [loading, user, router]);
+
+  useEffect(() => {
+    if (!loading && !user) router.replace("/dang-nhap");
+  }, [loading, user, router]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -42,10 +55,9 @@ export default function NewPatientPage() {
     }
   };
 
-  if (!loading && !user) {
-    router.replace("/dang-nhap");
-    return null;
-  }
+  if (loading) return <LoadingState />;
+  if (!user) return null;
+  if (laBacSiChiDocBenhNhan(user)) return <LoadingState />;
 
   return (
     <div>

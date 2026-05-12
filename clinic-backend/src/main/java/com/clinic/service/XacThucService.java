@@ -7,6 +7,7 @@ import com.clinic.dto.DangNhapPhanHoi;
 import com.clinic.entity.BenhNhan;
 import com.clinic.entity.NguoiDung;
 import com.clinic.entity.VaiTro;
+import com.clinic.repository.BacSiRepository;
 import com.clinic.repository.BenhNhanRepository;
 import com.clinic.repository.NguoiDungRepository;
 import com.clinic.security.JwtTienIch;
@@ -32,6 +33,7 @@ public class XacThucService {
     private final JwtTienIch jwtTienIch;
     private final NguoiDungRepository nguoiDungRepository;
     private final BenhNhanRepository benhNhanRepository;
+    private final BacSiRepository bacSiRepository;
     private final PasswordEncoder maHoaMatKhau;
 
     @Transactional
@@ -89,6 +91,9 @@ public class XacThucService {
         Long maBenhNhan = benhNhanRepository.findByNguoiDung_Id(nguoiDung.getId())
                 .map(b -> b.getId())
                 .orElse(null);
+        Long maBacSi = bacSiRepository.findByNguoiDung_Id(nguoiDung.getId())
+                .map(bs -> bs.getId())
+                .orElse(null);
         return DangNhapPhanHoi.builder()
                 .token(jwtTienIch.taoToken(ketQua))
                 .tenDangNhap(nguoiDung.getTenDangNhap())
@@ -96,6 +101,7 @@ public class XacThucService {
                 .cacVaiTro(chuThe.layCacTenVaiTro())
                 .maNguoiDung(nguoiDung.getId())
                 .maBenhNhan(maBenhNhan)
+                .maBacSi(maBacSi)
                 .build();
     }
 

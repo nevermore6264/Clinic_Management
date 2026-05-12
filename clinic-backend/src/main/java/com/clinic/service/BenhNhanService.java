@@ -60,6 +60,9 @@ public class BenhNhanService {
     public BenhNhanDto capNhat(Long ma, BenhNhanDto dto) {
         BenhNhan bn = benhNhanRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy bệnh nhân: " + ma));
         quyenTruyCapHoSoBenhNhan.yeuCauDuocTruyCapHoSo(ma);
+        if (quyenTruyCapHoSoBenhNhan.laBacSiChiDocBenhNhan()) {
+            throw new AccessDeniedException("Bác sĩ chỉ được xem hồ sơ bệnh nhân, không được chỉnh sửa.");
+        }
         if (!quyenTruyCapHoSoBenhNhan.laNhanVien()) {
             dto.setHoatDong(bn.isHoatDong());
         }

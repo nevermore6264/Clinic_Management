@@ -16,6 +16,8 @@ export interface NguoiDung {
   cacVaiTro: string[];
   maNguoiDung: number;
   maBenhNhan?: number;
+  /** Mã bản ghi bác sĩ (bac_si.id) khi tài khoản liên kết bác sĩ */
+  maBacSi?: number;
 }
 
 interface AuthContextType {
@@ -90,6 +92,14 @@ function luuPhienTuPhanHoiDangNhap(
         ? Number(maBnRaw) || undefined
         : undefined;
 
+  const maBsRaw = data.maBacSi;
+  const maBacSi =
+    typeof maBsRaw === "number"
+      ? maBsRaw
+      : typeof maBsRaw === "string"
+        ? Number(maBsRaw) || undefined
+        : undefined;
+
   const nd: NguoiDung = {
     tenDangNhap:
       typeof data.tenDangNhap === "string" ? data.tenDangNhap : fallbackTenDn,
@@ -102,6 +112,7 @@ function luuPhienTuPhanHoiDangNhap(
           ? Number(data.maNguoiDung) || 0
           : 0,
     ...(maBenhNhan != null && maBenhNhan > 0 ? { maBenhNhan } : {}),
+    ...(maBacSi != null && maBacSi > 0 ? { maBacSi } : {}),
   };
   setUser(nd);
   localStorage.setItem("user", JSON.stringify(nd));

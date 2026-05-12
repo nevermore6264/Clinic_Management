@@ -108,21 +108,6 @@ const NUOC_SAN_XUAT_OPTIONS = [
   "Khác",
 ] as const;
 
-const DUONG_DUNG_LOC_OPTIONS = [
-  "Uống",
-  "Tiêm",
-  "Bôi ngoài da",
-  "Nhỏ mắt",
-  "Pha uống",
-  "Đặt",
-  "Rửa / truyền",
-  "Súc miệng",
-  "Ngậm",
-  "Tiêm dưới da",
-  "Xịt mũi",
-  "Khác",
-] as const;
-
 const empty: Thuoc = {
   tenThuoc: "",
   donVi: "",
@@ -154,16 +139,6 @@ export default function ThuocPage() {
   const [tuKhoa, setTuKhoa] = useState("");
   const [tuKhoaTim, setTuKhoaTim] = useState("");
   const [boLocTrangThai, setBoLocTrangThai] = useState("tat-ca");
-  const [locDonVi, setLocDonVi] = useState("");
-  const [locDangBaoChe, setLocDangBaoChe] = useState("");
-  const [locDuongDung, setLocDuongDung] = useState("");
-  const [locHang, setLocHang] = useState("");
-  const [locNuoc, setLocNuoc] = useState("");
-  const [locTonThap, setLocTonThap] = useState(false);
-  const [locHanTu, setLocHanTu] = useState("");
-  const [locHanDen, setLocHanDen] = useState("");
-  const [locGiaBanTu, setLocGiaBanTu] = useState("");
-  const [locGiaBanDen, setLocGiaBanDen] = useState("");
   const [kichThuocTrang, setKichThuocTrang] = useState(20);
   const [trang, setTrang] = useState(0);
   const [sapXep, setSapXep] = useState("tenThuoc,asc");
@@ -188,42 +163,15 @@ export default function ThuocPage() {
 
   useEffect(() => {
     setTrang(0);
-  }, [
-    tuKhoaTim,
-    boLocTrangThai,
-    locDonVi,
-    locDangBaoChe,
-    locDuongDung,
-    locHang,
-    locNuoc,
-    locTonThap,
-    locHanTu,
-    locHanDen,
-    locGiaBanTu,
-    locGiaBanDen,
-    kichThuocTrang,
-    sapXep,
-  ]);
+  }, [tuKhoaTim, boLocTrangThai, kichThuocTrang, sapXep]);
 
   const load = useCallback(async () => {
     if (!user?.cacVaiTro.includes("QUAN_TRI")) return;
     setLoadingList(true);
-    const tienLoc = (s: string) =>
-      s.replace(/đ/gi, "").replace(/VNĐ/gi, "").replace(/\s/g, "").trim();
     try {
       const r = await thuocApi.timKiem({
         tuKhoa: tuKhoaTim.trim() || undefined,
         trangThai: boLocTrangThai,
-        donVi: locDonVi || undefined,
-        dangBaoChe: locDangBaoChe || undefined,
-        duongDung: locDuongDung || undefined,
-        hangSanXuat: locHang || undefined,
-        nuocSanXuat: locNuoc || undefined,
-        tonThap: locTonThap || undefined,
-        hanTu: locHanTu || undefined,
-        hanDen: locHanDen || undefined,
-        giaBanTu: tienLoc(locGiaBanTu) || undefined,
-        giaBanDen: tienLoc(locGiaBanDen) || undefined,
         page: trang,
         size: kichThuocTrang,
         sort: sapXep,
@@ -240,16 +188,6 @@ export default function ThuocPage() {
     user?.cacVaiTro,
     tuKhoaTim,
     boLocTrangThai,
-    locDonVi,
-    locDangBaoChe,
-    locDuongDung,
-    locHang,
-    locNuoc,
-    locTonThap,
-    locHanTu,
-    locHanDen,
-    locGiaBanTu,
-    locGiaBanDen,
     trang,
     kichThuocTrang,
     sapXep,
@@ -396,21 +334,9 @@ export default function ThuocPage() {
 
   const exportCsv = async () => {
     setExportingCsv(true);
-    const tienLoc = (s: string) =>
-      s.replace(/đ/gi, "").replace(/VNĐ/gi, "").replace(/\s/g, "").trim();
     const base = {
       tuKhoa: tuKhoaTim.trim() || undefined,
       trangThai: boLocTrangThai,
-      donVi: locDonVi || undefined,
-      dangBaoChe: locDangBaoChe || undefined,
-      duongDung: locDuongDung || undefined,
-      hangSanXuat: locHang || undefined,
-      nuocSanXuat: locNuoc || undefined,
-      tonThap: locTonThap || undefined,
-      hanTu: locHanTu || undefined,
-      hanDen: locHanDen || undefined,
-      giaBanTu: tienLoc(locGiaBanTu) || undefined,
-      giaBanDen: tienLoc(locGiaBanDen) || undefined,
       sort: sapXep,
     };
     const collected: Thuoc[] = [];
@@ -507,10 +433,10 @@ export default function ThuocPage() {
       <Card className="mb-3 card--static">
         <Card.Body className="py-3">
           <Row className="g-2 align-items-end">
-            <Col xs={12} md={6} lg={4}>
+            <Col xs={12} md={5} lg={6}>
               <Form.Label className="small text-muted mb-1">Từ khóa</Form.Label>
               <Form.Control
-                placeholder="Tên, hoạt chất, hàm lượng, ĐK, số lô, hãng…"
+                placeholder="Tên, hoạt chất, hàm lượng…"
                 value={tuKhoa}
                 onChange={(e) => setTuKhoa(e.target.value)}
               />
@@ -526,121 +452,7 @@ export default function ThuocPage() {
                 <option value="ngung">Ngừng</option>
               </Form.Select>
             </Col>
-            <Col xs={6} md={3} lg={2}>
-              <Form.Label className="small text-muted mb-1">Đơn vị</Form.Label>
-              <Form.Select
-                value={locDonVi}
-                onChange={(e) => setLocDonVi(e.target.value)}
-              >
-                <option value="">Tất cả đơn vị</option>
-                {DON_VI_OPTIONS.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
-                  </option>
-                ))}
-              </Form.Select>
-            </Col>
-            <Col xs={12} md={6} lg={4}>
-              <Form.Label className="small text-muted mb-1">Dạng bào chế</Form.Label>
-              <Form.Select
-                value={locDangBaoChe}
-                onChange={(e) => setLocDangBaoChe(e.target.value)}
-              >
-                <option value="">Tất cả dạng</option>
-                {DANG_BAO_CHE_OPTIONS.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
-                  </option>
-                ))}
-              </Form.Select>
-            </Col>
-            <Col xs={12} md={6} lg={4}>
-              <Form.Label className="small text-muted mb-1">Đường dùng</Form.Label>
-              <Form.Select
-                value={locDuongDung}
-                onChange={(e) => setLocDuongDung(e.target.value)}
-              >
-                <option value="">Tất cả</option>
-                {DUONG_DUNG_LOC_OPTIONS.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
-                  </option>
-                ))}
-              </Form.Select>
-            </Col>
-            <Col xs={12} md={6} lg={4}>
-              <Form.Label className="small text-muted mb-1">Hãng sản xuất</Form.Label>
-              <Form.Select
-                value={locHang}
-                onChange={(e) => setLocHang(e.target.value)}
-              >
-                <option value="">Tất cả hãng</option>
-                {HANG_SAN_XUAT_OPTIONS.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
-                  </option>
-                ))}
-              </Form.Select>
-            </Col>
-            <Col xs={12} md={6} lg={4}>
-              <Form.Label className="small text-muted mb-1">Nước sản xuất</Form.Label>
-              <Form.Select
-                value={locNuoc}
-                onChange={(e) => setLocNuoc(e.target.value)}
-              >
-                <option value="">Tất cả nước</option>
-                {NUOC_SAN_XUAT_OPTIONS.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
-                  </option>
-                ))}
-              </Form.Select>
-            </Col>
-            <Col xs={6} md={3} lg={2}>
-              <Form.Label className="small text-muted mb-1">HSD từ</Form.Label>
-              <Form.Control
-                type="date"
-                value={locHanTu}
-                onChange={(e) => setLocHanTu(e.target.value)}
-              />
-            </Col>
-            <Col xs={6} md={3} lg={2}>
-              <Form.Label className="small text-muted mb-1">HSD đến</Form.Label>
-              <Form.Control
-                type="date"
-                value={locHanDen}
-                onChange={(e) => setLocHanDen(e.target.value)}
-              />
-            </Col>
-            <Col xs={6} md={3} lg={2}>
-              <Form.Label className="small text-muted mb-1">Giá bán từ (VNĐ)</Form.Label>
-              <Form.Control
-                inputMode="numeric"
-                placeholder="0"
-                value={locGiaBanTu}
-                onChange={(e) => setLocGiaBanTu(e.target.value)}
-              />
-            </Col>
-            <Col xs={6} md={3} lg={2}>
-              <Form.Label className="small text-muted mb-1">Giá bán đến (VNĐ)</Form.Label>
-              <Form.Control
-                inputMode="numeric"
-                placeholder="0"
-                value={locGiaBanDen}
-                onChange={(e) => setLocGiaBanDen(e.target.value)}
-              />
-            </Col>
-            <Col xs={12} md={4} lg={3}>
-              <Form.Check
-                type="switch"
-                id="loc-ton-thap"
-                className="mb-1"
-                label="Chỉ thuốc tồn kho thấp"
-                checked={locTonThap}
-                onChange={(e) => setLocTonThap(e.target.checked)}
-              />
-            </Col>
-            <Col xs={12} md={4} lg={3}>
+            <Col xs={6} md={4} lg={2}>
               <Form.Label className="small text-muted mb-1">Sắp xếp</Form.Label>
               <Form.Select
                 value={sapXep}
@@ -656,8 +468,8 @@ export default function ThuocPage() {
                 <option value="tonKho,desc">Tồn nhiều nhất</option>
               </Form.Select>
             </Col>
-            <Col xs={6} md={4} lg={2}>
-              <Form.Label className="small text-muted mb-1">Số dòng / trang</Form.Label>
+            <Col xs={6} md={3} lg={1}>
+              <Form.Label className="small text-muted mb-1">/ trang</Form.Label>
               <Form.Select
                 value={kichThuocTrang}
                 onChange={(e) =>
@@ -670,7 +482,7 @@ export default function ThuocPage() {
                 <option value={100}>100</option>
               </Form.Select>
             </Col>
-            <Col xs={12} md={12} lg={4} className="d-flex align-items-end">
+            <Col xs={6} md={3} lg={1} className="d-flex align-items-end">
               <Button
                 variant="secondary"
                 className="w-100"
@@ -678,16 +490,6 @@ export default function ThuocPage() {
                   setTuKhoa("");
                   setTuKhoaTim("");
                   setBoLocTrangThai("tat-ca");
-                  setLocDonVi("");
-                  setLocDangBaoChe("");
-                  setLocDuongDung("");
-                  setLocHang("");
-                  setLocNuoc("");
-                  setLocTonThap(false);
-                  setLocHanTu("");
-                  setLocHanDen("");
-                  setLocGiaBanTu("");
-                  setLocGiaBanDen("");
                   setKichThuocTrang(20);
                   setSapXep("tenThuoc,asc");
                 }}

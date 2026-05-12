@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, Table, Button, Form, Alert, Modal } from "react-bootstrap";
 import Link from "next/link";
+import QRCode from "react-qr-code";
 import { useAuth } from "@/lib/useAuth";
 import {
   invoicesApi,
@@ -16,6 +17,25 @@ import { formatVndInput, parseVndInput } from "@/lib/moneyVnd";
 import { formatInstantVi } from "@/lib/formatInstantVi";
 import { laBacSiKhongXemHoaDon } from "@/lib/roles";
 import { LoadingState } from "@/components/LoadingState";
+
+/** PayOS trả `qrCode` là payload EMV VietQR (chuỗi số), không phải ảnh base64. */
+function payOsQrLaNguonAnh(qr: string): boolean {
+  const t = qr.trim();
+  if (!t) return false;
+  if (t.startsWith("http://") || t.startsWith("https://")) return true;
+  if (t.startsWith("data:image")) return true;
+  if (t.startsWith("iVBOR") || t.startsWith("/9j") || t.startsWith("R0lGOD"))
+    return true;
+  return false;
+}
+
+function qrPayOsSrcAnh(qr: string): string {
+  if (!qr) return "";
+  const t = qr.trim();
+  if (t.startsWith("data:") || t.startsWith("http://") || t.startsWith("https://"))
+    return t;
+  return `data:image/png;base64,${t}`;
+}
 
 export default function InvoiceDetailPage() {
   const params = useParams();
@@ -109,12 +129,6 @@ export default function InvoiceDetailPage() {
     }
   };
 
-  const qrPayOsSrc = (qr: string) => {
-    if (!qr) return "";
-    if (qr.startsWith("data:")) return qr;
-    return `data:image/png;base64,${qr}`;
-  };
-
   if (loading) return <LoadingState />;
   if (!user) return null;
   if (laBacSiKhongXemHoaDon(user)) return <LoadingState />;
@@ -200,13 +214,24 @@ export default function InvoiceDetailPage() {
                 {payOs && (
                   <div className="mt-3">
                     {payOs.qrCode ? (
-                      <img
-                        src={qrPayOsSrc(payOs.qrCode)}
-                        alt="Mã QR PayOS"
-                        className="d-block mb-2 border rounded bg-white p-1"
-                        width={220}
-                        height={220}
-                      />
+                      payOsQrLaNguonAnh(payOs.qrCode) ? (
+                        <img
+                          src={qrPayOsSrcAnh(payOs.qrCode)}
+                          alt="Mã QR PayOS"
+                          className="d-block mb-2 border rounded bg-white p-1"
+                          width={220}
+                          height={220}
+                        />
+                      ) : (
+                        <div className="d-inline-block mb-2 border rounded bg-white p-2">
+                          <QRCode
+                            value={payOs.qrCode.trim()}
+                            size={220}
+                            level="M"
+                            title="Mã QR thanh toán PayOS"
+                          />
+                        </div>
+                      )
                     ) : null}
                     <p className="small text-muted mb-1">
                       Số tiền: {payOs.amount.toLocaleString("vi-VN")}đ

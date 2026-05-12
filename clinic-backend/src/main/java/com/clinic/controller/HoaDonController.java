@@ -3,7 +3,9 @@ package com.clinic.controller;
 import com.clinic.dto.ChiTietHoaDonDto;
 import com.clinic.dto.GiaoDichThanhToanDto;
 import com.clinic.dto.HoaDonDto;
+import com.clinic.dto.payos.PayOsTaoLinkPhanHoi;
 import com.clinic.service.HoaDonService;
+import com.clinic.service.payos.PayOsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,6 +25,7 @@ import java.util.List;
 public class HoaDonController {
 
     private final HoaDonService hoaDonService;
+    private final PayOsService payOsService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','THU_NGAN')")
@@ -60,5 +63,11 @@ public class HoaDonController {
     public ResponseEntity<GiaoDichThanhToanDto> themThanhToan(
             @PathVariable Long maHoaDon, @RequestBody GiaoDichThanhToanDto dto) {
         return ResponseEntity.ok(hoaDonService.themThanhToan(maHoaDon, dto));
+    }
+
+    @PostMapping("/{id}/payos")
+    @PreAuthorize("hasAnyRole('THU_NGAN','BENH_NHAN')")
+    public ResponseEntity<PayOsTaoLinkPhanHoi> taoLinkPayOs(@PathVariable Long id) {
+        return ResponseEntity.ok(payOsService.taoLinkChoHoaDon(id));
     }
 }

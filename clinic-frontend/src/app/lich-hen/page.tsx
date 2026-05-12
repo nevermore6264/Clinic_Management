@@ -52,6 +52,12 @@ import {
   GIAI_DOAN_LICH_HEN_LABEL,
   type GiaiDoanLichHen,
 } from "@/lib/dashboardLichHenLinks";
+import {
+  formatNgayDdMmYyyy,
+  formatNgayDdMmYyyyCoThu,
+  formatThangMmYyyyLabel,
+  formatGioHen,
+} from "@/lib/formatInstantVi";
 
 const TRANG_THAI_CO_LICH_DANG_XU_LY = new Set([
   "DA_DAT",
@@ -156,18 +162,15 @@ function formatNgayKhamPatient(ymd?: string | null): {
   line2: string;
 } {
   if (!ymd) return { line1: "—", line2: "" };
-  const parts = ymd.split("-").map(Number);
+  const datePart = ymd.includes("T") ? ymd.split("T")[0]! : ymd;
+  const parts = datePart.split("-").map(Number);
   const [y, m, d] = parts;
   if (!y || !m || !d) return { line1: ymd, line2: "" };
   const dt = new Date(y, m - 1, d);
-  return {
-    line1: dt.toLocaleDateString("vi-VN", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    }),
-    line2: dt.toLocaleDateString("vi-VN", { year: "numeric" }),
-  };
+  if (Number.isNaN(dt.getTime())) return { line1: ymd, line2: "" };
+  const weekday = dt.toLocaleDateString("vi-VN", { weekday: "long" });
+  const cap = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+  return { line1: cap, line2: formatNgayDdMmYyyy(datePart) };
 }
 
 function monthBoundsFromYm(ym: string): { from: string; to: string } {
@@ -776,12 +779,7 @@ function AppointmentsPageInner() {
   }, [calendarMonthYm]);
 
   const calendarTitle = useMemo(() => {
-    const [y, m] = calendarMonthYm.split("-").map(Number);
-    if (!y || !m) return "";
-    return new Date(y, m - 1, 1).toLocaleDateString("vi-VN", {
-      month: "long",
-      year: "numeric",
-    });
+    return formatThangMmYyyyLabel(calendarMonthYm);
   }, [calendarMonthYm]);
 
   const shiftCalendarMonth = (delta: number) => {
@@ -983,8 +981,8 @@ function AppointmentsPageInner() {
     ];
     const dataRows = rows.map((a) => [
       String(a.id ?? ""),
-      csvEscape(a.ngayHen ?? ""),
-      csvEscape(a.gioHen ?? ""),
+      csvEscape(formatNgayDdMmYyyy(a.ngayHen ?? "")),
+      csvEscape(formatGioHen(a.gioHen)),
       csvEscape(a.tenBenhNhan ?? ""),
       csvEscape(a.tenBacSi ?? ""),
       csvEscape(a.tenDichVu ?? ""),
@@ -1220,12 +1218,7 @@ function AppointmentsPageInner() {
             <div className="d-flex flex-wrap gap-3 align-items-end">
               <div className="text-muted small mb-2 mb-sm-0">
                 <span className="fw-semibold text-body">Ngày xem:</span>{" "}
-                {new Date(`${from}T12:00:00`).toLocaleDateString("vi-VN", {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
+                {formatNgayDdMmYyyyCoThu(from)}
               </div>
               <Form.Group style={{ minWidth: "12rem" }}>
                 <Form.Label>Trạng thái</Form.Label>
@@ -1579,8 +1572,8 @@ function AppointmentsPageInner() {
               <tbody>
                 {danhSachLoc.map((a) => (
                   <tr key={a.id}>
-                    <td>{a.ngayHen}</td>
-                    <td>{a.gioHen}</td>
+                    <td>{formatNgayDdMmYyyy(a.ngayHen)}</td>
+                    <td>{formatGioHen(a.gioHen)}</td>
                     {!chiTaiKhoanBn && <td>{a.tenBenhNhan}</td>}
                     <td>{a.tenBacSi}</td>
                     <td>{a.tenDichVu}</td>

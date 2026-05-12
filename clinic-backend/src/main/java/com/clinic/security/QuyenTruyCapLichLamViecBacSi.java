@@ -12,10 +12,6 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * Bác sĩ thuần (có BAC_SI, không kèm QUAN_TRI / LE_TAN / THU_NGAN) chỉ được thao tác dữ liệu
- * lịch theo đúng {@link BacSi} liên kết với tài khoản đăng nhập.
- */
 @Component
 @RequiredArgsConstructor
 public class QuyenTruyCapLichLamViecBacSi {
@@ -41,9 +37,6 @@ public class QuyenTruyCapLichLamViecBacSi {
                 || r.contains(VaiTro.THU_NGAN.name());
     }
 
-    /**
-     * Chỉ bác sĩ thuần: danh sách /api/bac-si (không tatCa) thu hẹp một bản ghi.
-     */
     public boolean chiDuocThaoTacLichLamViecCuaBanThan() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !(auth.getPrincipal() instanceof NguoiDungChinhThuc u)) {

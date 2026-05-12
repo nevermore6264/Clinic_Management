@@ -21,6 +21,7 @@ import {
   metaTrangThaiLichHen as metaTrangThai,
 } from "@/lib/lichHenStatus";
 import { laBacSiKhongXemHoaDon, laChiTaiKhoanBenhNhan, laNhanVien } from "@/lib/roles";
+import { formatGioHen, formatNgayDdMmYyyy } from "@/lib/formatInstantVi";
 
 function newRow(maThuoc: number): ChiTietDonThuoc {
   return { maThuoc, soLuong: 1, lieuDung: "" };
@@ -179,7 +180,7 @@ export default function AppointmentDetailPage() {
       <Card className="mb-3">
         <Card.Header className="d-flex justify-content-between align-items-center flex-wrap gap-2">
           <span>
-            #{app.id} - {app.ngayHen} {app.gioHen}
+            #{app.id} - {formatNgayDdMmYyyy(app.ngayHen)} {formatGioHen(app.gioHen)}
           </span>
           <span
             className={`lich-hen-status-tag lich-hen-status-tag--${tagMeta.slug}`}

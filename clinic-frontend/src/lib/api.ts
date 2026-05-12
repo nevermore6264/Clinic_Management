@@ -343,6 +343,10 @@ export const hoaDonApi = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+  taoPayOsLink: (maHoaDon: number) =>
+    api<PayOsTaoLinkPhanHoi>(`/hoa-don/${maHoaDon}/payos`, {
+      method: "POST",
+    }),
 };
 
 export const baoCaoApi = {
@@ -740,6 +744,7 @@ export const invoicesApi = {
       maThamChieu: data.transactionRef,
     });
   },
+  createPayOsLink: hoaDonApi.taoPayOsLink,
 };
 export const reportsApi = {
   ...baoCaoApi,
@@ -931,6 +936,16 @@ export interface GiaoDichThanhToan {
   phuongThuc?: string;
   maThamChieu?: string;
   lucThanhToan?: string;
+}
+
+export interface PayOsTaoLinkPhanHoi {
+  checkoutUrl: string;
+  qrCode: string;
+  accountNumber: string;
+  accountName: string;
+  amount: number;
+  orderCode: number;
+  description: string;
 }
 
 export interface HoaDon {

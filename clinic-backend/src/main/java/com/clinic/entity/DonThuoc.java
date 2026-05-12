@@ -24,7 +24,6 @@ public class DonThuoc {
     @JoinColumn(name = "ma_ho_so_kham", nullable = false, unique = true)
     private HoSoKham hoSoKham;
 
-    /** Nội dung đơn dạng tự do (trước đây là cột ho_so_kham.don_thuoc). */
     @Column(name = "noi_dung", columnDefinition = "TEXT")
     private String noiDung;
 

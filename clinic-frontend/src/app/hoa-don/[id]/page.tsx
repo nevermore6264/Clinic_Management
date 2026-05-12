@@ -5,12 +5,16 @@ import { useRouter, useParams } from "next/navigation";
 import { Card, Table, Button, Form, Alert, Modal } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
-import { invoicesApi, type HoaDon } from "@/lib/api";
+import {
+  invoicesApi,
+  type HoaDon,
+  type PayOsTaoLinkPhanHoi,
+} from "@/lib/api";
 import { HoaDonStatusTag } from "@/components/HoaDonStatusTag";
 import { PhuongThucThanhToanTag } from "@/components/PhuongThucThanhToanTag";
 import { formatVndInput, parseVndInput } from "@/lib/moneyVnd";
 import { formatInstantVi } from "@/lib/formatInstantVi";
-import { laBacSiKhongXemHoaDon } from "@/lib/roles";
+import { laBacSiKhongXemHoaDon, laQuanTriHoacLeTan } from "@/lib/roles";
 import { LoadingState } from "@/components/LoadingState";
 
 export default function InvoiceDetailPage() {
@@ -24,6 +28,12 @@ export default function InvoiceDetailPage() {
   const [payMethod, setPayMethod] = useState("TIEN_MAT");
   const [payRef, setPayRef] = useState("");
   const [error, setError] = useState("");
+  const [payOs, setPayOs] = useState<PayOsTaoLinkPhanHoi | null>(null);
+  const [payOsLoading, setPayOsLoading] = useState(false);
+
+  useEffect(() => {
+    setPayOs(null);
+  }, [id]);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -43,6 +53,21 @@ export default function InvoiceDetailPage() {
       .then(setInv)
       .catch((e) => setError(e.message));
   }, [user, id]);
+
+  useEffect(() => {
+    if (!user || !id || typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    const q = sp.get("payos");
+    if (q === "success") {
+      invoicesApi
+        .get(id)
+        .then(setInv)
+        .catch((e) => setError(e.message));
+      router.replace(`/hoa-don/${id}`);
+    } else if (q === "cancel") {
+      router.replace(`/hoa-don/${id}`);
+    }
+  }, [user, id, router]);
 
   const submitPayment = async () => {
     const amount = parseVndInput(payAmount);
@@ -66,12 +91,41 @@ export default function InvoiceDetailPage() {
     }
   };
 
+  const coTheGhiNhanThuCong =
+    user?.cacVaiTro?.some((r) =>
+      ["QUAN_TRI", "LE_TAN", "THU_NGAN"].includes(r),
+    ) ?? false;
+
+  const taiPayOs = async () => {
+    setPayOsLoading(true);
+    setError("");
+    try {
+      const link = await invoicesApi.createPayOsLink(id);
+      setPayOs(link);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Lỗi PayOS");
+    } finally {
+      setPayOsLoading(false);
+    }
+  };
+
+  const qrPayOsSrc = (qr: string) => {
+    if (!qr) return "";
+    if (qr.startsWith("data:")) return qr;
+    return `data:image/png;base64,${qr}`;
+  };
+
   if (loading) return <LoadingState />;
   if (!user) return null;
   if (laBacSiKhongXemHoaDon(user)) return <LoadingState />;
   if (!inv) return <div className="py-4">Đang tải...</div>;
 
   const remaining = inv.tongTien - inv.soTienDaTra;
+  const hienThanhToanPayOs =
+    remaining > 0 &&
+    !laQuanTriHoacLeTan(user) &&
+    (user?.cacVaiTro?.includes("THU_NGAN") ||
+      user?.cacVaiTro?.includes("BENH_NHAN"));
 
   return (
     <div className="hoa-don-detail-page">
@@ -102,10 +156,63 @@ export default function InvoiceDetailPage() {
             <strong>Trạng thái:</strong>{" "}
             <HoaDonStatusTag trangThai={inv.trangThai} />
           </p>
-          {remaining > 0 && (
+          {hienThanhToanPayOs && (
+            <div className="no-print mt-3 p-3 border rounded bg-light">
+              <p className="mb-2 fw-semibold">Thanh toán trực tuyến (PayOS)</p>
+              <Button
+                variant="outline-primary"
+                size="sm"
+                className="d-inline-flex align-items-center gap-2"
+                disabled={payOsLoading}
+                onClick={() => void taiPayOs()}
+              >
+                <i className="bi bi-qr-code-scan" aria-hidden />
+                {payOsLoading
+                  ? "Đang tạo link…"
+                  : payOs
+                    ? "Tạo QR / link mới"
+                    : "Tạo QR / link thanh toán"}
+              </Button>
+              {payOs && (
+                <div className="mt-3">
+                  {payOs.qrCode ? (
+                    <img
+                      src={qrPayOsSrc(payOs.qrCode)}
+                      alt="Mã QR PayOS"
+                      className="d-block mb-2 border rounded bg-white p-1"
+                      width={220}
+                      height={220}
+                    />
+                  ) : null}
+                  <p className="small text-muted mb-1">
+                    Số tiền: {payOs.amount.toLocaleString("vi-VN")}đ
+                  </p>
+                  {(payOs.accountNumber || payOs.accountName) && (
+                    <p className="small mb-2">
+                      {payOs.accountNumber ? `STK: ${payOs.accountNumber}` : null}
+                      {payOs.accountNumber && payOs.accountName ? " — " : null}
+                      {payOs.accountName || null}
+                    </p>
+                  )}
+                  <Button
+                    variant="success"
+                    size="sm"
+                    className="d-inline-flex align-items-center gap-2"
+                    href={payOs.checkoutUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <i className="bi bi-box-arrow-up-right" aria-hidden />
+                    Mở trang thanh toán PayOS
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+          {remaining > 0 && coTheGhiNhanThuCong && (
             <Button
               variant="primary"
-              className="no-print d-inline-flex align-items-center gap-2"
+              className="no-print d-inline-flex align-items-center gap-2 mt-2"
               onClick={() => {
                 setPayAmount(formatVndInput(remaining));
                 setShowPayment(true);

@@ -44,6 +44,13 @@ public class HoaDonService {
         return sangDto(hd);
     }
 
+    /** Dùng nội bộ (webhook PayOS) — không kiểm tra JWT. */
+    @Transactional(readOnly = true)
+    public HoaDonDto layTheoMaNoiBo(Long ma) {
+        HoaDon hd = hoaDonRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn: " + ma));
+        return sangDto(hd);
+    }
+
     @Transactional
     public HoaDonDto tao(Long maLichHen, List<ChiTietHoaDonDto> chiTiet) {
         LichHen lh = lichHenRepository.findById(maLichHen)
@@ -92,6 +99,13 @@ public class HoaDonService {
     @Transactional
     public GiaoDichThanhToanDto themThanhToan(Long maHoaDon, GiaoDichThanhToanDto dto) {
         HoaDon hd = hoaDonRepository.findById(maHoaDon).orElseThrow();
+        if (dto.getSoTien() == null || dto.getSoTien().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("Số tiền thanh toán không hợp lệ.");
+        }
+        BigDecimal conLai = hd.getTongTien().subtract(hd.getSoTienDaTra());
+        if (dto.getSoTien().compareTo(conLai) > 0) {
+            throw new RuntimeException("Số tiền thanh toán vượt quá số còn lại của hóa đơn.");
+        }
         GiaoDichThanhToan gd = new GiaoDichThanhToan();
         gd.setHoaDon(hd);
         gd.setSoTien(dto.getSoTien());

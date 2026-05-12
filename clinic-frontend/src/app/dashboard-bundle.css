@@ -53,7 +53,7 @@
 
 @media (min-width: 1200px) {
   .dashboard-kpi-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(11.5rem, 1fr));
   }
 }
 

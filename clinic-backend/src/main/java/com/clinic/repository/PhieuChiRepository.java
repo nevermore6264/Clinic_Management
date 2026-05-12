@@ -14,6 +14,8 @@ import java.util.List;
 public interface PhieuChiRepository extends JpaRepository<PhieuChi, Long> {
     Page<PhieuChi> findByNgayChiBetweenOrderByNgayChiDesc(LocalDate tu, LocalDate den, Pageable phanTrang);
 
+    List<PhieuChi> findByNgayChiBetweenOrderByNgayChiAscIdAsc(LocalDate tu, LocalDate den);
+
     @Query("SELECT COALESCE(SUM(p.soTien), 0) FROM PhieuChi p WHERE p.ngayChi BETWEEN :tu AND :den")
     BigDecimal tongTienTrongKhoang(@Param("tu") LocalDate tu, @Param("den") LocalDate den);
 

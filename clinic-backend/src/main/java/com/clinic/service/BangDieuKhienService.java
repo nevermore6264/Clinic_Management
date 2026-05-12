@@ -6,6 +6,7 @@ import com.clinic.entity.LichHen;
 import com.clinic.repository.BenhNhanRepository;
 import com.clinic.repository.GiaoDichThanhToanRepository;
 import com.clinic.repository.LichHenRepository;
+import com.clinic.repository.PhieuChiRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class BangDieuKhienService {
     private final BenhNhanRepository benhNhanRepository;
     private final LichHenRepository lichHenRepository;
     private final GiaoDichThanhToanRepository giaoDichThanhToanRepository;
+    private final PhieuChiRepository phieuChiRepository;
     private final BaoCaoService baoCaoService;
 
     @Transactional(readOnly = true)
@@ -49,6 +51,15 @@ public class BangDieuKhienService {
         BigDecimal doanhThuTuan = giaoDichThanhToanRepository.findByLucThanhToanBetween(bdTuan, ktTuan).stream()
                 .map(g -> g.getSoTien()).reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        BigDecimal tongChiHomNay = phieuChiRepository.tongTienTrongKhoang(homNay, homNay);
+        if (tongChiHomNay == null) {
+            tongChiHomNay = BigDecimal.ZERO;
+        }
+        BigDecimal tongChiTuan = phieuChiRepository.tongTienTrongKhoang(dauTuan, cuoiTuan);
+        if (tongChiTuan == null) {
+            tongChiTuan = BigDecimal.ZERO;
+        }
+
         List<BaoCaoDoanhThuDto> bayNgay = baoCaoService.doanhThuTheoNgay(homNay.minusDays(6), homNay);
 
         long choTiepNhan = lichHenRepository.countByNgayHenAndTrangThai(homNay, LichHen.TrangThaiLichHen.DA_DAT);
@@ -71,6 +82,8 @@ public class BangDieuKhienService {
         dto.setLichHenTuanNay(lichTuanNay);
         dto.setDoanhThuHomNay(doanhThuHomNay);
         dto.setDoanhThuTuanNay(doanhThuTuan);
+        dto.setTongChiHomNay(tongChiHomNay);
+        dto.setTongChiTuanNay(tongChiTuan);
         dto.setDoanhThu7NgayGanNhat(bayNgay);
         dto.setLichHenChoTiepNhanHomNay(choTiepNhan);
         dto.setLichHenTrongKhamHomNay(trongKham);

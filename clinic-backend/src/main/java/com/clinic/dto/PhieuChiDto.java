@@ -17,6 +17,7 @@ public class PhieuChiDto {
     private BigDecimal soTien;
     private LocalDate ngayChi;
     private String loai;
+    private String chungTuThamChieu;
     private Long maNguoiTao;
     private String tenDangNhapNguoiTao;
     private Instant taoLuc;

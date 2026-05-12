@@ -13,6 +13,7 @@ import {
   Col,
   Badge,
   Pagination,
+  InputGroup,
 } from "react-bootstrap";
 import type { CSSProperties } from "react";
 import { useAuth } from "@/lib/useAuth";
@@ -38,6 +39,60 @@ function todayISO() {
 function monthStartISO() {
   const d = new Date();
   return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0, 10);
+}
+
+function fmtVnd(n: number) {
+  return `${Math.round(Number(n) || 0).toLocaleString("vi-VN")} đ`;
+}
+
+function fmtNgayChi(iso?: string) {
+  if (!iso) return "—";
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  return new Date(y, m - 1, d).toLocaleDateString("vi-VN");
+}
+
+function parseSoTienVnd(raw: string): number {
+  const digits = raw.replace(/\D/g, "");
+  if (!digits) return 0;
+  const n = Number(digits);
+  return Number.isFinite(n) ? Math.min(n, Number.MAX_SAFE_INTEGER) : 0;
+}
+
+function formatSoTienNhap(so: number): string {
+  if (!so || so <= 0) return "";
+  return Math.round(so).toLocaleString("vi-VN");
+}
+
+function thangISOHienTai(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+const THANG_XUAT_CSV_OPTIONS = Array.from({ length: 12 }, (_, i) => ({
+  value: i + 1,
+  label: `Tháng ${i + 1}`,
+}));
+
+function parseThangXuatCsv(iso: string): { nam: number; thang: number } {
+  const m = /^(\d{4})-(\d{2})$/.exec(iso.trim());
+  const d = new Date();
+  const fallback = { nam: d.getFullYear(), thang: d.getMonth() + 1 };
+  if (!m) return fallback;
+  const nam = Number(m[1]);
+  const thang = Number(m[2]);
+  if (!Number.isFinite(nam) || nam < 2000 || nam > 2100) return fallback;
+  if (!Number.isFinite(thang) || thang < 1 || thang > 12) return fallback;
+  return { nam, thang };
+}
+
+function danhSachNamXuatCsv(namDangChon: number): number[] {
+  const y = new Date().getFullYear();
+  const lo = Math.min(y - 8, namDangChon);
+  const hi = Math.max(y + 1, namDangChon);
+  const out: number[] = [];
+  for (let i = lo; i <= hi; i++) out.push(i);
+  return out;
 }
 
 function StatMini({
@@ -99,13 +154,17 @@ export default function PhieuChiPage() {
   const [tuNgay, setTuNgay] = useState(monthStartISO);
   const [denNgay, setDenNgay] = useState(todayISO);
   const [error, setError] = useState("");
+  const [thangXuatCsv, setThangXuatCsv] = useState(thangISOHienTai);
+  const [dangXuatCsv, setDangXuatCsv] = useState(false);
   const [show, setShow] = useState(false);
+  const [soTienNhap, setSoTienNhap] = useState("");
   const [editing, setEditing] = useState<PhieuChi | null>(null);
   const [form, setForm] = useState<PhieuChi>({
     moTa: "",
     soTien: 0,
     ngayChi: todayISO(),
     loai: "KHAC",
+    chungTuThamChieu: "",
   });
 
   const allowed =
@@ -163,7 +222,7 @@ export default function PhieuChiPage() {
     }
     if (!key || max <= 0) return null;
     const meta = LOAI_OPTIONS.find((o) => o.value === key);
-    return `${meta?.label ?? key}: ${max.toLocaleString("vi-VN")}đ`;
+    return `${meta?.label ?? key}: ${fmtVnd(max)}`;
   }, [chiTheoLoai]);
 
   const applyPreset = (preset: "month" | "7d" | "30d") => {
@@ -184,28 +243,44 @@ export default function PhieuChiPage() {
   };
 
   const openNew = () => {
+    setError("");
     setEditing(null);
+    setSoTienNhap("");
     setForm({
       moTa: "",
       soTien: 0,
       ngayChi: todayISO(),
       loai: "KHAC",
+      chungTuThamChieu: "",
     });
     setShow(true);
   };
 
   const openEdit = (pc: PhieuChi) => {
+    setError("");
     setEditing(pc);
     setForm({ ...pc });
+    setSoTienNhap(formatSoTienNhap(Number(pc.soTien) || 0));
     setShow(true);
   };
 
   const save = async () => {
+    const tien = Math.round(Number(form.soTien) || 0);
+    if (!form.moTa?.trim()) {
+      setError("Vui lòng nhập mô tả.");
+      return;
+    }
+    if (tien <= 0) {
+      setError("Số tiền phải lớn hơn 0.");
+      return;
+    }
+    setError("");
+    const payload = { ...form, soTien: tien };
     try {
       if (editing?.id != null) {
-        await phieuChiApi.capNhat(editing.id, form);
+        await phieuChiApi.capNhat(editing.id, payload);
       } else {
-        await phieuChiApi.tao(form);
+        await phieuChiApi.tao(payload);
       }
       setShow(false);
       await load();
@@ -224,24 +299,109 @@ export default function PhieuChiPage() {
     }
   };
 
-  if (!allowed) return null;
+  const { nam: namXuatCsv, thang: thangSoXuatCsv } = parseThangXuatCsv(
+    thangXuatCsv
+  );
 
-  const fmtMoney = (n: number) =>
-    `${n.toLocaleString("vi-VN", { maximumFractionDigits: 0 })}đ`;
+  const xuatCsvKeToan = async () => {
+    setDangXuatCsv(true);
+    setError("");
+    try {
+      const blob = await phieuChiApi.xuatCsvThang(thangXuatCsv);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `phieu-chi-${thangXuatCsv}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Lỗi xuất CSV");
+    } finally {
+      setDangXuatCsv(false);
+    }
+  };
+
+  if (!allowed) return null;
 
   return (
     <div className="phieu-chi-page">
       <PageHeader
         title="Phiếu chi"
-        subtitle="Theo dõi chi phí vận hành phòng khám — vật tư, thiết bị, lương, thuế và các khoản khác. Khác với thu tiền bệnh nhân trên hóa đơn."
+        subtitle="Chi phí vận hành (theo ngày chi) — bổ sung cho doanh thu hóa đơn. Cột «Chứng từ» ghi tay số HĐ mua / phiếu nhập khi chưa có module nhập liên thông."
       >
-        <Button
-          className="d-inline-flex align-items-center gap-2 rounded-pill px-3"
-          onClick={openNew}
-        >
-          <i className="bi bi-plus-lg" aria-hidden />
-          Ghi phiếu chi
-        </Button>
+        <div className="d-flex flex-wrap align-items-stretch align-items-md-center gap-2 justify-content-md-end">
+          <div className="d-flex flex-column justify-content-center">
+            <span className="small text-muted fw-semibold mb-1 d-md-none">
+              Xuất file kế toán (CSV)
+            </span>
+            <InputGroup className="phieu-chi-csv-inputgroup">
+              <Form.Select
+                className="phieu-chi-csv-select-thang border-secondary-subtle"
+                value={String(thangSoXuatCsv)}
+                onChange={(e) => {
+                  const t = Number(e.target.value);
+                  setThangXuatCsv(
+                    `${namXuatCsv}-${String(t).padStart(2, "0")}`
+                  );
+                }}
+                aria-label="Chọn tháng xuất CSV"
+              >
+                {THANG_XUAT_CSV_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </Form.Select>
+              <Form.Select
+                className="phieu-chi-csv-select-nam border-secondary-subtle"
+                value={String(namXuatCsv)}
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  setThangXuatCsv(
+                    `${n}-${String(thangSoXuatCsv).padStart(2, "0")}`
+                  );
+                }}
+                aria-label="Chọn năm xuất CSV"
+              >
+                {danhSachNamXuatCsv(namXuatCsv).map((yy) => (
+                  <option key={yy} value={yy}>
+                    Năm {yy}
+                  </option>
+                ))}
+              </Form.Select>
+              <Button
+                type="button"
+                variant="outline-secondary"
+                className="phieu-chi-csv-btn d-inline-flex align-items-center justify-content-center gap-2 text-nowrap"
+                disabled={dangXuatCsv}
+                onClick={() => void xuatCsvKeToan()}
+              >
+                {dangXuatCsv ? (
+                  <>
+                    <span
+                      className="spinner-border spinner-border-sm"
+                      role="status"
+                      aria-hidden
+                    />
+                    Đang xuất…
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-file-earmark-arrow-down" aria-hidden />
+                    Xuất CSV
+                  </>
+                )}
+              </Button>
+            </InputGroup>
+          </div>
+          <Button
+            className="d-inline-flex align-items-center gap-2 rounded-pill px-3"
+            onClick={openNew}
+          >
+            <i className="bi bi-plus-lg" aria-hidden />
+            Ghi phiếu chi
+          </Button>
+        </div>
       </PageHeader>
 
       <div className="phieu-chi-hero rounded-4 p-3 p-md-4 mb-4">
@@ -249,7 +409,7 @@ export default function PhieuChiPage() {
           <Col xs={12} md={4}>
             <StatMini
               label="Tổng chi (đã lọc)"
-              value={fmtMoney(tongChi)}
+              value={fmtVnd(tongChi)}
               hint={
                 topLoaiLabel
                   ? `Nhiều nhất: ${topLoaiLabel}`
@@ -281,7 +441,7 @@ export default function PhieuChiPage() {
               label="Trung bình / phiếu"
               value={
                 tongSoPhieu > 0
-                  ? fmtMoney(Math.round(tongChi / tongSoPhieu))
+                  ? fmtVnd(Math.round(tongChi / tongSoPhieu))
                   : "—"
               }
               hint={tongSoPhieu > 0 ? "Trong khoảng ngày đã chọn" : "—"}
@@ -366,7 +526,7 @@ export default function PhieuChiPage() {
           <div className="small text-muted mt-3 mb-0">
             <i className="bi bi-info-circle me-1" aria-hidden />
             {tongSoPhieu} bản ghi khớp khoảng thời gian · tổng chi{" "}
-            <strong className="text-body">{fmtMoney(tongChi)}</strong>
+            <strong className="text-body">{fmtVnd(tongChi)}</strong>
           </div>
         </Card.Body>
       </Card>
@@ -402,7 +562,8 @@ export default function PhieuChiPage() {
               <thead className="phieu-chi-thead">
                 <tr>
                   <th>Ngày</th>
-                  <th>Loại</th>
+                  <th className="phieu-chi-col-loai">Loại</th>
+                  <th className="phieu-chi-th-chung-tu">Chứng từ</th>
                   <th>Mô tả</th>
                   <th className="text-end text-nowrap">Số tiền</th>
                   <th>Người tạo</th>
@@ -414,21 +575,33 @@ export default function PhieuChiPage() {
                   const loaiMeta = LOAI_OPTIONS.find((o) => o.value === p.loai);
                   return (
                     <tr key={p.id}>
-                      <td className="text-nowrap small fw-medium">{p.ngayChi}</td>
-                      <td>
+                      <td className="text-nowrap small fw-medium">{fmtNgayChi(p.ngayChi)}</td>
+                      <td className="phieu-chi-col-loai">
                         <Badge
                           bg={loaiMeta?.badge ?? "secondary"}
                           text={
                             loaiMeta?.badge === "warning" ? "dark" : undefined
                           }
-                          className="rounded-pill px-2 py-1 fw-semibold"
+                          className="phieu-chi-loai-chip rounded-pill fw-semibold"
                         >
                           {loaiMeta?.label ?? p.loai}
                         </Badge>
                       </td>
+                      <td className="phieu-chi-td-chung-tu small text-muted">
+                        {p.chungTuThamChieu?.trim() ? (
+                          <span
+                            className="phieu-chi-chung-tu-text"
+                            title={p.chungTuThamChieu}
+                          >
+                            {p.chungTuThamChieu}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
                       <td className="phieu-chi-desc">{p.moTa}</td>
-                      <td className="text-end fw-semibold text-danger text-nowrap tabular-nums">
-                        {p.soTien?.toLocaleString("vi-VN")}đ
+                      <td className="text-end fw-semibold text-danger text-nowrap tabular-nums phieu-chi-so-tien">
+                        {fmtVnd(Number(p.soTien ?? 0))}
                       </td>
                       <td className="small text-muted">
                         {p.tenDangNhapNguoiTao || "—"}
@@ -436,17 +609,15 @@ export default function PhieuChiPage() {
                       <td className="text-end text-nowrap">
                         <Button
                           size="sm"
-                          variant="outline-primary"
                           className="rounded-pill me-1 btn-action-edit"
                           onClick={() => openEdit(p)}
                         >
-                          <i className="bi bi-pencil me-1" aria-hidden />
+                          <i className="bi bi-pencil-square me-1" aria-hidden />
                           Sửa
                         </Button>
                         {user?.cacVaiTro.includes("QUAN_TRI") && (
                           <Button
                             size="sm"
-                            variant="outline-danger"
                             className="rounded-pill btn-action-delete"
                             onClick={() => p.id && xoa(p.id)}
                           >
@@ -460,7 +631,7 @@ export default function PhieuChiPage() {
                 })}
                 {list.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center text-muted py-4">
+                    <td colSpan={7} className="text-center text-muted py-4">
                       Không có dòng trên trang này.
                     </td>
                   </tr>
@@ -501,8 +672,17 @@ export default function PhieuChiPage() {
         )}
       </Card>
 
-      <Modal show={show} onHide={() => setShow(false)} centered size="lg">
-        <Modal.Header closeButton className="border-0 pb-0">
+      <Modal
+        show={show}
+        onHide={() => {
+          setShow(false);
+          setError("");
+        }}
+        centered
+        size="lg"
+        className="phieu-chi-modal"
+      >
+        <Modal.Header closeButton className="border-0 pb-0 phieu-chi-modal-header">
           <Modal.Title className="fw-bold">
             {editing ? (
               <>
@@ -521,28 +701,56 @@ export default function PhieuChiPage() {
           <Form.Group className="mb-3">
             <Form.Label className="fw-semibold">Mô tả *</Form.Label>
             <Form.Control
+              as="textarea"
+              rows={2}
               value={form.moTa}
               onChange={(e) => setForm({ ...form, moTa: e.target.value })}
               placeholder="Ví dụ: Mua găng tay y tế tháng 5…"
               className="rounded-3"
             />
           </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label className="fw-semibold">Chứng từ tham chiếu</Form.Label>
+            <Form.Control
+              value={form.chungTuThamChieu ?? ""}
+              onChange={(e) =>
+                setForm({ ...form, chungTuThamChieu: e.target.value })
+              }
+              placeholder="VD: HĐ mua 0123, phiếu nhập kho NK-2026-05…"
+              className="rounded-3"
+            />
+            <Form.Text className="text-muted">
+              Ghi tay số hóa đơn mua / phiếu nhập ngoài hệ thống — khi có module
+              nhập có thể nối tự động sau.
+            </Form.Text>
+          </Form.Group>
           <Row className="g-3">
-            <Col md={4}>
-              <Form.Label className="fw-semibold">Số tiền *</Form.Label>
-              <Form.Control
-                type="number"
-                min={0}
-                placeholder="Ví dụ: 500000"
-                value={form.soTien}
-                onChange={(e) =>
-                  setForm({ ...form, soTien: Number(e.target.value) })
-                }
-                className="rounded-3"
-              />
+            <Col md={6}>
+              <Form.Label className="fw-semibold">Số tiền (VNĐ) *</Form.Label>
+              <InputGroup className="phieu-chi-vnd-inputgroup">
+                <Form.Control
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="off"
+                  placeholder="Ví dụ: 1.500.000"
+                  value={soTienNhap}
+                  onChange={(e) => {
+                    const num = parseSoTienVnd(e.target.value);
+                    setSoTienNhap(formatSoTienNhap(num));
+                    setForm({ ...form, soTien: num });
+                  }}
+                  className="phieu-chi-vnd-input font-monospace rounded-start-3 rounded-end-0"
+                />
+                <InputGroup.Text className="rounded-end-3 rounded-start-0 border-start-0 bg-body-secondary text-muted fw-semibold small">
+                  đ
+                </InputGroup.Text>
+              </InputGroup>
+              <Form.Text className="text-muted">
+                Chỉ nhập số; hệ thống tự thêm dấu phân cách hàng nghìn theo định dạng Việt Nam.
+              </Form.Text>
             </Col>
-            <Col md={4}>
-              <Form.Label className="fw-semibold">Ngày chi</Form.Label>
+            <Col md={3}>
+              <Form.Label className="fw-semibold">Ngày chi *</Form.Label>
               <Form.Control
                 type="date"
                 value={form.ngayChi?.slice(0, 10) ?? ""}
@@ -552,7 +760,7 @@ export default function PhieuChiPage() {
                 className="rounded-3"
               />
             </Col>
-            <Col md={4}>
+            <Col md={3}>
               <Form.Label className="fw-semibold">Loại</Form.Label>
               <Form.Select
                 value={form.loai ?? "KHAC"}
@@ -569,6 +777,14 @@ export default function PhieuChiPage() {
               </Form.Select>
             </Col>
           </Row>
+          {Number(form.soTien) > 0 ? (
+            <div className="mt-3 p-3 rounded-3 bg-body-secondary border phieu-chi-preview-tien">
+              <span className="small text-muted text-uppercase fw-semibold me-2">
+                Xem trước
+              </span>
+              <span className="fw-bold text-danger tabular-nums">{fmtVnd(Number(form.soTien))}</span>
+            </div>
+          ) : null}
         </Modal.Body>
         <Modal.Footer className="border-0 pt-0 clinic-modal-footer-actions">
           <Button

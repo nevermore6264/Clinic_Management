@@ -319,10 +319,11 @@ export default function UsersPage() {
                 ))}
               </Form.Select>
             </div>
-            <div className="col-12 col-md-4 d-flex align-items-stretch">
+            <div className="col-12 col-md-4 d-flex align-items-end justify-content-end">
               <Button
                 variant="outline-secondary"
-                className="btn-clinic-clear-filter w-100"
+                size="sm"
+                className="btn-clinic-clear-filter"
                 onClick={() => {
                   setTuKhoa("");
                   setBoLocTrangThai("tat-ca");

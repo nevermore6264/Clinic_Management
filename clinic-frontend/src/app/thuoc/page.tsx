@@ -466,10 +466,16 @@ export default function ThuocPage() {
                 <option value="tonKho,desc">Tồn nhiều nhất</option>
               </Form.Select>
             </Col>
-            <Col xs={12} md={3} lg={3} className="d-flex align-items-end">
+            <Col
+              xs={12}
+              md={3}
+              lg={3}
+              className="d-flex align-items-end justify-content-end"
+            >
               <Button
                 variant="outline-secondary"
-                className="btn-clinic-clear-filter w-100"
+                size="sm"
+                className="btn-clinic-clear-filter"
                 onClick={() => {
                   setTuKhoa("");
                   setTuKhoaTim("");

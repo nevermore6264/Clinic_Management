@@ -8736,6 +8736,36 @@ html.app-ready body {
   border-color: #e2e8f0;
 }
 
+.phieu-chi-page .phieu-chi-csv-inputgroup {
+  width: 100%;
+  max-width: 22rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+@media (min-width: 768px) {
+  .phieu-chi-page .phieu-chi-csv-inputgroup {
+    width: auto;
+  }
+}
+
+.phieu-chi-page .phieu-chi-csv-inputgroup .phieu-chi-csv-select-thang {
+  min-width: 7.25rem;
+  max-width: 9.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.phieu-chi-page .phieu-chi-csv-inputgroup .phieu-chi-csv-select-nam {
+  min-width: 5.5rem;
+  max-width: 7rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.phieu-chi-page .phieu-chi-csv-inputgroup .phieu-chi-csv-btn {
+  font-weight: 600;
+  padding-left: 0.9rem;
+  padding-right: 0.9rem;
+}
+
 .phieu-chi-page .phieu-chi-table-card {
   background: #fff;
 }
@@ -8765,6 +8795,61 @@ html.app-ready body {
   color: var(--clinic-navy-mid);
 }
 
+.phieu-chi-page .phieu-chi-table thead th.phieu-chi-th-chung-tu,
+.phieu-chi-page .phieu-chi-table tbody td.phieu-chi-td-chung-tu {
+  max-width: 10.5rem;
+  vertical-align: middle;
+}
+
+.phieu-chi-page .phieu-chi-chung-tu-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.phieu-chi-page .phieu-chi-table thead th.phieu-chi-col-loai,
+.phieu-chi-page .phieu-chi-table tbody td.phieu-chi-col-loai {
+  width: 1%;
+  white-space: nowrap;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.phieu-chi-page .phieu-chi-table thead th.phieu-chi-col-loai {
+  font-size: 0.72rem;
+}
+
+.phieu-chi-page .phieu-chi-loai-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 5.5rem;
+  padding: 0.38rem 0.75rem;
+  font-size: 0.78rem;
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.phieu-chi-page .phieu-chi-table tbody tr:hover .phieu-chi-loai-chip {
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.14);
+}
+
+.phieu-chi-page .phieu-chi-loai-chip.bg-warning {
+  border-color: rgba(217, 119, 6, 0.35);
+}
+
+.phieu-chi-page .phieu-chi-loai-chip.bg-secondary,
+.phieu-chi-page .phieu-chi-loai-chip.bg-dark {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
 .phieu-chi-page .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
@@ -8783,6 +8868,32 @@ html.app-ready body {
     rgba(148, 163, 184, 0.15),
     rgba(148, 163, 184, 0.06)
   );
+}
+
+.phieu-chi-page .phieu-chi-so-tien {
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+}
+
+.phieu-chi-modal .phieu-chi-modal-header {
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+}
+
+.phieu-chi-modal .phieu-chi-vnd-inputgroup .form-control {
+  border-right: 0;
+  min-height: calc(1.5em + 0.75rem + 2px);
+}
+
+.phieu-chi-modal .phieu-chi-vnd-inputgroup .input-group-text {
+  border-color: #dee2e6;
+}
+
+.phieu-chi-modal .phieu-chi-vnd-input:focus {
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+.phieu-chi-modal .phieu-chi-preview-tien {
+  border-color: rgba(148, 163, 184, 0.35) !important;
 }
 
 .lich-hen-page .lich-hen-cal-card {

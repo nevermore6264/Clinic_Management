@@ -16,7 +16,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,6 +97,7 @@ public class PhieuChiService {
                 .soTien(dto.getSoTien())
                 .ngayChi(dto.getNgayChi() != null ? dto.getNgayChi() : LocalDate.now())
                 .loai(loai)
+                .chungTuThamChieu(trimRong(dto.getChungTuThamChieu()))
                 .maNguoiTao(maNd)
                 .tenDangNhapNguoiTao(tenDn)
                 .build();
@@ -106,12 +111,52 @@ public class PhieuChiService {
         pc.setSoTien(dto.getSoTien());
         if (dto.getNgayChi() != null) pc.setNgayChi(dto.getNgayChi());
         if (dto.getLoai() != null) pc.setLoai(parseLoai(dto.getLoai()));
+        pc.setChungTuThamChieu(trimRong(dto.getChungTuThamChieu()));
         return sangDto(phieuChiRepository.save(pc));
     }
 
     @Transactional
     public void xoa(Long id) {
         phieuChiRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] xuatCsvTheoThang(String thang) {
+        YearMonth ym = YearMonth.parse(thang.trim());
+        LocalDate tu = ym.atDay(1);
+        LocalDate den = ym.atEndOfMonth();
+        List<PhieuChi> all = phieuChiRepository.findByNgayChiBetweenOrderByNgayChiAscIdAsc(tu, den);
+        DateTimeFormatter fmtLuc = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        StringBuilder sb = new StringBuilder();
+        sb.append('\uFEFF');
+        sb.append("ngay_chi,loai,mo_ta,so_tien,chung_tu_tham_chieu,ten_dang_nhap_nguoi_tao,tao_luc\n");
+        for (PhieuChi p : all) {
+            sb.append(csvEsc(p.getNgayChi() != null ? p.getNgayChi().toString() : "")).append(',');
+            sb.append(csvEsc(p.getLoai() != null ? p.getLoai().name() : "")).append(',');
+            sb.append(csvEsc(p.getMoTa())).append(',');
+            sb.append(p.getSoTien() != null ? p.getSoTien().stripTrailingZeros().toPlainString() : "0").append(',');
+            sb.append(csvEsc(p.getChungTuThamChieu())).append(',');
+            sb.append(csvEsc(p.getTenDangNhapNguoiTao())).append(',');
+            sb.append(csvEsc(p.getTaoLuc() != null ? fmtLuc.format(p.getTaoLuc().atZone(ZoneId.systemDefault()).toLocalDateTime()) : "")).append('\n');
+        }
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    private static String trimRong(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isEmpty() ? null : t;
+    }
+
+    private static String csvEsc(String s) {
+        if (s == null) {
+            return "";
+        }
+        String t = s.replace("\"", "\"\"");
+        if (t.contains(",") || t.contains("\n") || t.contains("\"") || t.contains("\r")) {
+            return "\"" + t + "\"";
+        }
+        return t;
     }
 
     private static PhieuChi.LoaiPhieuChi parseLoai(String loai) {
@@ -130,6 +175,7 @@ public class PhieuChiService {
         dto.setSoTien(pc.getSoTien());
         dto.setNgayChi(pc.getNgayChi());
         dto.setLoai(pc.getLoai() != null ? pc.getLoai().name() : null);
+        dto.setChungTuThamChieu(pc.getChungTuThamChieu());
         dto.setMaNguoiTao(pc.getMaNguoiTao());
         dto.setTenDangNhapNguoiTao(pc.getTenDangNhapNguoiTao());
         dto.setTaoLuc(pc.getTaoLuc());

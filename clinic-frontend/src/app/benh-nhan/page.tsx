@@ -813,10 +813,11 @@ function BenhNhanPageInner() {
                   onChange={(e) => setFilterTen(e.target.value)}
                 />
               </Col>
-              <Col md={6} lg={1} className="d-flex align-items-stretch">
+              <Col md={6} lg={1} className="d-flex align-items-end justify-content-end">
                 <Button
                   variant="outline-secondary"
-                  className="btn-clinic-clear-filter w-100"
+                  size="sm"
+                  className="btn-clinic-clear-filter"
                   type="button"
                   onClick={clearFilters}
                 >

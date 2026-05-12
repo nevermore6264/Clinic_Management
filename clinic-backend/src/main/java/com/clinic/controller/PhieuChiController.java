@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +38,16 @@ public class PhieuChiController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tuNgay,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate denNgay) {
         return ResponseEntity.ok(phieuChiService.tongHop(tuNgay, denNgay));
+    }
+
+    @GetMapping(value = "/xuat-csv-thang", produces = "text/csv;charset=UTF-8")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','THU_NGAN')")
+    public ResponseEntity<byte[]> xuatCsvThang(@RequestParam String thang) {
+        byte[] body = phieuChiService.xuatCsvTheoThang(thang);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"phieu-chi-" + thang + ".csv\"")
+                .contentType(MediaType.parseMediaType("text/csv;charset=UTF-8"))
+                .body(body);
     }
 
     @GetMapping("/{id}")

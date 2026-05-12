@@ -378,6 +378,15 @@ export const phieuChiApi = {
       body: JSON.stringify(data),
     }),
   xoa: (id: number) => api<void>(`/phieu-chi/${id}`, { method: "DELETE" }),
+  xuatCsvThang: async (thang: string): Promise<Blob> => {
+    const url = `${API_BASE}/phieu-chi/xuat-csv-thang?thang=${encodeURIComponent(thang)}`;
+    const token = getToken();
+    const res = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.blob();
+  },
 };
 
 export const hoaDonApi = {
@@ -444,6 +453,8 @@ export interface ThongKeBangDieuKhien {
   lichHenTuanNay: number;
   doanhThuHomNay: number;
   doanhThuTuanNay: number;
+  tongChiHomNay?: number;
+  tongChiTuanNay?: number;
   doanhThu7NgayGanNhat: BaoCaoDoanhThu[];
   lichHenChoTiepNhanHomNay?: number;
   lichHenTrongKhamHomNay?: number;
@@ -985,6 +996,7 @@ export interface PhieuChi {
   soTien: number;
   ngayChi: string;
   loai?: string;
+  chungTuThamChieu?: string;
   maNguoiTao?: number;
   tenDangNhapNguoiTao?: string;
   taoLuc?: string;

@@ -21,6 +21,7 @@ function StatCard({
   iconBg,
   iconFg,
   dash,
+  hint,
 }: {
   label: string;
   value: string | number;
@@ -29,6 +30,7 @@ function StatCard({
   iconBg?: string;
   iconFg?: string;
   dash?: boolean;
+  hint?: ReactNode;
 }) {
   return (
     <Card
@@ -46,6 +48,11 @@ function StatCard({
           <div>
             <div className="stat-label mb-2">{label}</div>
             <div className="stat-value">{value}</div>
+            {hint ? (
+              <div className="small text-muted mt-2 mb-0" style={{ maxWidth: "14rem" }}>
+                {hint}
+              </div>
+            ) : null}
           </div>
           <div className="stat-icon flex-shrink-0">
             <i className={`bi ${icon}`} aria-hidden />
@@ -425,6 +432,46 @@ export default function DashboardPage() {
               accent="var(--clinic-accent)"
               iconBg="var(--clinic-accent-soft)"
               iconFg="#c2410c"
+            />
+            <StatCard
+              dash
+              label="Chi phí hôm nay"
+              value={`${(stats.tongChiHomNay ?? 0).toLocaleString("vi-VN")}đ`}
+              icon="bi-cash-stack"
+              accent="#b45309"
+              iconBg="rgba(251, 191, 36, 0.2)"
+              iconFg="#92400e"
+              hint={
+                coNhomQuanLy ? (
+                  <>
+                    Theo <strong>ngày chi</strong> trên{" "}
+                    <Link href="/phieu-chi" className="fw-semibold">
+                      phiếu chi
+                    </Link>
+                    .
+                  </>
+                ) : (
+                  "Tổng phiếu chi trong ngày (ngày chi trên phiếu)."
+                )
+              }
+            />
+            <StatCard
+              dash
+              label="Chi phí tuần này"
+              value={`${(stats.tongChiTuanNay ?? 0).toLocaleString("vi-VN")}đ`}
+              icon="bi-graph-down-arrow"
+              accent="#991b1b"
+              iconBg="rgba(248, 113, 113, 0.18)"
+              iconFg="#b91c1c"
+              hint={
+                <>
+                  So với doanh thu tuần:{" "}
+                  <span className="text-body fw-semibold">
+                    {((stats.doanhThuTuanNay || 0) - (stats.tongChiTuanNay ?? 0)).toLocaleString("vi-VN")}đ
+                  </span>{" "}
+                  (thu − chi, tham khảo).
+                </>
+              }
             />
           </div>
 

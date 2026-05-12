@@ -234,8 +234,8 @@ function AppointmentsPageInner() {
   const [modalError, setModalError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [isDangTaiCaKham, setIsDangTaiCaKham] = useState(false);
-  const [bacSiCoCaTheoNgay, setBacSiCoCaTheoNgay] = useState<Record<number, boolean>>({});
   const [slotsTheoBacSi, setSlotsTheoBacSi] = useState<Record<number, SlotThongTin[]>>({});
+  const [kheGioHomNayTick, setKheGioHomNayTick] = useState(0);
   const [chuyenKhoa, setChuyenKhoa] = useState<ChuyenKhoa[]>([]);
   const [locChuyenKhoaId, setLocChuyenKhoaId] = useState("");
 
@@ -259,7 +259,6 @@ function AppointmentsPageInner() {
     setLocBacSi("");
     setLocDichVu("");
     setLocChuyenKhoaId("");
-    setBacSiCoCaTheoNgay({});
     setSlotsTheoBacSi({});
   }, [maBenhNhanParam]);
 
@@ -605,6 +604,30 @@ function AppointmentsPageInner() {
     );
   }, [benhNhanDuocChon, locBenhNhan]);
 
+  const bacSiCoCaTheoNgay = useMemo(() => {
+    const today = isoDateLocal(new Date());
+    const laHomNay = appointmentDate === today;
+    const now = Date.now();
+    const out: Record<number, boolean> = {};
+    for (const d of doctors) {
+      const id = d.id;
+      if (id == null) continue;
+      const numId = Number(id);
+      if (Number.isNaN(numId)) continue;
+      const raw = slotsTheoBacSi[numId] ?? [];
+      const slots =
+        laHomNay && appointmentDate
+          ? raw.filter((s) => {
+              const t = thoiDiemGioHenMs(appointmentDate, s.gio);
+              return !Number.isNaN(t) && t > now;
+            })
+          : raw;
+      out[numId] = slots.length > 0;
+    }
+    void kheGioHomNayTick;
+    return out;
+  }, [doctors, slotsTheoBacSi, appointmentDate, kheGioHomNayTick]);
+
   const bacSiSauLoc = useMemo(() => {
     const q = locBacSi.trim().toLowerCase();
     const ds = doctors.filter((d) => {
@@ -655,8 +678,16 @@ function AppointmentsPageInner() {
   const slotsDaChon = useMemo(() => {
     const ma = Number(doctorId);
     if (!ma || Number.isNaN(ma)) return [];
-    return slotsTheoBacSi[ma] ?? [];
-  }, [doctorId, slotsTheoBacSi]);
+    const raw = slotsTheoBacSi[ma] ?? [];
+    const today = isoDateLocal(new Date());
+    if (!appointmentDate || appointmentDate !== today) return raw;
+    const now = Date.now();
+    void kheGioHomNayTick;
+    return raw.filter((s) => {
+      const t = thoiDiemGioHenMs(appointmentDate, s.gio);
+      return !Number.isNaN(t) && t > now;
+    });
+  }, [doctorId, slotsTheoBacSi, appointmentDate, kheGioHomNayTick]);
 
   const appointmentTimeLabel = useMemo(() => {
     if (!appointmentTime) return "— Chọn khung giờ —";
@@ -811,6 +842,18 @@ function AppointmentsPageInner() {
       setModalError("Không thể đặt lịch cho ngày quá khứ.");
       return;
     }
+    if (
+      appointmentDate === todayLocal &&
+      appointmentTime
+    ) {
+      const tSlot = thoiDiemGioHenMs(appointmentDate, appointmentTime);
+      if (!Number.isNaN(tSlot) && tSlot <= Date.now()) {
+        setModalError(
+          "Khung giờ này đã qua trong hôm nay. Vui lòng chọn giờ khác hoặc ngày khác.",
+        );
+        return;
+      }
+    }
     if (!appointmentTime) {
       setModalError("Vui lòng chọn giờ khám.");
       return;
@@ -856,7 +899,6 @@ function AppointmentsPageInner() {
 
   useEffect(() => {
     if (!showDatLich || !appointmentDate) {
-      setBacSiCoCaTheoNgay({});
       setSlotsTheoBacSi({});
       return;
     }
@@ -867,23 +909,19 @@ function AppointmentsPageInner() {
       const result = await appointmentsApi.slotKhaDungTheoNgay(appointmentDate, maChuyenKhoa);
       if (cancelled) return;
       const slotsMap: Record<number, SlotThongTin[]> = {};
-      const caHopLeMap: Record<number, boolean> = {};
       for (const item of result as BacSiSlotKhaDung[]) {
         slotsMap[item.maBacSi] = (item.slots ?? []).map((s) => ({
           gio: normalizeTime(s.gio),
           tong: s.soLuongDaDat ?? 0,
           sucChua: s.sucChua ?? SO_LUONG_TOI_DA_MOI_GIO,
         }));
-        caHopLeMap[item.maBacSi] = (item.slots ?? []).length > 0;
       }
       setSlotsTheoBacSi(slotsMap);
-      setBacSiCoCaTheoNgay(caHopLeMap);
     };
     taiCaTheoNgay()
       .catch(() => {
         if (!cancelled) {
           setSlotsTheoBacSi({});
-          setBacSiCoCaTheoNgay({});
         }
       })
       .finally(() => {
@@ -893,6 +931,16 @@ function AppointmentsPageInner() {
       cancelled = true;
     };
   }, [showDatLich, appointmentDate, locChuyenKhoaId]);
+
+  useEffect(() => {
+    if (!showDatLich || !appointmentDate) return;
+    if (appointmentDate !== isoDateLocal(new Date())) return;
+    const id = window.setInterval(
+      () => setKheGioHomNayTick((n) => n + 1),
+      30_000,
+    );
+    return () => window.clearInterval(id);
+  }, [showDatLich, appointmentDate]);
 
   useEffect(() => {
     if (!doctorId) {
@@ -1684,6 +1732,9 @@ function AppointmentsPageInner() {
               />
               <Form.Text className="text-muted">
                 Chọn ngày từ hôm nay — hệ thống chỉ hiển thị bác sĩ có lịch trực (cố định hoặc ngoại lệ) trong ngày đó.
+                {appointmentDate === todayStr ? (
+                  <> Nếu chọn hôm nay, các khung giờ đã qua sẽ không hiển thị.</>
+                ) : null}
               </Form.Text>
             </Form.Group>
             <Form.Group className="mb-3">
@@ -1854,7 +1905,9 @@ function AppointmentsPageInner() {
                       </div>
                     ) : slotsDaChon.length === 0 ? (
                       <div className="px-2 py-3 text-muted small text-center">
-                        Không có khung giờ hợp lệ trong ngày này.
+                        {appointmentDate === todayStr
+                          ? "Không còn khung giờ còn lại hôm nay (các giờ đã qua được ẩn) hoặc đã đầy. Thử ngày khác."
+                          : "Không có khung giờ hợp lệ trong ngày này."}
                       </div>
                     ) : (
                       slotsDaChon.map((slot) => {

@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Alert,
-  Badge,
   Button,
   Card,
   Form,
@@ -472,6 +471,7 @@ export default function ServiceTypesPage() {
       </Modal>
 
       <Modal
+        className="loai-dv-xem-modal"
         show={Boolean(loaiXemDichVu)}
         onHide={() => setLoaiXemDichVu(null)}
         centered
@@ -494,7 +494,7 @@ export default function ServiceTypesPage() {
                 <tr>
                   <th>Tên dịch vụ</th>
                   <th className="text-end">Đơn giá</th>
-                  <th className="text-center">Trạng thái</th>
+                  <th className="service-col-status">Trạng thái</th>
                 </tr>
               </thead>
               <tbody>
@@ -504,12 +504,29 @@ export default function ServiceTypesPage() {
                     <td className="text-end">
                       {(dv.gia ?? 0).toLocaleString("vi-VN")}đ
                     </td>
-                    <td className="text-center">
-                      {dv.hoatDong !== false ? (
-                        <Badge bg="success">Đang áp dụng</Badge>
-                      ) : (
-                        <Badge bg="secondary">Ngưng</Badge>
-                      )}
+                    <td className="service-col-status">
+                      <span
+                        className={
+                          dv.hoatDong !== false
+                            ? "service-dv-status service-dv-status--on"
+                            : "service-dv-status service-dv-status--off"
+                        }
+                        aria-label={
+                          dv.hoatDong !== false
+                            ? "Trạng thái: đang áp dụng"
+                            : "Trạng thái: ngưng"
+                        }
+                      >
+                        <i
+                          className={
+                            dv.hoatDong !== false
+                              ? "bi bi-check-circle-fill"
+                              : "bi bi-pause-circle-fill"
+                          }
+                          aria-hidden
+                        />
+                        {dv.hoatDong !== false ? "Đang áp dụng" : "Ngưng"}
+                      </span>
                     </td>
                   </tr>
                 ))}

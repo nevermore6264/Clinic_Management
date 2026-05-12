@@ -393,15 +393,16 @@ html.app-ready body {
   margin-top: 0.12rem;
 }
 
-/* Cột trạng thái — danh sách dịch vụ */
-.service-type-page .service-col-status {
+.service-type-page .service-col-status,
+.loai-dv-xem-modal .service-col-status {
   width: 1%;
   min-width: 9.5rem;
   max-width: 11rem;
   vertical-align: middle !important;
   text-align: center;
 }
-.service-type-page thead .service-col-status {
+.service-type-page thead .service-col-status,
+.loai-dv-xem-modal thead .service-col-status {
   font-size: 0.8125rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -409,7 +410,8 @@ html.app-ready body {
   font-weight: 700;
   white-space: nowrap;
 }
-.service-type-page .service-dv-status {
+.service-type-page .service-dv-status,
+.loai-dv-xem-modal .service-dv-status {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -425,12 +427,14 @@ html.app-ready body {
     box-shadow var(--transition-fast),
     transform var(--transition-fast);
 }
-.service-type-page .service-dv-status .bi {
+.service-type-page .service-dv-status .bi,
+.loai-dv-xem-modal .service-dv-status .bi {
   font-size: 1.02rem;
   line-height: 1;
   flex-shrink: 0;
 }
-.service-type-page .service-dv-status--on {
+.service-type-page .service-dv-status--on,
+.loai-dv-xem-modal .service-dv-status--on {
   color: #065f46;
   background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%);
   border-color: rgba(16, 185, 129, 0.38);
@@ -438,7 +442,8 @@ html.app-ready body {
     0 1px 0 rgba(255, 255, 255, 0.65) inset,
     0 2px 8px rgba(5, 150, 105, 0.12);
 }
-.service-type-page .service-dv-status--off {
+.service-type-page .service-dv-status--off,
+.loai-dv-xem-modal .service-dv-status--off {
   color: #475569;
   background: linear-gradient(180deg, #f8fafc 0%, #e8ecf1 100%);
   border-color: rgba(100, 116, 139, 0.45);

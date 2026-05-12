@@ -661,6 +661,18 @@ function AppointmentsPageInner() {
       if (!appointmentDate || isDangTaiCaKham) return false;
       return bacSiCoCaTheoNgay[d.id] === true;
     });
+    const maLocCk =
+      locChuyenKhoaId && !Number.isNaN(Number(locChuyenKhoaId))
+        ? Number(locChuyenKhoaId)
+        : undefined;
+    if (maLocCk != null) {
+      ds = ds.filter(
+        (d) =>
+          d.maChuyenKhoa != null &&
+          !Number.isNaN(Number(d.maChuyenKhoa)) &&
+          Number(d.maChuyenKhoa) === maLocCk,
+      );
+    }
     const maDvCk = dichVuDaChon?.maChuyenKhoa;
     if (maDvCk != null && !Number.isNaN(Number(maDvCk))) {
       ds = ds.filter((d) => Number(d.maChuyenKhoa) === Number(maDvCk));
@@ -673,6 +685,7 @@ function AppointmentsPageInner() {
   }, [
     doctors,
     locBacSi,
+    locChuyenKhoaId,
     bacSiCoCaTheoNgay,
     appointmentDate,
     isDangTaiCaKham,
@@ -681,22 +694,52 @@ function AppointmentsPageInner() {
 
   const dichVuSauLoc = useMemo(() => {
     const q = locDichVu.trim().toLowerCase();
-    const maCkHienTai = locChuyenKhoaId ? Number(locChuyenKhoaId) : undefined;
+    const maTuChuyenKhoa =
+      locChuyenKhoaId && !Number.isNaN(Number(locChuyenKhoaId))
+        ? Number(locChuyenKhoaId)
+        : undefined;
+    const bacSiDaChon = doctorId
+      ? doctors.find((x) => String(x.id) === doctorId)
+      : undefined;
+    const maTuBacSi =
+      bacSiDaChon?.maChuyenKhoa != null &&
+      !Number.isNaN(Number(bacSiDaChon.maChuyenKhoa))
+        ? Number(bacSiDaChon.maChuyenKhoa)
+        : undefined;
+
     let base = services;
-    if (maCkHienTai != null && !Number.isNaN(maCkHienTai)) {
-      base = services.filter(
-        (s) =>
-          s.maChuyenKhoa == null ||
-          Number(s.maChuyenKhoa) === maCkHienTai,
-      );
+    if (
+      maTuChuyenKhoa != null &&
+      maTuBacSi != null &&
+      maTuChuyenKhoa !== maTuBacSi
+    ) {
+      base = [];
+    } else {
+      const maCkBatBuoc = maTuBacSi ?? maTuChuyenKhoa;
+      if (maCkBatBuoc != null && !Number.isNaN(maCkBatBuoc)) {
+        base = services.filter(
+          (s) =>
+            s.maChuyenKhoa != null &&
+            !Number.isNaN(Number(s.maChuyenKhoa)) &&
+            Number(s.maChuyenKhoa) === maCkBatBuoc,
+        );
+      }
     }
+
     if (!q) return base;
     return base.filter((s) => {
       const ten = (s.ten ?? "").toLowerCase();
       const gia = s.gia != null ? String(s.gia) : "";
       return ten.includes(q) || gia.includes(q);
     });
-  }, [services, locDichVu, locChuyenKhoaId]);
+  }, [services, locDichVu, locChuyenKhoaId, doctorId, doctors]);
+
+  const xungDotChuyenKhoaBacSi = useMemo(() => {
+    if (!locChuyenKhoaId || !doctorId) return false;
+    const d = doctors.find((x) => String(x.id) === doctorId);
+    if (!d || d.maChuyenKhoa == null) return false;
+    return Number(locChuyenKhoaId) !== Number(d.maChuyenKhoa);
+  }, [locChuyenKhoaId, doctorId, doctors]);
 
   const chonBenhNhanLabel = useMemo(() => {
     if (!patientId) return "— Chọn bệnh nhân —";
@@ -978,11 +1021,26 @@ function AppointmentsPageInner() {
   useEffect(() => {
     if (!serviceId || !locChuyenKhoaId) return;
     const s = services.find((x) => String(x.id) === serviceId);
-    if (!s || s.maChuyenKhoa == null) return;
-    if (Number(s.maChuyenKhoa) !== Number(locChuyenKhoaId)) {
+    if (!s) return;
+    if (
+      s.maChuyenKhoa == null ||
+      Number.isNaN(Number(s.maChuyenKhoa)) ||
+      Number(s.maChuyenKhoa) !== Number(locChuyenKhoaId)
+    ) {
       setServiceId("");
     }
   }, [locChuyenKhoaId, serviceId, services]);
+
+  useEffect(() => {
+    if (!serviceId || !doctorId) return;
+    const d = doctors.find((x) => String(x.id) === doctorId);
+    const s = services.find((x) => String(x.id) === serviceId);
+    if (!d || !s) return;
+    if (d.maChuyenKhoa == null || s.maChuyenKhoa == null) return;
+    if (Number(d.maChuyenKhoa) !== Number(s.maChuyenKhoa)) {
+      setServiceId("");
+    }
+  }, [doctorId, serviceId, doctors, services]);
 
   useEffect(() => {
     if (!showDatLich || !appointmentDate) return;
@@ -1814,8 +1872,8 @@ function AppointmentsPageInner() {
                 ))}
               </Form.Select>
               <Form.Text className="text-muted">
-                Lọc dịch vụ và ca làm việc theo chuyên khoa. Đổi chuyên khoa sẽ bỏ chọn bác sĩ và giờ; dịch vụ
-                chỉ thuộc chuyên khoa khác cũng bị bỏ chọn.
+                Lọc dịch vụ và ca làm việc theo chuyên khoa (chỉ dịch vụ đã gán đúng chuyên khoa trong danh mục).
+                Đổi chuyên khoa sẽ bỏ chọn bác sĩ và giờ; dịch vụ không còn khớp cũng bị bỏ chọn.
               </Form.Text>
             </Form.Group>
             <Form.Group className="mb-3">
@@ -1854,9 +1912,11 @@ function AppointmentsPageInner() {
                       <div className="px-2 py-3 text-muted small text-center">
                         {services.length === 0
                           ? "Chưa có dịch vụ trong hệ thống."
-                          : locChuyenKhoaId
-                            ? "Không có dịch vụ phù hợp chuyên khoa đã chọn (hoặc không khớp tìm kiếm)."
-                            : "Không có kết quả khớp bộ lọc."}
+                          : xungDotChuyenKhoaBacSi
+                            ? "Chuyên khoa đang chọn và bác sĩ đã chọn không cùng chuyên khoa — hãy điều chỉnh lại."
+                            : locChuyenKhoaId || doctorId
+                              ? "Không có dịch vụ phù hợp chuyên khoa / bác sĩ đã chọn (hoặc không khớp tìm kiếm). Kiểm tra dịch vụ đã gán chuyên khoa trong danh mục."
+                              : "Không có kết quả khớp bộ lọc."}
                       </div>
                     ) : (
                       dichVuSauLoc.map((s) => (

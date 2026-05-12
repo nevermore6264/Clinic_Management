@@ -389,15 +389,15 @@ export default function ServicesPage() {
               </Form.Select>
             </Form.Group>
             <Button
-              variant="secondary"
-              className="align-self-center"
+              variant="outline-secondary"
+              className="btn-clinic-clear-filter align-self-center"
               onClick={() => {
                 setBoLocLoaiDichVu("");
                 setTuKhoaTenDichVu("");
                 setTrang(0);
               }}
             >
-              <i className="bi bi-arrow-counterclockwise me-2" aria-hidden />
+              <i className="bi bi-arrow-counterclockwise" aria-hidden />
               Xóa lọc
             </Button>
           </div>

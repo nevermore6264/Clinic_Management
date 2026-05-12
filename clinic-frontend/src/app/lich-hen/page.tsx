@@ -1359,8 +1359,10 @@ function AppointmentsPageInner() {
                 type="button"
                 variant="outline-secondary"
                 size="sm"
+                className="btn-clinic-clear-filter"
                 onClick={() => setLocGiaiDoan("")}
               >
+                <i className="bi bi-arrow-counterclockwise" aria-hidden />
                 Bỏ lọc luồng
               </Button>
             </div>

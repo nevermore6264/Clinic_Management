@@ -17,10 +17,7 @@ import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import { formatNgayDdMmYyyy } from "@/lib/formatInstantVi";
 import { thuocApi, type Thuoc, type ThuocTrangTraCuu } from "@/lib/api";
-import {
-  formatVndInputMoneyUnit,
-  parseVndInputMoney,
-} from "@/lib/moneyVnd";
+import { formatVndInputMoneyUnit, parseVndInputMoney } from "@/lib/moneyVnd";
 import { LoadingState } from "@/components/LoadingState";
 
 const BUOC_THUOC = [
@@ -442,7 +439,9 @@ export default function ThuocPage() {
               />
             </Col>
             <Col xs={6} md={3} lg={2}>
-              <Form.Label className="small text-muted mb-1">Trạng thái</Form.Label>
+              <Form.Label className="small text-muted mb-1">
+                Trạng thái
+              </Form.Label>
               <Form.Select
                 value={boLocTrangThai}
                 onChange={(e) => setBoLocTrangThai(e.target.value)}
@@ -469,7 +468,9 @@ export default function ThuocPage() {
               </Form.Select>
             </Col>
             <Col xs={6} md={3} lg={1}>
-              <Form.Label className="small text-muted mb-1">/ trang</Form.Label>
+              <Form.Label className="small text-muted mb-1">
+                Số bản ghi / Trang
+              </Form.Label>
               <Form.Select
                 value={kichThuocTrang}
                 onChange={(e) =>
@@ -484,8 +485,8 @@ export default function ThuocPage() {
             </Col>
             <Col xs={6} md={3} lg={1} className="d-flex align-items-end">
               <Button
-                variant="secondary"
-                className="w-100"
+                variant="outline-secondary"
+                className="btn-clinic-clear-filter w-100"
                 onClick={() => {
                   setTuKhoa("");
                   setTuKhoaTim("");
@@ -494,7 +495,7 @@ export default function ThuocPage() {
                   setSapXep("tenThuoc,asc");
                 }}
               >
-                <i className="bi bi-arrow-counterclockwise me-1" aria-hidden />
+                <i className="bi bi-arrow-counterclockwise" aria-hidden />
                 Xóa lọc
               </Button>
             </Col>

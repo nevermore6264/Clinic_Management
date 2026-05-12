@@ -722,6 +722,69 @@ html.app-ready body {
   justify-content: center;
 }
 
+.btn.btn-outline-secondary.btn-clinic-clear-filter {
+  --bs-btn-color: var(--clinic-steel);
+  --bs-btn-border-color: #d8dee8;
+  --bs-btn-hover-color: var(--clinic-navy-mid);
+  --bs-btn-hover-bg: #e8ecf2;
+  --bs-btn-hover-border-color: #c5cdd9;
+  --bs-btn-active-color: var(--clinic-navy-mid);
+  --bs-btn-active-bg: #dfe5ee;
+  --bs-btn-active-border-color: #b0bac9;
+  --bs-btn-focus-shadow-rgb: 148, 163, 184;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  min-height: 40px;
+  color: var(--clinic-steel);
+  border-color: #d8dee8;
+  background: #f1f4f8;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    box-shadow var(--transition-fast),
+    color var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.btn.btn-outline-secondary.btn-clinic-clear-filter .bi {
+  margin: 0 !important;
+  font-size: 1.05rem;
+  line-height: 1;
+  opacity: 0.82;
+}
+.btn.btn-outline-secondary.btn-clinic-clear-filter:hover {
+  color: var(--clinic-navy-mid);
+  border-color: #c5cdd9;
+  background: #e8ecf2;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+.btn.btn-outline-secondary.btn-clinic-clear-filter:focus-visible {
+  border-color: #94a3b8;
+  color: var(--clinic-navy-mid);
+  box-shadow:
+    0 0 0 3px rgba(148, 163, 184, 0.35),
+    0 1px 4px rgba(15, 23, 42, 0.06);
+}
+.btn.btn-outline-secondary.btn-clinic-clear-filter:active {
+  background: #dfe5ee;
+  border-color: #b0bac9;
+}
+.btn.btn-outline-secondary.btn-clinic-clear-filter.btn-sm {
+  --bs-btn-padding-y: 0.35rem;
+  --bs-btn-padding-x: 0.85rem;
+  font-size: 0.8125rem;
+  min-height: 34px;
+  gap: 0.35rem;
+}
+.btn.btn-outline-secondary.btn-clinic-clear-filter.btn-sm .bi {
+  font-size: 0.95rem;
+}
+
 .btn-action-edit,
 .btn-action-delete,
 .btn-action-calendar,

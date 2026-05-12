@@ -334,8 +334,8 @@ export default function UsersPage() {
             </div>
             <div className="col-6 col-md-2 d-flex align-items-stretch">
               <Button
-                variant="secondary"
-                className="w-100"
+                variant="outline-secondary"
+                className="btn-clinic-clear-filter w-100"
                 onClick={() => {
                   setTuKhoa("");
                   setBoLocTrangThai("tat-ca");
@@ -343,7 +343,7 @@ export default function UsersPage() {
                   setTrang(0);
                 }}
               >
-                <i className="bi bi-arrow-counterclockwise me-2" aria-hidden />
+                <i className="bi bi-arrow-counterclockwise" aria-hidden />
                 Xóa lọc
               </Button>
             </div>

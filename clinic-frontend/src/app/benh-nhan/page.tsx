@@ -815,15 +815,12 @@ function BenhNhanPageInner() {
               </Col>
               <Col md={6} lg={1} className="d-flex align-items-stretch">
                 <Button
-                  variant="secondary"
-                  className="w-100"
+                  variant="outline-secondary"
+                  className="btn-clinic-clear-filter w-100"
                   type="button"
                   onClick={clearFilters}
                 >
-                  <i
-                    className="bi bi-arrow-counterclockwise me-1"
-                    aria-hidden
-                  />
+                  <i className="bi bi-arrow-counterclockwise" aria-hidden />
                   Xóa lọc
                 </Button>
               </Col>

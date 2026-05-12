@@ -82,12 +82,11 @@ public class XuLyDichVuService {
             dv.setLoaiDichVu(loaiDichVuRepository.findById(dto.getMaLoaiDichVu())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy loại dịch vụ: " + dto.getMaLoaiDichVu())));
         }
-        if (dto.getMaChuyenKhoa() != null) {
-            dv.setChuyenKhoa(chuyenKhoaRepository.findById(dto.getMaChuyenKhoa())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy chuyên khoa: " + dto.getMaChuyenKhoa())));
-        } else {
-            dv.setChuyenKhoa(null);
+        if (dto.getMaChuyenKhoa() == null) {
+            throw new RuntimeException("Vui lòng chọn chuyên khoa.");
         }
+        dv.setChuyenKhoa(chuyenKhoaRepository.findById(dto.getMaChuyenKhoa())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chuyên khoa: " + dto.getMaChuyenKhoa())));
         dv.setHoatDong(dto.isHoatDong());
     }
 

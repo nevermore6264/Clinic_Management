@@ -23,7 +23,9 @@ import {
 import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
 
 function tomTatLoiSuaDichVu(loi: DichVuFormErrors): string {
-  return [loi.maLoaiDichVu, loi.ten, loi.gia].filter(Boolean).join(" · ");
+  return [loi.maLoaiDichVu, loi.maChuyenKhoa, loi.ten, loi.gia]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 export default function ServicesPage() {
@@ -181,10 +183,7 @@ export default function ServicesPage() {
         ...form,
         ten: form.ten?.trim(),
         moTa: form.moTa?.trim() || "",
-        maChuyenKhoa:
-          form.maChuyenKhoa != null && !Number.isNaN(Number(form.maChuyenKhoa))
-            ? Number(form.maChuyenKhoa)
-            : undefined,
+        maChuyenKhoa: Number(form.maChuyenKhoa),
       });
       setThemDichVuLoi({});
       setHienModal(false);
@@ -309,11 +308,7 @@ export default function ServicesPage() {
     try {
       await servicesApi.update(id, {
         maLoaiDichVu: formSua.maLoaiDichVu,
-        maChuyenKhoa:
-          formSua.maChuyenKhoa != null &&
-          !Number.isNaN(Number(formSua.maChuyenKhoa))
-            ? Number(formSua.maChuyenKhoa)
-            : undefined,
+        maChuyenKhoa: Number(formSua.maChuyenKhoa),
         ten: (formSua.ten ?? "").trim(),
         moTa: formSua.moTa || "",
         gia: formSua.gia,
@@ -459,30 +454,44 @@ export default function ServicesPage() {
                 </td>
                 <td>
                   {dangSuaId === s.id ? (
-                    <Form.Select
-                      size="sm"
-                      aria-label="Chuyên khoa"
-                      title="Chuyên khoa"
-                      value={
-                        formSua.maChuyenKhoa != null
-                          ? String(formSua.maChuyenKhoa)
-                          : ""
-                      }
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setFormSua({
-                          ...formSua,
-                          maChuyenKhoa: v ? Number(v) : undefined,
-                        });
-                      }}
-                    >
-                      <option value="">— Chung —</option>
-                      {chuyenKhoa.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.tenChuyenKhoa}
+                    <>
+                      <Form.Select
+                        size="sm"
+                        aria-label="Chuyên khoa"
+                        title="Chuyên khoa"
+                        value={
+                          formSua.maChuyenKhoa != null
+                            ? String(formSua.maChuyenKhoa)
+                            : ""
+                        }
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setFormSua({
+                            ...formSua,
+                            maChuyenKhoa: v ? Number(v) : undefined,
+                          });
+                          setSuaDichVuLoi((x) => {
+                            const n = { ...x };
+                            delete n.maChuyenKhoa;
+                            return n;
+                          });
+                        }}
+                        isInvalid={Boolean(suaDichVuLoi.maChuyenKhoa)}
+                        disabled={chuyenKhoa.length === 0}
+                      >
+                        <option value="" disabled>
+                          Chọn chuyên khoa
                         </option>
-                      ))}
-                    </Form.Select>
+                        {chuyenKhoa.map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.tenChuyenKhoa}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <Form.Control.Feedback type="invalid" className="d-block">
+                        {suaDichVuLoi.maChuyenKhoa}
+                      </Form.Control.Feedback>
+                    </>
                   ) : (
                     s.tenChuyenKhoa || "—"
                   )}
@@ -594,6 +603,7 @@ export default function ServicesPage() {
                         variant="primary"
                         className="me-2"
                         onClick={() => luuSua(s.id)}
+                        disabled={chuyenKhoa.length === 0}
                       >
                         <i className="bi bi-check2 me-1" aria-hidden />
                         Lưu
@@ -776,9 +786,9 @@ export default function ServicesPage() {
                 </Form.Control.Feedback>
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>Chuyên khoa (tuỳ chọn)</Form.Label>
+                <Form.Label className="required">Chuyên khoa</Form.Label>
                 <Form.Select
-                  aria-label="Chuyên khoa khi đặt lịch"
+                  aria-label="Chuyên khoa của dịch vụ"
                   value={
                     form.maChuyenKhoa != null ? String(form.maChuyenKhoa) : ""
                   }
@@ -788,15 +798,27 @@ export default function ServicesPage() {
                       ...form,
                       maChuyenKhoa: v ? Number(v) : undefined,
                     });
+                    setThemDichVuLoi((x) => {
+                      const n = { ...x };
+                      delete n.maChuyenKhoa;
+                      return n;
+                    });
                   }}
+                  isInvalid={Boolean(themDichVuLoi.maChuyenKhoa)}
+                  disabled={chuyenKhoa.length === 0}
                 >
-                  <option value="">— Dùng được với mọi chuyên khoa —</option>
+                  <option value="" disabled>
+                    Chọn chuyên khoa
+                  </option>
                   {chuyenKhoa.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.tenChuyenKhoa}
                     </option>
                   ))}
                 </Form.Select>
+                <Form.Control.Feedback type="invalid" className="d-block">
+                  {themDichVuLoi.maChuyenKhoa}
+                </Form.Control.Feedback>
               </Form.Group>
               <Form.Group className="mb-3">
                 <Form.Label className="required">Tên dịch vụ</Form.Label>
@@ -876,7 +898,7 @@ export default function ServicesPage() {
               type="submit"
               form="form-them-dich-vu"
               className="btn-action-edit"
-              disabled={loaiDichVu.length === 0}
+              disabled={loaiDichVu.length === 0 || chuyenKhoa.length === 0}
             >
               <i className="bi bi-check2-circle me-2" aria-hidden />
               Lưu

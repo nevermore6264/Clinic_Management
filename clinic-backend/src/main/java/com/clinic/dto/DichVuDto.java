@@ -1,5 +1,6 @@
 package com.clinic.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -9,6 +10,7 @@ public class DichVuDto {
     private Long id;
     private Long maLoaiDichVu;
     private String tenLoaiDichVu;
+    @NotNull(message = "Vui lòng chọn chuyên khoa.")
     private Long maChuyenKhoa;
     private String tenChuyenKhoa;
     private String ten;

@@ -76,10 +76,7 @@ export default function NewServicePage() {
         ...form,
         ten: form.ten?.trim(),
         moTa: form.moTa?.trim() || "",
-        maChuyenKhoa:
-          form.maChuyenKhoa != null && !Number.isNaN(Number(form.maChuyenKhoa))
-            ? Number(form.maChuyenKhoa)
-            : undefined,
+        maChuyenKhoa: Number(form.maChuyenKhoa),
       });
       setFieldErrors({});
       router.push("/dich-vu");
@@ -99,6 +96,15 @@ export default function NewServicePage() {
           Bạn cần tạo ít nhất 1 loại dịch vụ trước khi thêm dịch vụ mới.{" "}
           <Alert.Link as={Link} href="/loai-dich-vu">
             Đi tới màn quản lý loại dịch vụ
+          </Alert.Link>
+          .
+        </Alert>
+      ) : null}
+      {chuyenKhoa.length === 0 ? (
+        <Alert variant="warning" className="mb-3">
+          Cần có ít nhất một chuyên khoa trong hệ thống trước khi thêm dịch vụ.{" "}
+          <Alert.Link as={Link} href="/chuyen-khoa">
+            Quản lý chuyên khoa
           </Alert.Link>
           .
         </Alert>
@@ -134,7 +140,7 @@ export default function NewServicePage() {
               </Form.Control.Feedback>
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label>Chuyên khoa (tuỳ chọn)</Form.Label>
+              <Form.Label className="required">Chuyên khoa</Form.Label>
               <Form.Select
                 value={
                   form.maChuyenKhoa != null
@@ -147,19 +153,30 @@ export default function NewServicePage() {
                     ...form,
                     maChuyenKhoa: v ? Number(v) : undefined,
                   });
+                  setFieldErrors((x) => {
+                    const n = { ...x };
+                    delete n.maChuyenKhoa;
+                    return n;
+                  });
                 }}
-                aria-label="Chuyên khoa áp dụng khi đặt lịch"
+                isInvalid={Boolean(fieldErrors.maChuyenKhoa)}
+                disabled={chuyenKhoa.length === 0}
+                aria-label="Chuyên khoa của dịch vụ"
               >
-                <option value="">— Dùng được với mọi chuyên khoa —</option>
+                <option value="" disabled>
+                  Chọn chuyên khoa
+                </option>
                 {chuyenKhoa.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.tenChuyenKhoa}
                   </option>
                 ))}
               </Form.Select>
+              <Form.Control.Feedback type="invalid" className="d-block">
+                {fieldErrors.maChuyenKhoa}
+              </Form.Control.Feedback>
               <Form.Text className="text-muted">
-                Nếu chọn, màn đặt lịch chỉ hiển thị dịch vụ này khi lọc đúng chuyên khoa (hoặc khi bệnh nhân chọn dịch vụ
-                trước, hệ thống tự khớp chuyên khoa).
+                Bắt buộc — màn đặt lịch chỉ hiển thị dịch vụ khi trùng chuyên khoa đã chọn hoặc chuyên khoa của bác sĩ.
               </Form.Text>
             </Form.Group>
             <Form.Group className="mb-3">
@@ -223,7 +240,11 @@ export default function NewServicePage() {
                 onChange={(e) => setForm({ ...form, hoatDong: e.target.checked })}
               />
             </Form.Group>
-            <Button type="submit" variant="primary" disabled={loaiDichVu.length === 0}>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={loaiDichVu.length === 0 || chuyenKhoa.length === 0}
+            >
               Lưu
             </Button>{" "}
             <Button

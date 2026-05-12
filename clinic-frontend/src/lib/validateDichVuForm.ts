@@ -2,6 +2,7 @@ import type { DichVu } from "@/lib/api";
 
 export type DichVuFormErrors = {
   maLoaiDichVu?: string;
+  maChuyenKhoa?: string;
   ten?: string;
   gia?: string;
 };
@@ -22,6 +23,13 @@ export function validateDichVuForm(
   const loi: DichVuFormErrors = {};
   if (!f.maLoaiDichVu) {
     loi.maLoaiDichVu = "Vui lòng chọn loại dịch vụ.";
+  }
+  if (
+    f.maChuyenKhoa == null ||
+    Number.isNaN(Number(f.maChuyenKhoa)) ||
+    Number(f.maChuyenKhoa) <= 0
+  ) {
+    loi.maChuyenKhoa = "Vui lòng chọn chuyên khoa.";
   }
   const ten = f.ten?.trim() ?? "";
   if (!ten) {

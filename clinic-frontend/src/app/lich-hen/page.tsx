@@ -1511,7 +1511,7 @@ function AppointmentsPageInner() {
                   <th>Dịch vụ</th>
                   {coCotChoQuaGio ? (
                     <th className="text-nowrap" style={{ minWidth: "11rem" }}>
-                      Chờ so với giờ hẹn
+                      Theo dõi giờ hẹn
                     </th>
                   ) : null}
                   <th>Trạng thái</th>

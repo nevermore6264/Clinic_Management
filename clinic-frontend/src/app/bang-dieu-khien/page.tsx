@@ -340,13 +340,15 @@ export default function DashboardPage() {
         lede={`${todayLong} · Theo dõi luồng khám, lịch và tài chính trong ngày.`}
         actions={
           <div className="d-flex flex-wrap gap-2">
-            <Link
-              href="/lich-hen?datLich=1"
-              className="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 rounded-pill px-3 shadow-sm"
-            >
-              <i className="bi bi-calendar-plus-lg" aria-hidden />
-              Đặt lịch nhanh
-            </Link>
+            {!chiBacSiKhongHoaDon ? (
+              <Link
+                href="/lich-hen?datLich=1"
+                className="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 rounded-pill px-3 shadow-sm"
+              >
+                <i className="bi bi-calendar-plus-lg" aria-hidden />
+                Đặt lịch nhanh
+              </Link>
+            ) : null}
             <Link
               href={hrefLichHenTheoNgay(todayISO, todayISO)}
               className="btn btn-sm btn-light border dashboard-hero-chip"
@@ -447,13 +449,15 @@ export default function DashboardPage() {
           icon="bi-person-vcard"
           tone={0}
         />
-        <QuickLinkCard
-          href="/lich-hen?datLich=1"
-          title="Đặt & quản lý lịch"
-          desc="Mở form đặt lịch ngay hoặc xem danh sách — từ bảng điều khiển."
-          icon="bi-calendar-plus"
-          tone={1}
-        />
+        {!chiBacSiKhongHoaDon ? (
+          <QuickLinkCard
+            href="/lich-hen?datLich=1"
+            title="Đặt & quản lý lịch"
+            desc="Mở form đặt lịch ngay hoặc xem danh sách — từ bảng điều khiển."
+            icon="bi-calendar-plus"
+            tone={1}
+          />
+        ) : null}
         <QuickLinkCard
           href="/lich-lam-viec-bac-si"
           title="Lịch bác sĩ"

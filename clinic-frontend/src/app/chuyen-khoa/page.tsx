@@ -2,11 +2,21 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Alert, Badge, Button, Card, Form, Modal, Table } from "react-bootstrap";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Form,
+  Modal,
+  Pagination,
+  Table,
+} from "react-bootstrap";
 import Link from "next/link";
 import { bacSiApi, chuyenKhoaApi, type BacSi, type ChuyenKhoa } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { notify } from "@/lib/notify";
+import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
 
 export default function ChuyenKhoaPage() {
   const { user, loading } = useAuth();
@@ -24,6 +34,8 @@ export default function ChuyenKhoaPage() {
   const [chuyenKhoaXemBacSi, setChuyenKhoaXemBacSi] = useState<ChuyenKhoa | null>(
     null,
   );
+  const [trang, setTrang] = useState(0);
+  const [kichThuocTrang, setKichThuocTrang] = useState(15);
 
   const napDuLieu = async () => {
     try {
@@ -61,6 +73,16 @@ export default function ChuyenKhoaPage() {
         ),
       );
   }, [bacSi, chuyenKhoaXemBacSi]);
+
+  const tongTrangCk = tongSoTrangClient(list.length, kichThuocTrang);
+  const dongTrangCk = useMemo(
+    () => catTrang(list, trang, kichThuocTrang),
+    [list, trang, kichThuocTrang],
+  );
+
+  useEffect(() => {
+    setTrang(0);
+  }, [list.length, kichThuocTrang]);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -231,6 +253,21 @@ export default function ChuyenKhoaPage() {
       {error ? <Alert variant="danger">{error}</Alert> : null}
 
       <Card>
+        <Card.Header className="d-flex flex-wrap align-items-center justify-content-end gap-2 py-2">
+          <Form.Select
+            size="sm"
+            aria-label="Số dòng mỗi trang"
+            style={{ maxWidth: "8rem" }}
+            value={kichThuocTrang}
+            onChange={(e) =>
+              setKichThuocTrang(Number(e.target.value) || 15)
+            }
+          >
+            <option value={10}>10 / trang</option>
+            <option value={15}>15 / trang</option>
+            <option value={25}>25 / trang</option>
+          </Form.Select>
+        </Card.Header>
         <Table responsive hover className="mb-0">
           <thead>
             <tr>
@@ -241,7 +278,7 @@ export default function ChuyenKhoaPage() {
             </tr>
           </thead>
           <tbody>
-            {list.map((item) => (
+            {dongTrangCk.map((item) => (
               <tr key={item.id}>
                 <td>
                   {dangSuaId === item.id ? (
@@ -341,6 +378,28 @@ export default function ChuyenKhoaPage() {
             ) : null}
           </tbody>
         </Table>
+        {list.length > 0 ? (
+          <Card.Footer className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
+            <div className="small text-muted">
+              {list.length} chuyên khoa khớp lọc · trang {trang + 1}/{tongTrangCk}
+            </div>
+            <Pagination className="mb-0 flex-wrap">
+              <Pagination.Prev
+                disabled={trang <= 0}
+                onClick={() => setTrang((p) => Math.max(0, p - 1))}
+              />
+              <Pagination.Item active className="user-select-none">
+                {trang + 1} / {tongTrangCk}
+              </Pagination.Item>
+              <Pagination.Next
+                disabled={trang >= tongTrangCk - 1}
+                onClick={() =>
+                  setTrang((p) => Math.min(tongTrangCk - 1, p + 1))
+                }
+              />
+            </Pagination>
+          </Card.Footer>
+        ) : null}
       </Card>
 
       <Modal

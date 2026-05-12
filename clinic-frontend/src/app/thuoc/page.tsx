@@ -617,8 +617,6 @@ export default function ThuocPage() {
         {!loadingList && tongPhanTu > 0 ? (
           <Card.Footer className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
             <div className="small text-muted">
-              Hiển thị {trang * kichThuocTrang + 1}–
-              {Math.min((trang + 1) * kichThuocTrang, tongPhanTu)} trong{" "}
               {tongPhanTu} thuốc khớp lọc · trang {trang + 1}/{tongSoTrang}
             </div>
             <Pagination className="mb-0 flex-wrap">

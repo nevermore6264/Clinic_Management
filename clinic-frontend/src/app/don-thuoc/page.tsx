@@ -142,7 +142,7 @@ export default function DonThuocPage() {
           {rows.length > 0 ? (
             <Card.Footer className="d-flex flex-wrap align-items-center justify-content-between gap-2 py-3">
               <div className="small text-muted">
-                {rows.length} dòng khớp lọc · trang {trang + 1}/{tongTrang}
+                {rows.length} dòng đơn thuốc khớp lọc · trang {trang + 1}/{tongTrang}
               </div>
               <Pagination className="mb-0 flex-wrap">
                 <Pagination.Prev

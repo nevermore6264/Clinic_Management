@@ -292,6 +292,41 @@ export const hoSoKhamApi = {
 export const thuocApi = {
   dangHoatDong: () => api<Thuoc[]>("/thuoc/dang-hoat-dong"),
   tatCa: () => api<Thuoc[]>("/thuoc"),
+  timKiem: (params: {
+    tuKhoa?: string;
+    trangThai?: string;
+    donVi?: string;
+    dangBaoChe?: string;
+    duongDung?: string;
+    hangSanXuat?: string;
+    nuocSanXuat?: string;
+    tonThap?: boolean;
+    hanTu?: string;
+    hanDen?: string;
+    giaBanTu?: string;
+    giaBanDen?: string;
+    page?: number;
+    size?: number;
+    sort?: string;
+  }) => {
+    const q = new URLSearchParams();
+    if (params.tuKhoa?.trim()) q.set("tuKhoa", params.tuKhoa.trim());
+    if (params.trangThai) q.set("trangThai", params.trangThai);
+    if (params.donVi?.trim()) q.set("donVi", params.donVi.trim());
+    if (params.dangBaoChe?.trim()) q.set("dangBaoChe", params.dangBaoChe.trim());
+    if (params.duongDung?.trim()) q.set("duongDung", params.duongDung.trim());
+    if (params.hangSanXuat?.trim()) q.set("hangSanXuat", params.hangSanXuat.trim());
+    if (params.nuocSanXuat?.trim()) q.set("nuocSanXuat", params.nuocSanXuat.trim());
+    if (params.tonThap) q.set("tonThap", "true");
+    if (params.hanTu?.trim()) q.set("hanTu", params.hanTu.trim());
+    if (params.hanDen?.trim()) q.set("hanDen", params.hanDen.trim());
+    if (params.giaBanTu?.trim()) q.set("giaBanTu", params.giaBanTu.trim());
+    if (params.giaBanDen?.trim()) q.set("giaBanDen", params.giaBanDen.trim());
+    q.set("page", String(params.page ?? 0));
+    q.set("size", String(params.size ?? 20));
+    q.set("sort", params.sort ?? "tenThuoc,asc");
+    return api<ThuocTrangTraCuu>(`/thuoc/tim-kiem?${q.toString()}`);
+  },
   bangKeDonThuoc: () => api<DonThuocChiTietBangKe[]>("/thuoc/bang-ke-don-thuoc"),
   layTheoMa: (id: number) => api<Thuoc>(`/thuoc/${id}`),
   tao: (data: Partial<Thuoc>) =>
@@ -908,6 +943,18 @@ export interface Thuoc {
   chongChiDinh?: string;
   tacDungPhu?: string;
   hoatDong?: boolean;
+}
+
+/** Trang kết quả GET /thuoc/tim-kiem (Spring Data Page) */
+export interface ThuocTrangTraCuu {
+  content: Thuoc[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  first?: boolean;
+  last?: boolean;
+  empty?: boolean;
 }
 
 export interface PhieuChi {

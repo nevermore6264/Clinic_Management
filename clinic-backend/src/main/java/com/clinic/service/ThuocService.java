@@ -6,13 +6,18 @@ import com.clinic.entity.ChiTietDonThuoc;
 import com.clinic.entity.Thuoc;
 import com.clinic.repository.ChiTietDonThuocRepository;
 import com.clinic.repository.ThuocRepository;
+import com.clinic.repository.ThuocSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +37,45 @@ public class ThuocService {
     @Transactional(readOnly = true)
     public List<ThuocDto> danhSachTatCa() {
         return thuocRepository.findAll().stream().map(this::sangDto).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ThuocDto> timKiem(
+            String tuKhoa,
+            String trangThai,
+            String donVi,
+            String dangBaoChe,
+            String duongDung,
+            String hangSanXuat,
+            String nuocSanXuat,
+            boolean tonThap,
+            LocalDate hanTu,
+            LocalDate hanDen,
+            BigDecimal giaBanTu,
+            BigDecimal giaBanDen,
+            Pageable pageable) {
+        List<Specification<Thuoc>> phan = new ArrayList<>();
+        themNeuCo(phan, ThuocSpecification.tuKhoaChua(tuKhoa));
+        themNeuCo(phan, ThuocSpecification.trangThaiHoatDong(trangThai));
+        themNeuCo(phan, ThuocSpecification.donViBang(donVi));
+        themNeuCo(phan, ThuocSpecification.dangBaoCheBang(dangBaoChe));
+        themNeuCo(phan, ThuocSpecification.duongDungBang(duongDung));
+        themNeuCo(phan, ThuocSpecification.hangSanXuatBang(hangSanXuat));
+        themNeuCo(phan, ThuocSpecification.nuocSanXuatBang(nuocSanXuat));
+        themNeuCo(phan, ThuocSpecification.chiTonThap(tonThap));
+        themNeuCo(phan, ThuocSpecification.hanSuDungTu(hanTu));
+        themNeuCo(phan, ThuocSpecification.hanSuDungDen(hanDen));
+        themNeuCo(phan, ThuocSpecification.giaBanTu(giaBanTu));
+        themNeuCo(phan, ThuocSpecification.giaBanDen(giaBanDen));
+        Specification<Thuoc> spec = phan.stream().reduce(Specification::and)
+                .orElseGet(() -> (root, q, cb) -> cb.conjunction());
+        return thuocRepository.findAll(spec, pageable).map(this::sangDto);
+    }
+
+    private static void themNeuCo(List<Specification<Thuoc>> list, Specification<Thuoc> s) {
+        if (s != null) {
+            list.add(s);
+        }
     }
 
     @Transactional(readOnly = true)

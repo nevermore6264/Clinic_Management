@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Table,
@@ -11,11 +11,12 @@ import {
   Modal,
   Row,
   Col,
+  Pagination,
 } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
 import { formatNgayDdMmYyyy } from "@/lib/formatInstantVi";
-import { thuocApi, type Thuoc } from "@/lib/api";
+import { thuocApi, type Thuoc, type ThuocTrangTraCuu } from "@/lib/api";
 import {
   formatVndInputMoneyUnit,
   parseVndInputMoney,

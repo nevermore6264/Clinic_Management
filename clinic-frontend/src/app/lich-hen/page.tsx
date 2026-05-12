@@ -92,7 +92,6 @@ function thoiDiemGioHenMs(ngayHen: string, gioHen?: string | null): number {
   return new Date(y, m - 1, d, hh, mm, 0, 0).getTime();
 }
 
-/** Khoảng thời gian (số giây) → chuỗi tiếng Việt; không dùng m:ss (dễ nhầm với giờ:phút). */
 function formatKhoangThoiGianBangTiengViet(tongGiay: number): string {
   const s = Math.max(0, Math.floor(tongGiay));
   if (s === 0) return "0 giây";

@@ -429,7 +429,7 @@ export default function ThuocPage() {
       <Card className="mb-3 card--static">
         <Card.Body className="py-3">
           <Row className="g-2 align-items-end">
-            <Col xs={12} md={5} lg={6}>
+            <Col xs={12} md={4} lg={4}>
               <Form.Label className="small text-muted mb-1">Từ khóa</Form.Label>
               <Form.Control
                 placeholder="Tên, hoạt chất, hàm lượng…"
@@ -437,7 +437,7 @@ export default function ThuocPage() {
                 onChange={(e) => setTuKhoa(e.target.value)}
               />
             </Col>
-            <Col xs={6} md={3} lg={2}>
+            <Col xs={6} md={2} lg={2}>
               <Form.Label className="small text-muted mb-1">
                 Trạng thái
               </Form.Label>
@@ -450,7 +450,7 @@ export default function ThuocPage() {
                 <option value="ngung">Ngừng</option>
               </Form.Select>
             </Col>
-            <Col xs={6} md={4} lg={3}>
+            <Col xs={6} md={3} lg={3}>
               <Form.Label className="small text-muted mb-1">Sắp xếp</Form.Label>
               <Form.Select
                 value={sapXep}
@@ -466,7 +466,7 @@ export default function ThuocPage() {
                 <option value="tonKho,desc">Tồn nhiều nhất</option>
               </Form.Select>
             </Col>
-            <Col xs={12} md={6} lg={3} className="d-flex align-items-end">
+            <Col xs={12} md={3} lg={3} className="d-flex align-items-end">
               <Button
                 variant="outline-secondary"
                 className="btn-clinic-clear-filter w-100"

@@ -66,7 +66,7 @@ public class HoaDonController {
     }
 
     @PostMapping("/{id}/payos")
-    @PreAuthorize("hasAnyRole('THU_NGAN','BENH_NHAN')")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','THU_NGAN','BENH_NHAN')")
     public ResponseEntity<PayOsTaoLinkPhanHoi> taoLinkPayOs(@PathVariable Long id) {
         return ResponseEntity.ok(payOsService.taoLinkChoHoaDon(id));
     }

@@ -14,15 +14,6 @@ export function laNhanVien(user: Pick<NguoiDung, "cacVaiTro"> | null): boolean {
   );
 }
 
-/** Quản trị hoặc lễ tân — chỉ ghi nhận thanh toán thủ công, không dùng PayOS QR trên màn chi tiết. */
-export function laQuanTriHoacLeTan(
-  user: Pick<NguoiDung, "cacVaiTro"> | null,
-): boolean {
-  if (!user?.cacVaiTro?.length) return false;
-  const r = user.cacVaiTro;
-  return r.includes("QUAN_TRI") || r.includes("LE_TAN");
-}
-
 export function laChiTaiKhoanBenhNhan(user: NguoiDung | null): boolean {
   if (!user?.cacVaiTro?.length) return false;
   return user.cacVaiTro.includes("BENH_NHAN") && !laNhanVien(user);

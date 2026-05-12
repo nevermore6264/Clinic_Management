@@ -128,7 +128,7 @@ function noiDungCotChoQuaGioHen(a: LichHen, dongHo: number) {
   }
   return (
     <span className="text-danger small fw-semibold">
-      Quá 15p — tự báo vắng…
+      Khách không đến
     </span>
   );
 }

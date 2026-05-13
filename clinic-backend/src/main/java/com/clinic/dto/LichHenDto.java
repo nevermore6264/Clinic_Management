@@ -19,6 +19,5 @@ public class LichHenDto {
     private LocalTime gioHen;
     private LichHen.TrangThaiLichHen trangThai;
     private String ghiChu;
-    /** Email bệnh nhân (hỗ trợ UI nhắc lịch); có thể null. */
     private String thuDienTuBenhNhan;
 }

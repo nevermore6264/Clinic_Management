@@ -1730,10 +1730,10 @@ function AppointmentsPageInner() {
                       </span>
                     </td>
                     <td className="text-end text-nowrap">
-                      <div className="d-inline-flex flex-wrap gap-1 justify-content-end">
+                      <div className="d-inline-flex flex-wrap gap-2 justify-content-end align-items-center">
                         <Link
                           href={`/lich-hen/${a.id}`}
-                          className="btn btn-sm btn-outline-primary"
+                          className="btn btn-sm btn-outline-primary text-decoration-none"
                         >
                           <i className="bi bi-arrow-right-circle me-1" />
                           Chi tiết
@@ -1741,9 +1741,9 @@ function AppointmentsPageInner() {
                         {coTheGuiEmailNhacLich && a.id != null ? (
                           <Button
                             type="button"
-                            variant="outline-secondary"
+                            variant="outline-primary"
                             size="sm"
-                            className="lich-hen-btn-gui-email-nhac d-inline-flex align-items-center gap-1"
+                            className="d-inline-flex align-items-center gap-1"
                             disabled={
                               guiEmailNhacDangXuLyId === a.id ||
                               a.trangThai === "HUY" ||

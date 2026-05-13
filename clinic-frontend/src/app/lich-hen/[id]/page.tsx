@@ -22,6 +22,7 @@ import {
 } from "@/lib/lichHenStatus";
 import { laBacSiKhongXemHoaDon, laChiTaiKhoanBenhNhan, laNhanVien } from "@/lib/roles";
 import { formatGioHen, formatNgayDdMmYyyy } from "@/lib/formatInstantVi";
+import { ThuocChonModal } from "@/components/ThuocChonModal";
 
 function newRow(maThuoc: number): ChiTietDonThuoc {
   return { maThuoc, soLuong: 1, lieuDung: "" };
@@ -38,6 +39,7 @@ export default function AppointmentDetailPage() {
   const [notes, setNotes] = useState("");
   const [rows, setRows] = useState<ChiTietDonThuoc[]>([]);
   const [thuocList, setThuocList] = useState<Thuoc[]>([]);
+  const [thuocModalRow, setThuocModalRow] = useState<number | null>(null);
   const [statusLog, setStatusLog] = useState<LichSuTrangThaiLichHen[]>([]);
   const [error, setError] = useState("");
 
@@ -325,22 +327,24 @@ export default function AppointmentDetailPage() {
                 <tbody>
                   {rows.map((row, idx) => (
                     <tr key={idx}>
-                      <td>
-                        <Form.Select
-                          value={row.maThuoc}
-                          onChange={(e) =>
-                            patchRow(idx, {
-                              maThuoc: Number(e.target.value),
-                            })
-                          }
-                        >
-                          {thuocList.map((t) => (
-                            <option key={t.id} value={t.id}>
-                              {t.tenThuoc}
-                              {t.donVi ? ` (${t.donVi})` : ""}
-                            </option>
-                          ))}
-                        </Form.Select>
+                      <td className="lich-hen-thuoc-chon-cell">
+                        <div className="d-flex flex-column gap-1 align-items-start">
+                          <span className="small text-break fw-medium text-body-secondary">
+                            {row.tenThuoc?.trim() ||
+                              thuocList.find((x) => x.id === row.maThuoc)?.tenThuoc?.trim() ||
+                              "—"}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="outline-primary"
+                            size="sm"
+                            className="d-inline-flex align-items-center gap-1"
+                            onClick={() => setThuocModalRow(idx)}
+                          >
+                            <i className="bi bi-capsule" aria-hidden />
+                            Chọn thuốc
+                          </Button>
+                        </div>
                       </td>
                       <td>
                         <Form.Control
@@ -417,6 +421,27 @@ export default function AppointmentDetailPage() {
           </Card.Body>
         </Card>
       ) : null}
+      <ThuocChonModal
+        show={thuocModalRow !== null}
+        onHide={() => setThuocModalRow(null)}
+        thuocList={thuocList}
+        selectedId={
+          thuocModalRow !== null ? rows[thuocModalRow]?.maThuoc ?? 0 : 0
+        }
+        title={
+          thuocModalRow !== null
+            ? `Chọn thuốc (dòng ${thuocModalRow + 1})`
+            : "Chọn thuốc"
+        }
+        onSelect={(maThuoc) => {
+          if (thuocModalRow === null) return;
+          const t = thuocList.find((x) => x.id === maThuoc);
+          patchRow(thuocModalRow, {
+            maThuoc,
+            tenThuoc: t?.tenThuoc,
+          });
+        }}
+      />
       <div className="mt-3 d-flex flex-wrap gap-2 align-items-center lich-hen-detail-actions">
         {user && laBacSiKhongXemHoaDon(user) ? (
           <Button

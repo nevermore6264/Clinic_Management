@@ -22,7 +22,7 @@ function NavLinkItem({
       as={Link}
       href={href}
       active={active}
-      className="align-items-center"
+      className="nav-clinic-link align-items-center"
     >
       <i className={`bi ${icon}`} aria-hidden />
       <span>{children}</span>
@@ -200,7 +200,7 @@ export function NavBar() {
             <span className="brand-mark">
               <i className="bi bi-heart-pulse-fill" aria-hidden />
             </span>
-            Phòng khám
+            <span className="brand-text">Phòng khám</span>
           </Navbar.Brand>
           <div
             className="loading-state__spinner"
@@ -216,11 +216,15 @@ export function NavBar() {
     return pathname === "/dang-nhap" ? null : (
       <Navbar variant="light" className="navbar-clinic" expand="md">
         <Container className="page-shell">
-          <Navbar.Brand as={Link} href="/" className="mb-0">
+          <Navbar.Brand
+            as={Link}
+            href="/"
+            className="mb-0 d-flex align-items-center gap-2"
+          >
             <span className="brand-mark">
               <i className="bi bi-heart-pulse-fill" aria-hidden />
             </span>
-            Phòng khám
+            <span className="brand-text">Phòng khám</span>
           </Navbar.Brand>
         </Container>
       </Navbar>
@@ -250,7 +254,7 @@ export function NavBar() {
           <span className="brand-mark">
             <i className="bi bi-heart-pulse-fill" aria-hidden />
           </span>
-          <span className="d-none d-sm-inline">Phòng khám</span>
+          <span className="d-none d-sm-inline brand-text">Phòng khám</span>
         </Navbar.Brand>
         <Navbar.Toggle
           aria-controls="nav-main"

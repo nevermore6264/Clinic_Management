@@ -1259,75 +1259,119 @@ html.app-ready body {
 }
 
 .navbar-clinic {
-  background: rgba(255, 255, 255, 0.92) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.05);
-  padding-top: 0.7rem !important;
-  padding-bottom: 0.7rem !important;
-  border-bottom: 1px solid rgba(37, 99, 235, 0.09);
+  --nav-clinic-pill-pad-x: 0.75rem;
+  --nav-clinic-pill-pad-y: 0.42rem;
+  position: relative;
+  z-index: 1030;
+  background: rgba(255, 255, 255, 0.94) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
+  padding-top: 0.65rem !important;
+  padding-bottom: 0.65rem !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.95);
 }
+
 .navbar-clinic .navbar-brand {
   font-weight: 800;
   letter-spacing: -0.03em;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   color: var(--clinic-navy) !important;
+  text-decoration: none;
 }
+
+.navbar-clinic .navbar-brand:hover {
+  color: var(--clinic-navy) !important;
+  opacity: 0.88;
+}
+
+.navbar-clinic .navbar-brand .brand-text {
+  display: inline-block;
+  color: var(--clinic-navy) !important;
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  filter: none;
+}
+
 .navbar-clinic .navbar-brand .brand-mark {
   width: 38px;
   height: 38px;
   border-radius: 11px;
-  background: linear-gradient(145deg, #60a5fa 0%, #3b82f6 40%, #2563eb 100%);
+  background: linear-gradient(145deg, #60a5fa 0%, #3b82f6 45%, #2563eb 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
   color: #fff;
   box-shadow:
-    0 2px 8px rgba(37, 99, 235, 0.28),
+    0 2px 8px rgba(37, 99, 235, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
-.navbar-clinic .nav-link {
-  position: relative;
-  border-radius: 8px;
-  padding: 0.45rem 0.65rem !important;
-  margin: 0 0.1rem;
+
+.navbar-clinic .navbar-brand:hover .brand-mark {
+  transform: scale(1.03);
+  box-shadow: 0 3px 12px rgba(37, 99, 235, 0.28);
+}
+
+.navbar-clinic .nav-link.nav-clinic-link {
+  border-radius: 10px;
+  padding: var(--nav-clinic-pill-pad-y) var(--nav-clinic-pill-pad-x) !important;
+  margin: 0 0.06rem;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--clinic-navy-mid) !important;
+  border: 1px solid transparent;
+  background: transparent;
   transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
+    background 0.15s ease,
+    color 0.15s ease;
 }
-.navbar-clinic .nav-link i {
-  opacity: 0.9;
-  font-size: 1rem;
+
+.navbar-clinic .nav-link.nav-clinic-link i {
+  opacity: 0.88;
+  font-size: 1.02rem;
 }
-.navbar-clinic .nav-link::after {
+
+.navbar-clinic .nav-link.nav-clinic-link::after {
   display: none;
 }
-.navbar-clinic .nav-link:hover {
-  background: var(--clinic-blue-faint);
+
+.navbar-clinic .nav-link.nav-clinic-link:hover {
+  background: rgba(241, 245, 249, 0.95);
   color: var(--clinic-blue-dark) !important;
 }
-.navbar-clinic .nav-link.active {
-  background: linear-gradient(
-    180deg,
-    rgba(59, 130, 246, 0.12) 0%,
-    rgba(37, 99, 235, 0.1) 100%
-  );
-  color: var(--clinic-blue-dark) !important;
-  font-weight: 600;
+
+.navbar-clinic .nav-link.nav-clinic-link:hover i {
+  opacity: 1;
+  color: var(--clinic-blue-dark);
 }
+
+.navbar-clinic .nav-link.nav-clinic-link.active {
+  background: rgba(219, 234, 254, 0.85);
+  border-color: rgba(147, 197, 253, 0.55);
+  color: var(--clinic-blue-dark) !important;
+  font-weight: 700;
+}
+
+.navbar-clinic .nav-link.nav-clinic-link.active i {
+  opacity: 1;
+  color: var(--clinic-blue-dark);
+}
+
 .navbar-clinic .dropdown-toggle::after {
   margin-left: 0.35em;
 }
+
 .navbar-clinic .btn-outline-light {
   border-radius: var(--clinic-radius-sm);
   font-weight: 600;
@@ -1335,6 +1379,7 @@ html.app-ready body {
   border-color: var(--clinic-border) !important;
   color: var(--clinic-navy-mid) !important;
 }
+
 .navbar-clinic .btn-outline-light:hover {
   background: var(--clinic-blue-faint);
   color: var(--clinic-blue-dark) !important;
@@ -1343,31 +1388,39 @@ html.app-ready body {
 
 .navbar-clinic .nav-user-dropdown .dropdown-toggle {
   color: var(--clinic-navy) !important;
-  padding: 0.32rem 0.52rem !important;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: rgba(255, 255, 255, 0.78);
-  transition: all 0.18s ease;
+  padding: 0.32rem 0.5rem !important;
+  border-radius: 10px;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
+
 .navbar-clinic .nav-user-dropdown .dropdown-toggle:hover {
-  border-color: rgba(37, 99, 235, 0.42);
-  background: #eff6ff;
+  border-color: rgba(148, 163, 184, 0.55);
+  background: #f8fafc;
 }
+
 .navbar-clinic .nav-user-dropdown .dropdown-toggle::after {
   vertical-align: 0.15em;
   margin-left: 0.25rem;
 }
+
 .navbar-clinic .nav-user-dropdown .dropdown-menu {
-  border-radius: var(--clinic-radius-sm);
-  box-shadow: var(--clinic-shadow-lg);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
   border: 1px solid var(--clinic-border);
-  margin-top: 0.5rem !important;
+  margin-top: 0.45rem !important;
+  padding: 0.3rem;
 }
+
 .navbar-clinic .nav-user-dropdown .dropdown-item {
-  border-radius: 6px;
-  margin: 0.15rem 0.35rem;
+  border-radius: 8px;
+  margin: 0.1rem 0.25rem;
   width: auto;
+  font-weight: 500;
 }
+
 .navbar-clinic .nav-user-dropdown .dropdown-item:active {
   background: var(--clinic-blue-soft);
   color: var(--clinic-navy);
@@ -1375,53 +1428,76 @@ html.app-ready body {
 
 .navbar-clinic .nav-quan-ly-dropdown .dropdown-toggle {
   color: var(--clinic-navy-mid) !important;
-  padding: 0.45rem 0.65rem !important;
-  border-radius: 8px;
+  padding: var(--nav-clinic-pill-pad-y) var(--nav-clinic-pill-pad-x) !important;
+  border-radius: 10px;
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
   display: inline-flex !important;
   align-items: center;
   gap: 0.4rem;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
+
 .navbar-clinic .nav-quan-ly-dropdown .dropdown-toggle::after {
   margin-left: 0.2rem;
 }
-.navbar-clinic .nav-quan-ly-dropdown .dropdown-toggle:hover,
-.navbar-clinic .nav-quan-ly-dropdown--active .dropdown-toggle {
-  background: var(--clinic-blue-faint);
+
+.navbar-clinic .nav-quan-ly-dropdown .dropdown-toggle:hover {
+  background: rgba(241, 245, 249, 0.95);
   color: var(--clinic-blue-dark) !important;
-  font-weight: 600;
 }
+
+.navbar-clinic .nav-quan-ly-dropdown--active .dropdown-toggle {
+  background: rgba(219, 234, 254, 0.9);
+  border-color: rgba(147, 197, 253, 0.55);
+  color: var(--clinic-blue-dark) !important;
+  font-weight: 700;
+}
+
+.navbar-clinic .nav-quan-ly-dropdown--active .dropdown-toggle::after {
+  border-top-color: var(--clinic-blue-dark);
+}
+
+.navbar-clinic .nav-quan-ly-dropdown--active .dropdown-toggle:hover {
+  background: rgba(219, 234, 254, 0.95);
+  color: var(--clinic-blue-dark) !important;
+  border-color: rgba(147, 197, 253, 0.6);
+}
+
 .navbar-clinic .nav-quan-ly-dropdown .dropdown-menu {
   min-width: 15.5rem;
-  border-radius: var(--clinic-radius-sm);
-  box-shadow: var(--clinic-shadow-lg);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
   border: 1px solid var(--clinic-border);
-  margin-top: 0.45rem !important;
-  padding-top: 0.25rem;
-  padding-bottom: 0.35rem;
+  margin-top: 0.4rem !important;
+  padding: 0.3rem 0.35rem 0.4rem;
 }
+
 .navbar-clinic .nav-quan-ly-dropdown .dropdown-item {
   font-size: 0.88rem;
   font-weight: 500;
-  padding: 0.45rem 0.85rem;
+  padding: 0.42rem 0.8rem;
   display: flex;
   align-items: center;
+  border-radius: 8px;
+  margin: 0.05rem 0.12rem;
 }
+
 .navbar-clinic .nav-quan-ly-dropdown .dropdown-item i {
   opacity: 0.88;
   width: 1.25rem;
   text-align: center;
 }
+
 .navbar-clinic .nav-quan-ly-dropdown .dropdown-item.active {
-  background: linear-gradient(
-    180deg,
-    rgba(59, 130, 246, 0.14) 0%,
-    rgba(37, 99, 235, 0.1) 100%
-  );
+  background: rgba(219, 234, 254, 0.95);
   color: var(--clinic-blue-dark) !important;
   font-weight: 600;
+  border: 1px solid transparent;
 }
+
 .navbar-clinic .nav-quan-ly-dropdown .dropdown-header {
   font-size: 0.65rem !important;
   letter-spacing: 0.06em;
@@ -1432,13 +1508,19 @@ html.app-ready body {
   flex-direction: column;
   align-items: flex-end;
   justify-content: center;
-  padding: 0.42rem 0.75rem;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(226, 232, 240, 0.92);
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
-  line-height: 1.1;
-  min-width: 135px;
+  padding: 0.4rem 0.7rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: none;
+  line-height: 1.15;
+  min-width: 130px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.nav-user-summary:hover {
+  border-color: rgba(148, 163, 184, 0.55);
+  background: #f8fafc;
 }
 
 .nav-user-summary__name {
@@ -1462,16 +1544,38 @@ html.app-ready body {
 
 .nav-user-trigger i {
   font-size: 1.1rem !important;
-  color: var(--clinic-navy);
+  color: var(--clinic-navy-mid);
 }
 
 .navbar-clinic .navbar-toggler {
-  border-color: var(--clinic-border);
+  border: 1px solid var(--clinic-border);
   padding: 0.4rem 0.55rem;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: none;
 }
+
+.navbar-clinic .navbar-toggler:focus {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
 .navbar-clinic .navbar-toggler-icon {
   filter: none;
   opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navbar-clinic .navbar-brand .brand-mark,
+  .navbar-clinic .nav-link.nav-clinic-link,
+  .navbar-clinic .nav-link.nav-clinic-link i,
+  .navbar-clinic .nav-user-dropdown .dropdown-toggle,
+  .navbar-clinic .nav-quan-ly-dropdown .dropdown-toggle {
+    transition: none !important;
+  }
+
+  .navbar-clinic .navbar-brand:hover .brand-mark {
+    transform: none;
+  }
 }
 
 .app-footer {
@@ -7948,6 +8052,11 @@ html.app-ready body {
 .lich-hen-detail-page .lich-hen-remove-row-thuoc:active {
   transform: translateY(0);
   box-shadow: none;
+}
+
+.lich-hen-detail-page .lich-hen-thuoc-chon-cell {
+  min-width: min(100%, 280px);
+  vertical-align: top;
 }
 
 .lich-hen-detail-page .lich-hen-status-log-scroll {

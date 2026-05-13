@@ -43,21 +43,19 @@ function StatCard({
         } as CSSProperties
       }
     >
-      <Card.Body className="p-4">
-        <div className="d-flex justify-content-between align-items-start gap-3">
-          <div>
-            <div className="stat-label mb-2">{label}</div>
-            <div className="stat-value">{value}</div>
-            {hint ? (
-              <div className="small text-muted mt-2 mb-0" style={{ maxWidth: "14rem" }}>
-                {hint}
-              </div>
-            ) : null}
+      <Card.Body className="stat-card__body d-flex flex-column h-100 p-4">
+        <div className="stat-card__top flex-grow-1 d-flex justify-content-between align-items-start gap-3">
+          <div className="flex-grow-1" style={{ minWidth: 0 }}>
+            <div className="stat-label stat-card__label mb-2">{label}</div>
+            <div className="stat-value stat-card__value">{value}</div>
           </div>
-          <div className="stat-icon flex-shrink-0">
-            <i className={`bi ${icon}`} aria-hidden />
+          <div className="stat-icon flex-shrink-0" aria-hidden>
+            <i className={`bi ${icon}`} />
           </div>
         </div>
+        {hint ? (
+          <div className="stat-card__hint mt-3 pt-3">{hint}</div>
+        ) : null}
       </Card.Body>
     </Card>
   );

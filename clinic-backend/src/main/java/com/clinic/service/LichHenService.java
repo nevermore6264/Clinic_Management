@@ -229,21 +229,29 @@ public class LichHenService {
         if (coNghi) {
             return Set.of();
         }
-        int thu = ngay.getDayOfWeek().getValue();
-        List<Integer> thuCanKiemTra = new ArrayList<>();
-        thuCanKiemTra.add(thu);
-        int thuChuNhatDangSo0 = thu % 7;
-        if (!thuCanKiemTra.contains(thuChuNhatDangSo0)) {
-            thuCanKiemTra.add(thuChuNhatDangSo0);
-        }
-        Set<LocalTime> ketQua = lichLamViecCoDinhRepository.findByBacSiIdAndThuTrongTuanIn(maBacSi, thuCanKiemTra).stream()
-                .flatMap(x -> tachTheoCa1Gio(x.getKhungGioBatDau(), x.getKhungGioKetThuc()).stream())
-                .collect(Collectors.toCollection(HashSet::new));
         List<LichNgoaiLe> doiGio = ngoaiLe.stream()
                 .filter(x -> x.getLoaiNgoaiLe() == LichNgoaiLe.LoaiNgoaiLe.DOI_GIO)
                 .toList();
-        for (LichNgoaiLe item : doiGio) {
-            ketQua.addAll(tachTheoCa1Gio(item.getGioBatDau(), item.getGioKetThuc()));
+
+        Set<LocalTime> ketQua;
+        if (!doiGio.isEmpty()) {
+            // Có ít nhất một ca DOI_GIO: ngày đó thay khung làm việc so với mẫu tuần — chỉ lấy slot từ
+            // các ca ngoại lệ (hợp nhất), không ghép thêm lịch cố định (trùng mục đích tab "Ca ngoại lệ").
+            ketQua = new HashSet<>();
+            for (LichNgoaiLe item : doiGio) {
+                ketQua.addAll(tachTheoCa1Gio(item.getGioBatDau(), item.getGioKetThuc()));
+            }
+        } else {
+            int thu = ngay.getDayOfWeek().getValue();
+            List<Integer> thuCanKiemTra = new ArrayList<>();
+            thuCanKiemTra.add(thu);
+            int thuChuNhatDangSo0 = thu % 7;
+            if (!thuCanKiemTra.contains(thuChuNhatDangSo0)) {
+                thuCanKiemTra.add(thuChuNhatDangSo0);
+            }
+            ketQua = lichLamViecCoDinhRepository.findByBacSiIdAndThuTrongTuanIn(maBacSi, thuCanKiemTra).stream()
+                    .flatMap(x -> tachTheoCa1Gio(x.getKhungGioBatDau(), x.getKhungGioKetThuc()).stream())
+                    .collect(Collectors.toCollection(() -> new HashSet<LocalTime>()));
         }
 
         // Fallback cho các bác sĩ có "lịch legacy" (đang được quản lý tại /lich-lam-viec-bac-si)
@@ -253,7 +261,7 @@ public class LichHenService {
             if (legacy != null && !legacy.isEmpty()) {
                 return legacy.stream()
                         .flatMap(x -> tachTheoCa1Gio(x.getKhungGioBatDau(), x.getKhungGioKetThuc()).stream())
-                        .collect(Collectors.toCollection(HashSet::new));
+                        .collect(Collectors.toCollection(() -> new HashSet<LocalTime>()));
             }
         }
 

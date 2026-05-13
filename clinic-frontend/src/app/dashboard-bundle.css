@@ -1060,3 +1060,57 @@
   background: rgba(37, 99, 235, 0.1);
   color: #1d4ed8;
 }
+
+.bao-cao-page--charts-only {
+  padding-bottom: 2rem;
+}
+
+.bao-cao-chart-toolbar {
+  background: linear-gradient(120deg, #0f172a 0%, #1e3a5f 55%, #1e293b 100%);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
+}
+
+.bao-cao-toolbar-label {
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.08em;
+}
+
+.bao-cao-date-input {
+  max-width: 155px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.bao-cao-date-input:focus {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(96, 165, 250, 0.65);
+  color: #fff;
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+}
+
+.bao-cao-charts-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.bao-cao-chart-card--solo {
+  min-height: 340px;
+}
+
+.bao-cao-bars--tall {
+  min-height: 280px;
+}
+
+.bao-cao-bars--tall .bao-cao-bar-col {
+  height: 280px;
+}
+
+.bao-cao-bar--tx {
+  background: linear-gradient(180deg, #34d399 0%, #059669 55%, #047857 100%) !important;
+  box-shadow: 0 6px 14px rgba(5, 150, 105, 0.28);
+}

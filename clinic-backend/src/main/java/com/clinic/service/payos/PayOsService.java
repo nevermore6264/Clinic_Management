@@ -15,10 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -31,6 +34,7 @@ public class PayOsService {
     private final PayOsProperties payOsProperties;
     private final HoaDonService hoaDonService;
     private final PayOsDonHangRepository payOsDonHangRepository;
+    private final PayOsWebhookService payOsWebhookService;
     private final ObjectMapper objectMapper;
 
     @Value("${app.frontend-url:http://localhost:4009}")
@@ -144,5 +148,95 @@ public class PayOsService {
             }
         }
         throw new RuntimeException("Không sinh được mã đơn PayOS duy nhất.");
+    }
+
+    @Transactional
+    public HoaDonDto dongBoThanhToanTuPayOs(Long maHoaDon) {
+        if (!payOsProperties.daCauHinh()) {
+            throw new RuntimeException("PayOS chưa cấu hình (app.payos.client-id, api-key, checksum-key).");
+        }
+        hoaDonService.layTheoMa(maHoaDon);
+        PayOsDonHang dong = payOsDonHangRepository
+                .findTopByMaHoaDonOrderByIdDesc(maHoaDon)
+                .orElseThrow(() -> new RuntimeException("Chưa có link thanh toán PayOS cho hóa đơn này."));
+        long dongId = dong.getId();
+        PayOsDonHang dh = payOsDonHangRepository.findById(dongId).orElseThrow();
+
+        if (dh.isDaXuLyWebhook()) {
+            return hoaDonService.layTheoMa(maHoaDon);
+        }
+
+        String idPath = (dh.getPaymentLinkId() != null && !dh.getPaymentLinkId().isBlank())
+                ? dh.getPaymentLinkId().trim()
+                : String.valueOf(dh.getOrderCode());
+        String idEncoded = UriUtils.encodePathSegment(idPath, StandardCharsets.UTF_8);
+
+        JsonNode tree;
+        try {
+            String resp = RestClient.create()
+                    .get()
+                    .uri(PAYOS_TAO_LINK + "/" + idEncoded)
+                    .header("x-client-id", payOsProperties.getClientId().trim())
+                    .header("x-api-key", payOsProperties.getApiKey().trim())
+                    .retrieve()
+                    .body(String.class);
+            tree = objectMapper.readTree(resp);
+        } catch (Exception e) {
+            log.warn("PayOS đồng bộ: không đọc được phản hồi API: {}", e.getMessage());
+            return hoaDonService.layTheoMa(maHoaDon);
+        }
+
+        if (!"00".equals(tree.path("code").asText(""))) {
+            log.warn("PayOS đồng bộ: code={} desc={}", tree.path("code").asText(""), tree.path("desc").asText(""));
+            return hoaDonService.layTheoMa(maHoaDon);
+        }
+
+        JsonNode data = tree.get("data");
+        if (data == null || !data.isObject()) {
+            return hoaDonService.layTheoMa(maHoaDon);
+        }
+
+        String sig = tree.path("signature").asText("");
+        if (!PayOsKyTu.chuKyWebhookHopLe(data, sig, payOsProperties.getChecksumKey().trim())) {
+            log.warn("PayOS đồng bộ: chữ ký phản hồi không hợp lệ");
+            return hoaDonService.layTheoMa(maHoaDon);
+        }
+
+        dh = payOsDonHangRepository.findById(dongId).orElse(dh);
+        if (dh.isDaXuLyWebhook()) {
+            return hoaDonService.layTheoMa(maHoaDon);
+        }
+
+        String status = data.path("status").asText("");
+        int amountPaid = data.path("amountPaid").asInt(0);
+        int orderAmount = data.path("amount").asInt(dh.getSoTienVnd());
+
+        boolean daThanhToanDu = "PAID".equalsIgnoreCase(status)
+                || (amountPaid > 0 && orderAmount > 0 && amountPaid >= orderAmount);
+        boolean underpaidCoTien = "UNDERPAID".equalsIgnoreCase(status) && amountPaid > 0;
+
+        if (!daThanhToanDu && !underpaidCoTien) {
+            return hoaDonService.layTheoMa(maHoaDon);
+        }
+
+        int soTienAp = amountPaid > 0 ? amountPaid : Math.max(orderAmount, dh.getSoTienVnd());
+        soTienAp = Math.min(soTienAp, dh.getSoTienVnd());
+
+        String maThamChieu = maThamChieuTuGiaoDichGet(data, dh.getOrderCode());
+        payOsWebhookService.ghiNhanTuDonHangNeuChuaXuLy(dh, soTienAp, maThamChieu);
+        return hoaDonService.layTheoMa(maHoaDon);
+    }
+
+    private static String maThamChieuTuGiaoDichGet(JsonNode data, int orderCode) {
+        JsonNode tx = data.get("transactions");
+        if (tx != null && tx.isArray()) {
+            for (int i = tx.size() - 1; i >= 0; i--) {
+                String ref = tx.get(i).path("reference").asText("");
+                if (ref != null && !ref.isBlank()) {
+                    return ref.trim();
+                }
+            }
+        }
+        return "PAYOS-" + orderCode;
     }
 }

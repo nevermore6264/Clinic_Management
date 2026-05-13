@@ -50,6 +50,8 @@ export default function InvoiceDetailPage() {
   const [payOs, setPayOs] = useState<PayOsTaoLinkPhanHoi | null>(null);
   const [payOsLoading, setPayOsLoading] = useState(false);
 
+  const [dongBoBusy, setDongBoBusy] = useState(false);
+
   useEffect(() => {
     setPayOs(null);
   }, [id]);
@@ -77,16 +79,67 @@ export default function InvoiceDetailPage() {
     if (!user || !id || typeof window === "undefined") return;
     const sp = new URLSearchParams(window.location.search);
     const q = sp.get("payos");
-    if (q === "success") {
-      invoicesApi
-        .get(id)
-        .then(setInv)
-        .catch((e) => setError(e.message));
+    if (q === "cancel") {
       router.replace(`/hoa-don/${id}`);
-    } else if (q === "cancel") {
-      router.replace(`/hoa-don/${id}`);
+      return;
     }
+    if (q !== "success") return;
+
+    let cancelled = false;
+    const maxTicks = 24;
+
+    const remainingOf = (u: HoaDon) => {
+      const tong = Number(u.tongTien);
+      const da = Number(u.soTienDaTra);
+      return (Number.isFinite(tong) ? tong : 0) - (Number.isFinite(da) ? da : 0);
+    };
+
+    const run = async () => {
+      setDongBoBusy(true);
+      try {
+        for (let i = 0; i < maxTicks && !cancelled; i++) {
+          try {
+            const u = await invoicesApi.syncPayOs(id);
+            if (cancelled) break;
+            setInv(u);
+            setError("");
+            if (remainingOf(u) <= 0.000001) break;
+          } catch (e: unknown) {
+            if (!cancelled) {
+              setError(e instanceof Error ? e.message : "Đồng bộ PayOS thất bại");
+            }
+            break;
+          }
+          if (cancelled || i === maxTicks - 1) break;
+          await new Promise((r) => setTimeout(r, 2500));
+        }
+      } finally {
+        if (!cancelled) {
+          setDongBoBusy(false);
+          router.replace(`/hoa-don/${id}`);
+        }
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+      setDongBoBusy(false);
+    };
   }, [user, id, router]);
+
+  const dongBoMotLan = async () => {
+    setDongBoBusy(true);
+    setError("");
+    try {
+      const u = await invoicesApi.syncPayOs(id);
+      setInv(u);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Đồng bộ PayOS thất bại");
+    } finally {
+      setDongBoBusy(false);
+    }
+  };
 
   const submitPayment = async () => {
     const amount = parseVndInput(payAmount);
@@ -194,9 +247,13 @@ export default function InvoiceDetailPage() {
             <div className="mb-4 pb-4 border-bottom">
               <p className="fw-semibold mb-2">Trực tuyến (PayOS)</p>
                 <p className="text-muted small mb-3">
-                  Tạo mã QR hoặc link để khách quét / thanh toán PayOS. Sau khi
-                  PayOS xác nhận, hệ thống tự ghi nhận (webhook).
+                  PayOS có thể gửi <strong>webhook</strong> tới máy chủ công khai để ghi nhận tự động.
+                  Trên localhost hoặc khi chưa cấu hình URL webhook, sau khi khách thanh toán hãy bấm{" "}
+                  <strong>Đồng bộ trạng thái PayOS</strong> — hệ thống sẽ hỏi trực tiếp PayOS (API lấy
+                  thông tin link). Khi quay lại từ PayOS với <code>?payos=success</code>, trang cũng tự
+                  đồng bộ vài lần cho tới khi đủ tiền hoặc hết thời gian chờ.
                 </p>
+                <div className="d-flex flex-wrap gap-2 align-items-center">
                 <Button
                   variant="primary"
                   className="d-inline-flex align-items-center gap-2"
@@ -210,6 +267,17 @@ export default function InvoiceDetailPage() {
                       ? "Tạo QR / link mới"
                       : "Tạo QR / link thanh toán"}
                 </Button>
+                <Button
+                  type="button"
+                  variant="outline-primary"
+                  className="d-inline-flex align-items-center gap-2"
+                  disabled={dongBoBusy || payOsLoading}
+                  onClick={() => void dongBoMotLan()}
+                >
+                  <i className="bi bi-arrow-repeat" aria-hidden />
+                  {dongBoBusy ? "Đang đồng bộ…" : "Đồng bộ trạng thái PayOS"}
+                </Button>
+                </div>
                 {payOs && (
                   <div className="mt-3">
                     {payOs.qrCode ? (
@@ -244,6 +312,7 @@ export default function InvoiceDetailPage() {
                         {payOs.accountName || null}
                       </p>
                     )}
+                    <div className="d-flex flex-wrap gap-2 mt-3">
                     <Button
                       variant="success"
                       className="d-inline-flex align-items-center gap-2"
@@ -254,6 +323,17 @@ export default function InvoiceDetailPage() {
                       <i className="bi bi-box-arrow-up-right" aria-hidden />
                       Mở trang thanh toán PayOS
                     </Button>
+                    <Button
+                      type="button"
+                      variant="outline-secondary"
+                      className="d-inline-flex align-items-center gap-2"
+                      disabled={dongBoBusy}
+                      onClick={() => void dongBoMotLan()}
+                    >
+                      <i className="bi bi-arrow-repeat" aria-hidden />
+                      Cập nhật sau khi quét QR
+                    </Button>
+                    </div>
                   </div>
                 )}
               </div>

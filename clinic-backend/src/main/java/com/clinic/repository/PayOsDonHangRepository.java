@@ -9,4 +9,6 @@ public interface PayOsDonHangRepository extends JpaRepository<PayOsDonHang, Long
     Optional<PayOsDonHang> findByOrderCode(int orderCode);
 
     boolean existsByOrderCode(int orderCode);
+
+    Optional<PayOsDonHang> findTopByMaHoaDonOrderByIdDesc(Long maHoaDon);
 }

@@ -77,6 +77,28 @@ public class PayOsWebhookService {
             log.warn("PayOS webhook: amount {} khác số đã tạo link {}", amountFromHook, dh.getSoTienVnd());
         }
 
+        String maThamChieu = data.path("reference").asText("");
+        if (maThamChieu == null || maThamChieu.isBlank()) {
+            maThamChieu = "PAYOS-" + orderCode;
+        }
+        ghiNhanTuDonHangNeuChuaXuLy(dh, amountFromHook, maThamChieu);
+    }
+
+    /**
+     * Ghi nhận thanh toán cho một đơn PayOS đã lưu (webhook hoặc đồng bộ chủ động qua API PayOS).
+     */
+    @Transactional
+    public void ghiNhanTuDonHangNeuChuaXuLy(PayOsDonHang dh, int soTienTuPayOsVnd, String maThamChieuGoiY) {
+        if (dh.isDaXuLyWebhook()) {
+            return;
+        }
+        if (soTienTuPayOsVnd <= 0) {
+            return;
+        }
+        if (soTienTuPayOsVnd != dh.getSoTienVnd()) {
+            log.warn("PayOS: số tiền {} khác số đã tạo link {}", soTienTuPayOsVnd, dh.getSoTienVnd());
+        }
+
         HoaDonDto hd = hoaDonService.layTheoMaNoiBo(dh.getMaHoaDon());
         BigDecimal conLai = hd.getTongTien().subtract(hd.getSoTienDaTra());
         if (conLai.compareTo(BigDecimal.ZERO) <= 0) {
@@ -85,16 +107,15 @@ public class PayOsWebhookService {
             return;
         }
 
-        BigDecimal soTien = BigDecimal.valueOf(Math.min(amountFromHook, dh.getSoTienVnd()));
+        BigDecimal soTien = BigDecimal.valueOf(Math.min(soTienTuPayOsVnd, dh.getSoTienVnd()));
         soTien = soTien.min(conLai);
         if (soTien.compareTo(BigDecimal.ZERO) <= 0) {
             return;
         }
 
-        String maThamChieu = data.path("reference").asText("");
-        if (maThamChieu == null || maThamChieu.isBlank()) {
-            maThamChieu = "PAYOS-" + orderCode;
-        }
+        String maThamChieu = maThamChieuGoiY != null && !maThamChieuGoiY.isBlank()
+                ? maThamChieuGoiY.trim()
+                : "PAYOS-" + dh.getOrderCode();
 
         GiaoDichThanhToanDto g = new GiaoDichThanhToanDto();
         g.setSoTien(soTien);

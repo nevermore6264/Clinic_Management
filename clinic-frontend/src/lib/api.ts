@@ -452,6 +452,8 @@ export const hoaDonApi = {
     api<PayOsTaoLinkPhanHoi>(`/hoa-don/${maHoaDon}/payos`, {
       method: "POST",
     }),
+  dongBoPayOs: (maHoaDon: number) =>
+    api<HoaDon>(`/hoa-don/${maHoaDon}/payos/dong-bo`, { method: "POST" }),
 };
 
 export const baoCaoApi = {
@@ -848,6 +850,7 @@ export const invoicesApi = {
     });
   },
   createPayOsLink: hoaDonApi.taoPayOsLink,
+  syncPayOs: hoaDonApi.dongBoPayOs,
 };
 export const reportsApi = {
   ...baoCaoApi,

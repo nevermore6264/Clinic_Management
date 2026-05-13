@@ -70,4 +70,10 @@ public class HoaDonController {
     public ResponseEntity<PayOsTaoLinkPhanHoi> taoLinkPayOs(@PathVariable Long id) {
         return ResponseEntity.ok(payOsService.taoLinkChoHoaDon(id));
     }
+
+    @PostMapping("/{id}/payos/dong-bo")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','THU_NGAN','BENH_NHAN')")
+    public ResponseEntity<HoaDonDto> dongBoPayOs(@PathVariable Long id) {
+        return ResponseEntity.ok(payOsService.dongBoThanhToanTuPayOs(id));
+    }
 }

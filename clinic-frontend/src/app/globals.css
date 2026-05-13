@@ -8028,58 +8028,63 @@ html.app-ready body {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  gap: 0.28rem;
+  gap: 0.4rem;
   width: auto !important;
   min-width: unset;
   max-width: 100%;
   height: auto !important;
   min-height: calc(1.5em + 0.5rem + 2px);
-  padding: 0.28rem 0.6rem !important;
-  border-radius: var(--clinic-radius-sm, 8px);
-  border: 1px solid rgba(248, 113, 113, 0.85) !important;
-  background: #fff !important;
-  color: #b91c1c !important;
+  padding: 0.38rem 0.95rem !important;
+  border-radius: 9999px;
+  border: none !important;
+  background: #ef4444 !important;
+  color: #fff !important;
   box-shadow: none;
   line-height: 1.2;
   font-size: 0.8125rem;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   vertical-align: middle;
   flex-shrink: 0;
   transform: none !important;
 }
 .lich-hen-remove-row-thuoc .bi {
-  font-size: 0.88rem;
-  font-weight: 700;
+  font-size: 0.95rem;
   line-height: 1;
   flex-shrink: 0;
-  margin-top: 0.5px;
+  color: inherit;
 }
 .lich-hen-remove-row-thuoc span {
   line-height: 1;
+  color: inherit;
 }
 .lich-hen-remove-row-thuoc:hover {
-  background: #fef2f2 !important;
-  border-color: #ef4444 !important;
-  color: #991b1b !important;
-  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.12);
+  background: #dc2626 !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
   transform: none !important;
 }
 .lich-hen-remove-row-thuoc:focus-visible {
   transform: none !important;
-  box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.2);
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 4px rgba(220, 38, 38, 0.55);
   outline: none;
 }
 .lich-hen-remove-row-thuoc:active {
   transform: none !important;
+  background: #b91c1c !important;
+  color: #fff !important;
   box-shadow: none;
-  background: #fee2e2 !important;
 }
 .lich-hen-remove-row-thuoc:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
   transform: none !important;
   box-shadow: none;
+  background: #fca5a5 !important;
+  color: rgba(255, 255, 255, 0.92) !important;
 }
 
 .lich-hen-detail-page .lich-hen-thuoc-chon-cell {

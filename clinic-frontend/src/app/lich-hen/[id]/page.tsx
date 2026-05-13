@@ -433,7 +433,7 @@ export default function AppointmentDetailPage() {
                             title="Xóa dòng thuốc"
                             aria-label="Xóa dòng thuốc"
                           >
-                            <i className="bi bi-x-lg" aria-hidden />
+                            <i className="bi bi-trash" aria-hidden />
                             <span>Xóa</span>
                           </button>
                         </td>

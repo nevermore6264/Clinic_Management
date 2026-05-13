@@ -330,7 +330,7 @@ function NewInvoicePageInner() {
                           style={{ width: 80 }}
                         />
                       </td>
-                      <td className="align-middle text-center">
+                      <td className="lich-hen-don-thuoc-del-cell">
                           <button
                             type="button"
                             className="btn btn-sm lich-hen-remove-row-thuoc"
@@ -338,7 +338,7 @@ function NewInvoicePageInner() {
                             onClick={() => removeItem(i)}
                             title="Xóa dòng dịch vụ"
                           >
-                            <i className="bi bi-x-lg" aria-hidden />
+                            <i className="bi bi-trash" aria-hidden />
                             <span>Xóa</span>
                           </button>
                       </td>

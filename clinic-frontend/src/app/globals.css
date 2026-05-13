@@ -8028,41 +8028,57 @@ html.app-ready body {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
+  gap: 0.28rem;
   width: auto !important;
-  min-width: 4.5rem;
+  min-width: unset;
+  max-width: 100%;
   height: auto !important;
-  padding: 0.32rem 0.55rem !important;
+  min-height: calc(1.5em + 0.5rem + 2px);
+  padding: 0.28rem 0.6rem !important;
   border-radius: var(--clinic-radius-sm, 8px);
-  border: 1.5px solid #fecaca !important;
-  background: linear-gradient(180deg, #fff 0%, #fff5f5 100%) !important;
-  color: #dc2626 !important;
-  box-shadow: 0 1px 2px rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.85) !important;
+  background: #fff !important;
+  color: #b91c1c !important;
+  box-shadow: none;
   line-height: 1.2;
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: 0.8125rem;
+  font-weight: 600;
   white-space: nowrap;
+  vertical-align: middle;
+  flex-shrink: 0;
+  transform: none !important;
 }
 .lich-hen-remove-row-thuoc .bi {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 0.5px;
+}
+.lich-hen-remove-row-thuoc span {
   line-height: 1;
 }
 .lich-hen-remove-row-thuoc:hover {
-  background: linear-gradient(180deg, #fef2f2 0%, #fee2e2 100%) !important;
-  border-color: #f87171 !important;
-  color: #b91c1c !important;
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.18);
-  transform: translateY(-1px);
+  background: #fef2f2 !important;
+  border-color: #ef4444 !important;
+  color: #991b1b !important;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.12);
+  transform: none !important;
+}
+.lich-hen-remove-row-thuoc:focus-visible {
+  transform: none !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.2);
+  outline: none;
 }
 .lich-hen-remove-row-thuoc:active {
-  transform: translateY(0);
+  transform: none !important;
   box-shadow: none;
+  background: #fee2e2 !important;
 }
 .lich-hen-remove-row-thuoc:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
+  transform: none !important;
   box-shadow: none;
 }
 
@@ -8092,6 +8108,17 @@ html.app-ready body {
   text-align: center;
 }
 
+.lich-hen-detail-page .lich-hen-don-thuoc-del-cell {
+  width: 1%;
+  white-space: nowrap;
+  vertical-align: middle !important;
+  text-align: center;
+  padding: 0.4rem 0.45rem !important;
+}
+.lich-hen-detail-page .lich-hen-don-thuoc-del-cell .lich-hen-remove-row-thuoc {
+  margin: 0 auto;
+}
+
 .lich-hen-detail-page .lich-hen-thuoc-cell-block {
   min-width: 0;
 }
@@ -8103,6 +8130,7 @@ html.app-ready body {
   letter-spacing: -0.01em;
 }
 
+.thuoc-chon-modal-dialog.modal-lg {
   max-width: min(720px, 96vw);
 }
 .thuoc-chon-modal .modal-header {

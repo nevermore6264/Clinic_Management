@@ -425,7 +425,7 @@ export default function AppointmentDetailPage() {
                             }
                           />
                         </td>
-                        <td className="align-middle text-center">
+                        <td className="lich-hen-don-thuoc-del-cell">
                           <button
                             type="button"
                             className="btn btn-sm lich-hen-remove-row-thuoc"

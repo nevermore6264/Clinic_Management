@@ -44,6 +44,7 @@ import {
   laChiTaiKhoanBenhNhan,
   laChiTaiKhoanBacSiXemLichHomNay,
   laCoTuDongBaoVangLichHen,
+  laDuocGuiEmailNhacLichThuCong,
 } from "@/lib/roles";
 import { consumeLandingBookingDraft } from "@/lib/landingBookingDraft";
 import {
@@ -247,6 +248,9 @@ function AppointmentsPageInner() {
   const [locTrangThaiBang, setLocTrangThaiBang] = useState("");
   const [locGiaiDoan, setLocGiaiDoan] = useState("");
   const [viewMode, setViewMode] = useState<"bang" | "lich">("bang");
+  const [guiEmailNhacDangXuLyId, setGuiEmailNhacDangXuLyId] = useState<
+    number | null
+  >(null);
 
   const resetDatLichForm = useCallback(() => {
     setPatientId(maBenhNhanParam ? String(Number(maBenhNhanParam)) : "");
@@ -360,6 +364,22 @@ function AppointmentsPageInner() {
     () => !!user && !chiTaiKhoanBn && laCoTuDongBaoVangLichHen(user),
     [user, chiTaiKhoanBn],
   );
+
+  const coTheGuiEmailNhacLich = useMemo(
+    () => !!user && !chiTaiKhoanBn && laDuocGuiEmailNhacLichThuCong(user),
+    [user, chiTaiKhoanBn],
+  );
+
+  const handleGuiEmailNhacLich = useCallback(async (maLichHen: number) => {
+    setGuiEmailNhacDangXuLyId(maLichHen);
+    try {
+      await appointmentsApi.guiEmailNhacLich(maLichHen);
+    } catch {
+      /* api() đã notify lỗi */
+    } finally {
+      setGuiEmailNhacDangXuLyId(null);
+    }
+  }, []);
 
   const openDatLichModal = useCallback(() => {
     if (user && laChiTaiKhoanBacSiXemLichHomNay(user)) return;
@@ -1710,14 +1730,47 @@ function AppointmentsPageInner() {
                         {metaBang.label}
                       </span>
                     </td>
-                    <td className="text-end">
-                      <Link
-                        href={`/lich-hen/${a.id}`}
-                        className="btn btn-sm btn-outline-primary"
-                      >
-                        <i className="bi bi-arrow-right-circle me-1" />
-                        Chi tiết
-                      </Link>
+                    <td className="text-end text-nowrap">
+                      <div className="d-inline-flex flex-wrap gap-1 justify-content-end">
+                        <Link
+                          href={`/lich-hen/${a.id}`}
+                          className="btn btn-sm btn-outline-primary"
+                        >
+                          <i className="bi bi-arrow-right-circle me-1" />
+                          Chi tiết
+                        </Link>
+                        {coTheGuiEmailNhacLich && a.id != null ? (
+                          <Button
+                            type="button"
+                            variant="outline-secondary"
+                            size="sm"
+                            className="lich-hen-btn-gui-email-nhac d-inline-flex align-items-center gap-1"
+                            disabled={
+                              guiEmailNhacDangXuLyId === a.id ||
+                              a.trangThai === "HUY" ||
+                              a.trangThai === "VANG" ||
+                              !String(a.thuDienTuBenhNhan ?? "").trim()
+                            }
+                            title={
+                              !String(a.thuDienTuBenhNhan ?? "").trim()
+                                ? "Bệnh nhân chưa có email trên hồ sơ"
+                                : "Gửi email nhắc lịch cho bệnh nhân"
+                            }
+                            onClick={() => handleGuiEmailNhacLich(a.id!)}
+                          >
+                            {guiEmailNhacDangXuLyId === a.id ? (
+                              <span
+                                className="spinner-border spinner-border-sm"
+                                role="status"
+                                aria-hidden
+                              />
+                            ) : (
+                              <i className="bi bi-envelope" aria-hidden />
+                            )}
+                            Email nhắc
+                          </Button>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                   );

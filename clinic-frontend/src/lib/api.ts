@@ -272,6 +272,11 @@ export const lichHenApi = {
     }),
   lichSuTrangThai: (id: number) =>
     api<LichSuTrangThaiLichHen[]>(`/lich-hen/${id}/lich-su-trang-thai`),
+  guiEmailNhacLich: (id: number) =>
+    api<void>(`/lich-hen/${id}/gui-email-nhac`, {
+      method: "POST",
+      notifySuccessMessage: "Đã gửi email nhắc lịch cho bệnh nhân.",
+    }),
 };
 
 export const hoSoKhamApi = {
@@ -932,6 +937,8 @@ export interface LichHen {
   id?: number;
   maBenhNhan: number;
   tenBenhNhan?: string;
+  /** Email bệnh nhân (API trả kèm danh sách lịch để bật/tắt gửi nhắc). */
+  thuDienTuBenhNhan?: string | null;
   maBacSi: number;
   tenBacSi?: string;
   maDichVu: number;

@@ -288,6 +288,7 @@ public class LichHenService {
         dto.setGioHen(lh.getGioHen());
         dto.setTrangThai(lh.getTrangThai());
         dto.setGhiChu(lh.getGhiChu());
+        dto.setThuDienTuBenhNhan(lh.getBenhNhan().getThuDienTu());
         return dto;
     }
 }

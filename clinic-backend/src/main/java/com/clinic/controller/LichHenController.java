@@ -6,6 +6,7 @@ import com.clinic.dto.BacSiSlotKhaDungDto;
 import com.clinic.entity.LichHen;
 import com.clinic.service.LichHenService;
 import com.clinic.service.LichSuTrangThaiLichHenService;
+import com.clinic.service.NhacLichHenService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,7 @@ public class LichHenController {
 
     private final LichHenService lichHenService;
     private final LichSuTrangThaiLichHenService lichSuTrangThaiLichHenService;
+    private final NhacLichHenService nhacLichHenService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','BAC_SI','THU_NGAN')")
@@ -80,5 +82,12 @@ public class LichHenController {
     public ResponseEntity<LichHenDto> capNhatTrangThai(
             @PathVariable Long id, @RequestParam LichHen.TrangThaiLichHen trangThai) {
         return ResponseEntity.ok(lichHenService.capNhatTrangThai(id, trangThai));
+    }
+
+    @PostMapping("/{id}/gui-email-nhac")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','THU_NGAN')")
+    public ResponseEntity<Void> guiEmailNhacThuCong(@PathVariable Long id) {
+        nhacLichHenService.guiNhacThuCong(id);
+        return ResponseEntity.ok().build();
     }
 }

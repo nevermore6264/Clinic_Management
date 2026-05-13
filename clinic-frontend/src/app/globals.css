@@ -7757,6 +7757,69 @@ html.app-ready body {
   opacity: 0.92;
 }
 
+/* Nút gửi email nhắc lịch (danh sách lịch hẹn — nhân viên) */
+.lich-hen-page .lich-hen-btn-gui-email-nhac.btn {
+  --lich-hen-mail-bg1: #f0fdfa;
+  --lich-hen-mail-bg2: #ccfbf1;
+  --lich-hen-mail-border: rgba(13, 148, 136, 0.42);
+  --lich-hen-mail-text: #0f766e;
+  border-radius: 999px !important;
+  border: 1px solid var(--lich-hen-mail-border) !important;
+  padding: 0.34rem 0.85rem !important;
+  font-weight: 700 !important;
+  font-size: 0.78rem !important;
+  letter-spacing: 0.03em;
+  color: var(--lich-hen-mail-text) !important;
+  background: linear-gradient(
+    180deg,
+    var(--lich-hen-mail-bg1) 0%,
+    var(--lich-hen-mail-bg2) 100%
+  ) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.75) inset,
+    0 2px 8px rgba(13, 148, 136, 0.12);
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+.lich-hen-page .lich-hen-btn-gui-email-nhac.btn .bi {
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.95;
+}
+.lich-hen-page .lich-hen-btn-gui-email-nhac.btn .spinner-border-sm {
+  width: 0.95rem;
+  height: 0.95rem;
+  border-width: 0.14em;
+  color: #0d9488;
+}
+.lich-hen-page .lich-hen-btn-gui-email-nhac.btn:hover:not(:disabled) {
+  --lich-hen-mail-bg1: #ccfbf1;
+  --lich-hen-mail-bg2: #99f6e4;
+  --lich-hen-mail-border: #2dd4bf;
+  --lich-hen-mail-text: #115e59;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.85) inset,
+    0 4px 14px rgba(13, 148, 136, 0.22);
+}
+.lich-hen-page .lich-hen-btn-gui-email-nhac.btn:focus-visible {
+  box-shadow:
+    0 0 0 3px rgba(45, 212, 191, 0.35),
+    0 2px 8px rgba(13, 148, 136, 0.15);
+  outline: none;
+}
+.lich-hen-page .lich-hen-btn-gui-email-nhac.btn:active:not(:disabled) {
+  box-shadow: 0 1px 2px rgba(13, 148, 136, 0.15) inset;
+}
+.lich-hen-page .lich-hen-btn-gui-email-nhac.btn:disabled {
+  opacity: 0.48;
+  filter: grayscale(0.2);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
 .lich-hen-detail-page .lich-hen-status-tag--da-dat,
 .patient-create-modal .lich-hen-status-tag--da-dat,
 .patient-portal-lichen .lich-hen-status-tag--da-dat,

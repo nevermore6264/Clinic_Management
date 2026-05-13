@@ -9,6 +9,7 @@ import com.clinic.repository.LichHenRepository;
 import com.clinic.repository.NhatKyNhacLichRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -31,6 +32,9 @@ public class NhacLichHenService {
     private final LichHenRepository khoLichHen;
     private final JavaMailSender mailSender;
 
+    @Value("${spring.mail.username:}")
+    private String mailTu;
+
     @Transactional(readOnly = true)
     public CauHinhNhacLichDto layCauHinh() {
         List<CauHinhNhacLich> tatCa = khoCauHinh.findAll(PageRequest.of(0, 1)).getContent();
@@ -47,6 +51,36 @@ public class NhacLichHenService {
         cauHinh.setBatThuDienTu(dto.isBatThuDienTu());
         cauHinh = khoCauHinh.save(cauHinh);
         return sangDto(cauHinh);
+    }
+
+    @Transactional
+    public void guiNhacThuCong(Long maLichHen) {
+        if (mailTu == null || mailTu.isBlank()) {
+            throw new IllegalStateException("Chưa cấu hình gửi email (spring.mail.username).");
+        }
+        LichHen lh = khoLichHen.findById(maLichHen)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch hẹn."));
+        if (lh.getTrangThai() == LichHen.TrangThaiLichHen.HUY
+                || lh.getTrangThai() == LichHen.TrangThaiLichHen.VANG) {
+            throw new IllegalArgumentException("Không gửi nhắc cho lịch đã hủy hoặc vắng.");
+        }
+        String thu = lh.getBenhNhan().getThuDienTu();
+        if (thu == null || thu.isBlank()) {
+            throw new IllegalArgumentException("Bệnh nhân chưa có email trên hồ sơ.");
+        }
+        try {
+            SimpleMailMessage tin = taoTinNhac(lh, true);
+            mailSender.send(tin);
+        } catch (Exception e) {
+            log.warn("Gửi email nhắc lịch thủ công thất bại: {}", e.getMessage());
+            throw new IllegalStateException("Gửi email thất bại: " + e.getMessage());
+        }
+        if (khoNhatKy.findByLichHenIdAndKenh(lh.getId(), NhatKyNhacLich.KenhNhac.THU_DIEN_TU).isEmpty()) {
+            khoNhatKy.save(NhatKyNhacLich.builder()
+                    .lichHen(lh)
+                    .kenh(NhatKyNhacLich.KenhNhac.THU_DIEN_TU)
+                    .build());
+        }
     }
 
     @Scheduled(cron = "0 */15 * * * *")
@@ -76,12 +110,7 @@ public class NhacLichHenService {
                 String thu = lh.getBenhNhan().getThuDienTu();
                 if (thu == null || thu.isBlank()) continue;
                 try {
-                    SimpleMailMessage tin = new SimpleMailMessage();
-                    tin.setTo(thu);
-                    tin.setSubject("Nhắc lịch khám - " + lh.getNgayHen() + " " + lh.getGioHen());
-                    tin.setText("Kính gửi " + lh.getBenhNhan().getHoTen() + ",\n\nPhòng khám nhắc bạn có lịch khám vào "
-                            + lh.getNgayHen() + " lúc " + lh.getGioHen()
-                            + " với bác sĩ. Vui lòng có mặt đúng giờ.\n\nTrân trọng.");
+                    SimpleMailMessage tin = taoTinNhac(lh, false);
                     mailSender.send(tin);
                     khoNhatKy.save(NhatKyNhacLich.builder()
                             .lichHen(lh)
@@ -109,5 +138,24 @@ public class NhacLichHenService {
         dto.setSoGioTruoc(2);
         dto.setBatThuDienTu(true);
         return dto;
+    }
+
+    private SimpleMailMessage taoTinNhac(LichHen lh, boolean thuCong) {
+        SimpleMailMessage tin = new SimpleMailMessage();
+        if (mailTu != null && !mailTu.isBlank()) {
+            tin.setFrom(mailTu);
+        }
+        tin.setTo(lh.getBenhNhan().getThuDienTu());
+        tin.setSubject("Nhắc lịch khám - " + lh.getNgayHen() + " " + lh.getGioHen());
+        StringBuilder noi = new StringBuilder();
+        noi.append("Kính gửi ").append(lh.getBenhNhan().getHoTen()).append(",\n\nPhòng khám nhắc bạn có lịch khám vào ")
+                .append(lh.getNgayHen()).append(" lúc ").append(lh.getGioHen())
+                .append(" với bác sĩ. Vui lòng có mặt đúng giờ.\n");
+        if (thuCong) {
+            noi.append("\n(Tin nhắn được gửi thủ công từ quầy tiếp nhận.)\n");
+        }
+        noi.append("\nTrân trọng.");
+        tin.setText(noi.toString());
+        return tin;
     }
 }

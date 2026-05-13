@@ -375,7 +375,6 @@ function AppointmentsPageInner() {
     try {
       await appointmentsApi.guiEmailNhacLich(maLichHen);
     } catch {
-      /* api() đã notify lỗi */
     } finally {
       setGuiEmailNhacDangXuLyId(null);
     }

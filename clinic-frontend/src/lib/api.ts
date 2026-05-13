@@ -937,7 +937,6 @@ export interface LichHen {
   id?: number;
   maBenhNhan: number;
   tenBenhNhan?: string;
-  /** Email bệnh nhân (API trả kèm danh sách lịch để bật/tắt gửi nhắc). */
   thuDienTuBenhNhan?: string | null;
   maBacSi: number;
   tenBacSi?: string;

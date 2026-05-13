@@ -7757,7 +7757,6 @@ html.app-ready body {
   opacity: 0.92;
 }
 
-/* Nút gửi email nhắc lịch (danh sách lịch hẹn — nhân viên) */
 .lich-hen-page .lich-hen-btn-gui-email-nhac.btn {
   --lich-hen-mail-bg1: #f0fdfa;
   --lich-hen-mail-bg2: #ccfbf1;

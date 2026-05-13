@@ -65,7 +65,6 @@ export function laCoTuDongBaoVangLichHen(
   return r.includes("QUAN_TRI") || r.includes("LE_TAN") || r.includes("BAC_SI");
 }
 
-/** Quầy / thu ngân / quản trị: gửi email nhắc lịch thủ công từ danh sách lịch hẹn. */
 export function laDuocGuiEmailNhacLichThuCong(
   user: Pick<NguoiDung, "cacVaiTro"> | null,
 ): boolean {

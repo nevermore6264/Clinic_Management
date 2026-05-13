@@ -1,3 +1,9 @@
+-- MySQL dump 10.13  Distrib 8.0.34, for Win64 (x86_64)
+--
+-- Host: localhost    Database: clinic_management
+-- ------------------------------------------------------
+-- Server version	5.7.44-log
+
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -85,7 +91,7 @@ CREATE TABLE `benh_nhan` (
 
 LOCK TABLES `benh_nhan` WRITE;
 /*!40000 ALTER TABLE `benh_nhan` DISABLE KEYS */;
-INSERT INTO `benh_nhan` VALUES (1,'2026-05-02 13:48:23.068661','303 Lưu Văn Lang Hoà Hải Ngũ Hành Sơn Đà Nẵng','Nguyễn Văn Hiếu',_binary '','1997-03-14','0862478150','2026-04-30 22:01:26.103552','hieupikas2606@gmail.com',NULL,'Không','NAM','Nhân viên văn phòng','Tướng Thị Quế','A','168570382','0364982843','Không'),(2,'2026-05-02 18:30:01.762705','','Nguyễn Văn Quý',_binary '',NULL,'0364982843','2026-04-30 22:01:43.511145','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(3,'2026-05-02 18:30:09.078467','','Phạm Văn Khoa',_binary '',NULL,'0984452108','2026-04-30 22:26:51.825181','',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL),(4,'2026-05-11 11:22:25.080740','Số 24 Trần Phú, Phường Hải Châu 1, Quận Hải Châu, TP. Đà Nẵng','Tướng Thị Quế',_binary '','2004-06-20','0364982843','2026-05-11 06:52:46.529828','nevermore6264@gmail.com',9,'Hải sản, đậu phộng, trứng, sữa.','NU','Thu ngân siêu thị','Tướng Chí Vỹ','A','168570382','0984452108','Cao huyết áp, đái tháo đường, bệnh tim mạch, hen suyễn, bệnh gan/thận....Thời gian phát hiện và phương pháp điều trị.'),(5,'2026-05-11 07:51:43.663492','','Trần Văn Vinh',_binary '',NULL,'','2026-05-11 07:51:43.663492','',NULL,'','','','','','','',''),(6,'2026-05-11 07:51:55.050083','','Nguyễn Văn Thoại',_binary '',NULL,'','2026-05-11 07:51:55.050083','',NULL,'','','','','','','',''),(7,'2026-05-11 07:52:03.792738','','Đào Văn Dũng',_binary '',NULL,'','2026-05-11 07:52:03.792738','',NULL,'','','','','','','',''),(8,'2026-05-11 07:52:15.624951','','Nguyễn Đăng Hải Hoàng',_binary '',NULL,'','2026-05-11 07:52:15.624951','',NULL,'','','','','','','',''),(9,'2026-05-11 07:55:41.551791','','Ngô Văn Đức',_binary '',NULL,'','2026-05-11 07:55:41.551791','',NULL,'','','','','','','',''),(10,'2026-05-11 07:55:55.855485','','Chế Văn Hoàng',_binary '',NULL,'','2026-05-11 07:55:55.855485','',NULL,'','','','','','','',''),(11,'2026-05-11 07:58:23.665901','','Lương Ngọc Hùng',_binary '',NULL,'','2026-05-11 07:58:23.665901','',NULL,'','','','','','','',''),(12,'2026-05-11 07:59:58.471664','','Bùi Thị Minh Quý',_binary '',NULL,'','2026-05-11 07:59:58.471664','',NULL,'','','','','','','',''),(13,'2026-05-11 19:33:10.721294','','Trần Võ Thành Nhân',_binary '',NULL,'','2026-05-11 19:33:10.721294','',NULL,'','','','','','','',''),(14,'2026-05-11 19:33:33.943842','','Lưu Diệp Phàm',_binary '',NULL,'','2026-05-11 19:33:33.943842','',NULL,'','','','','','','',''),(15,'2026-05-11 19:33:48.490868','','Âu Chúc Thanh Phương',_binary '',NULL,'','2026-05-11 19:33:48.490868','',NULL,'','','','','','','',''),(16,'2026-05-11 19:33:57.828628','','Nghệ Mạn Thiên',_binary '',NULL,'','2026-05-11 19:33:57.828628','',NULL,'','','','','','','',''),(17,'2026-05-11 19:34:07.669735','','Lưu Văn Châu Kỳ',_binary '',NULL,'','2026-05-11 19:34:07.669735','',NULL,'','','','','','','',''),(18,'2026-05-11 19:34:59.760996','','Phạm Thiên Kim',_binary '',NULL,'','2026-05-11 19:34:59.760996','',NULL,'','','','','','','',''),(19,'2026-05-11 19:35:30.359600','','Phạm Ngọc Mai',_binary '',NULL,'','2026-05-11 19:35:30.359600','',NULL,'','','','','','','',''),(20,'2026-05-11 19:35:37.447585','','Nguyễn Uyển Dư',_binary '',NULL,'','2026-05-11 19:35:37.447585','',NULL,'','','','','','','',''),(21,'2026-05-11 19:35:44.396580','','Hồ Hiếu An',_binary '',NULL,'','2026-05-11 19:35:44.396580','',NULL,'','','','','','','',''),(22,'2026-05-11 19:35:51.454748','','Lý Đăng Khoa',_binary '',NULL,'','2026-05-11 19:35:51.454748','',NULL,'','','','','','','',''),(23,'2026-05-11 19:35:58.828435','','Trần Thanh Phong',_binary '',NULL,'','2026-05-11 19:35:58.828435','',NULL,'','','','','','','',''),(24,'2026-05-11 19:36:17.549329','','Nguyễn Anh Khôi',_binary '',NULL,'','2026-05-11 19:36:17.549329','',NULL,'','','','','','','','');
+INSERT INTO `benh_nhan` VALUES (1,'2026-05-02 13:48:23.068661','303 Lưu Văn Lang Hoà Hải Ngũ Hành Sơn Đà Nẵng','Nguyễn Văn Hiếu',_binary '','1997-03-14','0862478150','2026-04-30 22:01:26.103552','hieupikas2606@gmail.com',NULL,'Không','NAM','Nhân viên văn phòng','Tướng Thị Quế','A','168570382','0364982843','Không'),(2,'2026-05-02 18:30:01.762705','119 Trần Phú, Hải Châu 1, Hải Châu, Đà Nẵng','Nguyễn Văn Quý',_binary '','1988-11-02','0364982843','2026-04-30 22:01:43.511145','benhnhan2@placeholder.clinic',NULL,'Không','NAM','Lái xe','Người nhà (chưa cập nhật chi tiết)','O',NULL,'0364982843','Không'),(3,'2026-05-02 18:30:09.078467','290 Hùng Vương, Vĩnh Trung, Hải Châu, Đà Nẵng','Phạm Văn Khoa',_binary '','1991-07-15','0984452108','2026-04-30 22:26:51.825181','benhnhan3@placeholder.clinic',NULL,'Không','NAM','Kinh doanh','Người nhà (chưa cập nhật chi tiết)','O',NULL,'0984452108','Không'),(4,'2026-05-11 11:22:25.080740','Số 24 Trần Phú, Phường Hải Châu 1, Quận Hải Châu, TP. Đà Nẵng','Tướng Thị Quế',_binary '','2004-06-20','0364982843','2026-05-11 06:52:46.529828','nevermore6264@gmail.com',9,'Hải sản, đậu phộng, trứng, sữa.','NU','Thu ngân siêu thị','Tướng Chí Vỹ','A','168570382','0984452108','Cao huyết áp, đái tháo đường, bệnh tim mạch, hen suyễn, bệnh gan/thận....Thời gian phát hiện và phương pháp điều trị.'),(5,'2026-05-11 07:51:43.663492','6 Nại Nam, Hòa Cường Bắc, Hải Châu, Đà Nẵng','Trần Văn Vinh',_binary '','1994-01-20','0901000005','2026-05-11 07:51:43.663492','benhnhan5@placeholder.clinic',NULL,'Không','NAM','Lao động tự do','Chưa cập nhật','O',NULL,'0901000005','Không'),(6,'2026-05-11 07:51:55.050083','257 Hùng Vương, Vĩnh Trung, Thanh Khê, Đà Nẵng','Nguyễn Văn Thoại',_binary '','1993-09-08','0901000006','2026-05-11 07:51:55.050083','benhnhan6@placeholder.clinic',NULL,'Không','NAM','Công nhân','Chưa cập nhật','O',NULL,'0901000006','Không'),(7,'2026-05-11 07:52:03.792738','Nguyễn Văn Linh, Phước Ninh, Hải Châu, Đà Nẵng','Đào Văn Dũng',_binary '','1992-04-12','0901000007','2026-05-11 07:52:03.792738','benhnhan7@placeholder.clinic',NULL,'Không','NAM','Nhân viên văn phòng','Chưa cập nhật','O',NULL,'0901000007','Không'),(8,'2026-05-11 07:52:15.624951','Chưa cập nhật (Đà Nẵng)','Nguyễn Đăng Hải Hoàng',_binary '','1996-12-01','0901000008','2026-05-11 07:52:15.624951','benhnhan8@placeholder.clinic',NULL,'Không','NAM','Học sinh / sinh viên','Chưa cập nhật','O',NULL,'0901000008','Không'),(9,'2026-05-11 07:55:41.551791','Chưa cập nhật (Đà Nẵng)','Ngô Văn Đức',_binary '','1995-03-18','0901000009','2026-05-11 07:55:41.551791','benhnhan9@placeholder.clinic',NULL,'Không','NAM','Lao động tự do','Chưa cập nhật','O',NULL,'0901000009','Không'),(10,'2026-05-11 07:55:55.855485','Chưa cập nhật (Đà Nẵng)','Chế Văn Hoàng',_binary '','1990-08-25','0901000010','2026-05-11 07:55:55.855485','benhnhan10@placeholder.clinic',NULL,'Không','NAM','Kỹ thuật viên','Chưa cập nhật','O',NULL,'0901000010','Không'),(11,'2026-05-11 07:58:23.665901','Chưa cập nhật (Đà Nẵng)','Lương Ngọc Hùng',_binary '','1993-06-14','0901000011','2026-05-11 07:58:23.665901','benhnhan11@placeholder.clinic',NULL,'Không','NAM','Kinh doanh','Chưa cập nhật','O',NULL,'0901000011','Không'),(12,'2026-05-11 07:59:58.471664','Chưa cập nhật (Đà Nẵng)','Bùi Thị Minh Quý',_binary '','2001-02-28','0901000012','2026-05-11 07:59:58.471664','benhnhan12@placeholder.clinic',NULL,'Không','NU','Nhân viên văn phòng','Chưa cập nhật','O',NULL,'0901000012','Không'),(13,'2026-05-11 19:33:10.721294','Chưa cập nhật (Đà Nẵng)','Trần Võ Thành Nhân',_binary '','1997-10-05','0901000013','2026-05-11 19:33:10.721294','benhnhan13@placeholder.clinic',NULL,'Không','NAM','Lao động tự do','Chưa cập nhật','O',NULL,'0901000013','Không'),(14,'2026-05-11 19:33:33.943842','Chưa cập nhật (Đà Nẵng)','Lưu Diệp Phàm',_binary '','1994-11-30','0901000014','2026-05-11 19:33:33.943842','benhnhan14@placeholder.clinic',NULL,'Không','NAM','Lao động tự do','Chưa cập nhật','O',NULL,'0901000014','Không'),(15,'2026-05-11 19:33:48.490868','Chưa cập nhật (Đà Nẵng)','Âu Chúc Thanh Phương',_binary '','2000-05-22','0901000015','2026-05-11 19:33:48.490868','benhnhan15@placeholder.clinic',NULL,'Không','NU','Học sinh / sinh viên','Chưa cập nhật','O',NULL,'0901000015','Không'),(16,'2026-05-11 19:33:57.828628','Chưa cập nhật (Đà Nẵng)','Nghệ Mạn Thiên',_binary '','1998-07-07','0901000016','2026-05-11 19:33:57.828628','benhnhan16@placeholder.clinic',NULL,'Không','KHAC','Lao động tự do','Chưa cập nhật','O',NULL,'0901000016','Không'),(17,'2026-05-11 19:34:07.669735','Chưa cập nhật (Đà Nẵng)','Lưu Văn Châu Kỳ',_binary '','1991-01-16','0901000017','2026-05-11 19:34:07.669735','benhnhan17@placeholder.clinic',NULL,'Không','NAM','Công nhân','Chưa cập nhật','O',NULL,'0901000017','Không'),(18,'2026-05-11 19:34:59.760996','Chưa cập nhật (Đà Nẵng)','Phạm Thiên Kim',_binary '','1999-04-09','0901000018','2026-05-11 19:34:59.760996','benhnhan18@placeholder.clinic',NULL,'Không','NU','Nhân viên văn phòng','Chưa cập nhật','O',NULL,'0901000018','Không'),(19,'2026-05-11 19:35:30.359600','Chưa cập nhật (Đà Nẵng)','Phạm Ngọc Mai',_binary '','2002-08-19','0901000019','2026-05-11 19:35:30.359600','benhnhan19@placeholder.clinic',NULL,'Không','NU','Học sinh / sinh viên','Chưa cập nhật','O',NULL,'0901000019','Không'),(20,'2026-05-11 19:35:37.447585','Chưa cập nhật (Đà Nẵng)','Nguyễn Uyển Dư',_binary '','2003-03-03','0901000020','2026-05-11 19:35:37.447585','benhnhan20@placeholder.clinic',NULL,'Không','NU','Học sinh / sinh viên','Chưa cập nhật','O',NULL,'0901000020','Không'),(21,'2026-05-11 19:35:44.396580','Chưa cập nhật (Đà Nẵng)','Hồ Hiếu An',_binary '','1996-06-21','0901000021','2026-05-11 19:35:44.396580','benhnhan21@placeholder.clinic',NULL,'Không','NAM','Nhân viên văn phòng','Chưa cập nhật','O',NULL,'0901000021','Không'),(22,'2026-05-11 19:35:51.454748','Chưa cập nhật (Đà Nẵng)','Lý Đăng Khoa',_binary '','1995-12-12','0901000022','2026-05-11 19:35:51.454748','benhnhan22@placeholder.clinic',NULL,'Không','NAM','Kỹ thuật viên','Chưa cập nhật','O',NULL,'0901000022','Không'),(23,'2026-05-11 19:35:58.828435','Chưa cập nhật (Đà Nẵng)','Trần Thanh Phong',_binary '','1992-02-02','0901000023','2026-05-11 19:35:58.828435','benhnhan23@placeholder.clinic',NULL,'Không','NAM','Kinh doanh','Chưa cập nhật','O',NULL,'0901000023','Không'),(24,'2026-05-11 19:36:17.549329','Chưa cập nhật (Đà Nẵng)','Nguyễn Anh Khôi',_binary '','2010-11-11','0901000024','2026-05-11 19:36:17.549329','benhnhan24@placeholder.clinic',NULL,'Không','NAM','Học sinh / sinh viên','Chưa cập nhật','O',NULL,'0901000024','Không');
 /*!40000 ALTER TABLE `benh_nhan` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -135,8 +141,10 @@ CREATE TABLE `chi_tiet_don_thuoc` (
   PRIMARY KEY (`id`),
   KEY `FKcl6odejgr99y2hydvtkia4mbi` (`ma_ho_so_kham`),
   KEY `FKel5h0l6cue78wbo96t36srrtf` (`ma_thuoc`),
+  KEY `FKrstqqtjiw6nv964wsun1sld3k` (`ma_don_thuoc`),
   CONSTRAINT `FKcl6odejgr99y2hydvtkia4mbi` FOREIGN KEY (`ma_ho_so_kham`) REFERENCES `ho_so_kham` (`id`),
-  CONSTRAINT `FKel5h0l6cue78wbo96t36srrtf` FOREIGN KEY (`ma_thuoc`) REFERENCES `thuoc` (`id`)
+  CONSTRAINT `FKel5h0l6cue78wbo96t36srrtf` FOREIGN KEY (`ma_thuoc`) REFERENCES `thuoc` (`id`),
+  CONSTRAINT `FKrstqqtjiw6nv964wsun1sld3k` FOREIGN KEY (`ma_don_thuoc`) REFERENCES `don_thuoc` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -146,7 +154,6 @@ CREATE TABLE `chi_tiet_don_thuoc` (
 
 LOCK TABLES `chi_tiet_don_thuoc` WRITE;
 /*!40000 ALTER TABLE `chi_tiet_don_thuoc` DISABLE KEYS */;
-INSERT INTO `chi_tiet_don_thuoc` VALUES (10,0.00,'Sau ăn',1,1,1,0),(11,0.00,'Sau ăn',1,1,2,0),(12,0.00,'Trước ăn',1,1,3,0),(13,0.00,'Sau ăn',1,2,1,0);
 /*!40000 ALTER TABLE `chi_tiet_don_thuoc` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -169,7 +176,7 @@ CREATE TABLE `chi_tiet_hoa_don` (
   KEY `FKk49dolcd69qi88u6a25i9x2e` (`ma_hoa_don`),
   CONSTRAINT `FKcosd9dsdme9663m1ors1jkqux` FOREIGN KEY (`ma_dich_vu`) REFERENCES `dich_vu` (`id`),
   CONSTRAINT `FKk49dolcd69qi88u6a25i9x2e` FOREIGN KEY (`ma_hoa_don`) REFERENCES `hoa_don` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -178,7 +185,7 @@ CREATE TABLE `chi_tiet_hoa_don` (
 
 LOCK TABLES `chi_tiet_hoa_don` WRITE;
 /*!40000 ALTER TABLE `chi_tiet_hoa_don` DISABLE KEYS */;
-INSERT INTO `chi_tiet_hoa_don` VALUES (1,150000.00,1,150000.00,1,1),(2,180000.00,1,180000.00,3,1),(3,180000.00,1,180000.00,3,3);
+INSERT INTO `chi_tiet_hoa_don` VALUES (1,150000.00,1,150000.00,1,1),(2,180000.00,1,180000.00,3,1),(3,180000.00,1,180000.00,3,3),(4,2000.00,1,2000.00,11,4);
 /*!40000 ALTER TABLE `chi_tiet_hoa_don` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -257,7 +264,7 @@ CREATE TABLE `don_thuoc` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_2v40hovd5j3k1v5399a93tpc2` (`ma_ho_so_kham`),
   CONSTRAINT `FKrwxwljx6mubt2633nbc5cdl7t` FOREIGN KEY (`ma_ho_so_kham`) REFERENCES `ho_so_kham` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -320,7 +327,7 @@ CREATE TABLE `ho_so_kham` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_cqq8dw4gppaqjmuwdol7tvi8l` (`ma_lich_hen`),
   CONSTRAINT `FKlb04etpbagv4q3nskyye4e5sl` FOREIGN KEY (`ma_lich_hen`) REFERENCES `lich_hen` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -355,7 +362,7 @@ CREATE TABLE `hoa_don` (
   KEY `FKlrjsa6evj8wj1q4rqcifme2hf` (`ma_benh_nhan`),
   CONSTRAINT `FK9mtn33pej1vxmos28jxcscv65` FOREIGN KEY (`ma_lich_hen`) REFERENCES `lich_hen` (`id`),
   CONSTRAINT `FKlrjsa6evj8wj1q4rqcifme2hf` FOREIGN KEY (`ma_benh_nhan`) REFERENCES `benh_nhan` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -364,7 +371,7 @@ CREATE TABLE `hoa_don` (
 
 LOCK TABLES `hoa_don` WRITE;
 /*!40000 ALTER TABLE `hoa_don` DISABLE KEYS */;
-INSERT INTO `hoa_don` VALUES (1,'2026-05-02 19:20:41.686606','HD-1777748931198',330000.00,'2026-05-02 19:08:51.198420',330000.00,'DA_THANH_TOAN',1,1),(3,'2026-05-02 20:36:00.566186','HD-1777754160556',0.00,'2026-05-02 20:36:00.556188',180000.00,'CHO_THANH_TOAN',2,2);
+INSERT INTO `hoa_don` VALUES (1,'2026-05-02 19:20:41.686606','HD-1777748931198',330000.00,'2026-05-02 19:08:51.198420',330000.00,'DA_THANH_TOAN',1,1),(3,'2026-05-02 20:36:00.566186','HD-1777754160556',0.00,'2026-05-02 20:36:00.556188',180000.00,'CHO_THANH_TOAN',2,2),(4,'2026-05-13 21:05:42.785219','HD-1778706342773',0.00,'2026-05-13 21:05:42.773217',2000.00,'CHO_THANH_TOAN',11,10);
 /*!40000 ALTER TABLE `hoa_don` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -393,7 +400,7 @@ CREATE TABLE `lich_hen` (
   CONSTRAINT `FK14y4w4a4rs2x9yjwf02e6rhm4` FOREIGN KEY (`ma_bac_si`) REFERENCES `bac_si` (`id`),
   CONSTRAINT `FK86nvsujvgwkrbud0vjuog5bpo` FOREIGN KEY (`ma_benh_nhan`) REFERENCES `benh_nhan` (`id`),
   CONSTRAINT `FKbwl9gbpyfiheog25lkxh3y6nh` FOREIGN KEY (`ma_dich_vu`) REFERENCES `dich_vu` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -402,7 +409,7 @@ CREATE TABLE `lich_hen` (
 
 LOCK TABLES `lich_hen` WRITE;
 /*!40000 ALTER TABLE `lich_hen` DISABLE KEYS */;
-INSERT INTO `lich_hen` VALUES (1,'2026-05-03 08:44:06.521471',NULL,'08:00:00.000000','2026-05-02','2026-05-02 16:36:12.109381','CHO_THANH_TOAN',1,1,1),(2,'2026-05-02 20:36:00.565204',NULL,'08:00:00.000000','2026-05-02','2026-05-02 20:27:46.534410','DA_THANH_TOAN',3,2,3),(3,'2026-05-12 16:48:38.488257',NULL,'08:00:00.000000','2026-05-11','2026-05-11 09:25:29.296852','VANG',1,4,2),(4,'2026-05-12 05:00:00.031633',NULL,'07:30:00.000000','2026-05-12','2026-05-11 22:44:31.525597','VANG',2,24,3),(5,'2026-05-12 05:00:00.031633',NULL,'07:30:00.000000','2026-05-12','2026-05-11 22:44:46.201997','VANG',7,23,3),(6,'2026-05-12 05:00:00.031633',NULL,'07:30:00.000000','2026-05-12','2026-05-11 22:45:20.006236','VANG',4,22,9),(7,'2026-05-12 16:46:28.058102',NULL,'16:00:00.000000','2026-05-13','2026-05-11 22:47:44.775613','DA_TIEP_NHAN',8,5,1),(8,'2026-05-13 00:45:41.184335','Tai bị bẩn\n','07:30:00.000000','2026-05-13','2026-05-12 16:47:44.781915','VANG',6,2,11),(9,'2026-05-13 08:15:41.176183',NULL,'15:00:00.000000','2026-05-13','2026-05-12 22:55:31.794046','VANG',1,19,10);
+INSERT INTO `lich_hen` VALUES (1,'2026-05-03 08:44:06.521471',NULL,'08:00:00.000000','2026-05-02','2026-05-02 16:36:12.109381','CHO_THANH_TOAN',1,1,1),(2,'2026-05-02 20:36:00.565204',NULL,'08:00:00.000000','2026-05-02','2026-05-02 20:27:46.534410','DA_THANH_TOAN',3,2,3),(3,'2026-05-12 16:48:38.488257',NULL,'08:00:00.000000','2026-05-11','2026-05-11 09:25:29.296852','VANG',1,4,2),(4,'2026-05-12 05:00:00.031633',NULL,'07:30:00.000000','2026-05-12','2026-05-11 22:44:31.525597','VANG',2,24,3),(5,'2026-05-12 05:00:00.031633',NULL,'07:30:00.000000','2026-05-12','2026-05-11 22:44:46.201997','VANG',7,23,3),(6,'2026-05-12 05:00:00.031633',NULL,'07:30:00.000000','2026-05-12','2026-05-11 22:45:20.006236','VANG',4,22,9),(7,'2026-05-12 16:46:28.058102',NULL,'16:00:00.000000','2026-05-13','2026-05-11 22:47:44.775613','DA_TIEP_NHAN',8,5,1),(8,'2026-05-13 00:45:41.184335','Tai bị bẩn\n','07:30:00.000000','2026-05-13','2026-05-12 16:47:44.781915','VANG',6,2,11),(9,'2026-05-13 08:15:41.176183',NULL,'15:00:00.000000','2026-05-13','2026-05-12 22:55:31.794046','VANG',1,19,10),(10,'2026-05-13 21:05:42.785219',NULL,'07:30:00.000000','2026-05-14','2026-05-13 19:44:49.593934','CHO_THANH_TOAN',9,11,11),(11,'2026-05-13 21:25:03.235416',NULL,'09:30:00.000000','2026-05-14','2026-05-13 21:25:03.235416','DA_DAT',8,3,1),(12,'2026-05-13 21:26:05.639973',NULL,'13:00:00.000000','2026-05-14','2026-05-13 21:26:05.639973','DA_DAT',2,1,3);
 /*!40000 ALTER TABLE `lich_hen` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -520,7 +527,7 @@ CREATE TABLE `lich_su_trang_thai_lich_hen` (
   KEY `idx_ls_ma_lich` (`ma_lich_hen`),
   KEY `idx_ls_tao_luc` (`tao_luc`),
   CONSTRAINT `FK94khg79huo7d8ko7c2rjbpbj` FOREIGN KEY (`ma_lich_hen`) REFERENCES `lich_hen` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -529,7 +536,7 @@ CREATE TABLE `lich_su_trang_thai_lich_hen` (
 
 LOCK TABLES `lich_su_trang_thai_lich_hen` WRITE;
 /*!40000 ALTER TABLE `lich_su_trang_thai_lich_hen` DISABLE KEYS */;
-INSERT INTO `lich_su_trang_thai_lich_hen` VALUES (1,NULL,1,'2026-05-02 18:43:43.944174','admin','DA_DAT','DA_TIEP_NHAN',1),(2,NULL,1,'2026-05-02 18:43:45.104393','admin','DA_TIEP_NHAN','DA_DAT',1),(3,NULL,1,'2026-05-02 18:43:45.648383','admin','DA_DAT','DA_TIEP_NHAN',1),(4,NULL,1,'2026-05-02 18:43:47.072023','admin','DA_TIEP_NHAN','DA_DAT',1),(5,NULL,1,'2026-05-02 18:43:47.712013','admin','DA_DAT','DA_TIEP_NHAN',1),(6,NULL,1,'2026-05-02 18:43:48.082623','admin','DA_TIEP_NHAN','DANG_KHAM',1),(7,NULL,1,'2026-05-02 18:43:53.001139','admin','DANG_KHAM','DA_DAT',1),(8,NULL,1,'2026-05-02 18:43:53.587524','admin','DA_DAT','DA_TIEP_NHAN',1),(9,NULL,1,'2026-05-02 18:43:53.968522','admin','DA_TIEP_NHAN','DANG_KHAM',1),(10,NULL,1,'2026-05-02 18:43:54.304529','admin','DANG_KHAM','XET_NGHIEM',1),(11,NULL,1,'2026-05-02 18:43:59.189878','admin','XET_NGHIEM','DA_KE_DON',1),(12,NULL,1,'2026-05-02 18:44:02.504169','admin','DA_KE_DON','DA_THANH_TOAN',1),(13,NULL,1,'2026-05-02 18:44:03.224277','admin','DA_THANH_TOAN','HUY',1),(14,NULL,1,'2026-05-02 18:44:03.634281','admin','HUY','VANG',1),(15,NULL,1,'2026-05-02 18:44:04.967316','admin','VANG','HUY',1),(16,NULL,1,'2026-05-02 18:44:05.376327','admin','HUY','DA_THANH_TOAN',1),(17,NULL,1,'2026-05-02 18:44:05.955878','admin','DA_THANH_TOAN','DA_KE_DON',1),(18,NULL,1,'2026-05-02 18:44:06.357512','admin','DA_KE_DON','XET_NGHIEM',1),(19,NULL,1,'2026-05-02 18:44:06.738511','admin','XET_NGHIEM','DANG_KHAM',1),(20,NULL,1,'2026-05-02 18:44:07.053510','admin','DANG_KHAM','DA_DAT',1),(21,NULL,1,'2026-05-02 18:44:07.470517','admin','DA_DAT','DA_TIEP_NHAN',1),(22,NULL,1,'2026-05-02 18:44:07.718511','admin','DA_TIEP_NHAN','DANG_KHAM',1),(23,NULL,1,'2026-05-02 18:44:08.267536','admin','DANG_KHAM','XET_NGHIEM',1),(24,NULL,1,'2026-05-02 18:44:08.590538','admin','XET_NGHIEM','DA_KE_DON',1),(25,NULL,1,'2026-05-02 18:44:09.485543','admin','DA_KE_DON','HUY',1),(26,NULL,1,'2026-05-02 18:44:09.954604','admin','HUY','VANG',1),(27,NULL,1,'2026-05-02 18:44:10.516236','admin','VANG','DA_THANH_TOAN',1),(28,NULL,1,'2026-05-02 18:44:18.281188','admin','DA_THANH_TOAN','DA_DAT',1),(29,NULL,1,'2026-05-02 19:20:41.671605','admin','DA_DAT','DA_THANH_TOAN',1),(30,NULL,1,'2026-05-02 20:31:51.022221','admin','DA_DAT','DA_KE_DON',2),(31,NULL,1,'2026-05-02 20:36:00.563188','admin','DA_KE_DON','DA_THANH_TOAN',2),(32,NULL,1,'2026-05-03 08:40:11.353334','admin','DA_THANH_TOAN','DA_DAT',1),(33,NULL,1,'2026-05-03 08:40:12.357869','admin','DA_DAT','DA_TIEP_NHAN',1),(34,NULL,1,'2026-05-03 08:40:12.926610','admin','DA_TIEP_NHAN','DANG_KHAM',1),(35,NULL,1,'2026-05-03 08:40:34.123263','admin','DANG_KHAM','XET_NGHIEM',1),(36,NULL,1,'2026-05-03 08:40:35.617213','admin','XET_NGHIEM','DA_KE_DON',1),(37,NULL,1,'2026-05-03 08:44:02.998530','admin','DA_KE_DON','CHO_THANH_TOAN',1),(38,NULL,1,'2026-05-03 08:44:06.041846','admin','CHO_THANH_TOAN','DA_KE_DON',1),(39,NULL,1,'2026-05-03 08:44:06.517472','admin','DA_KE_DON','CHO_THANH_TOAN',1),(40,'Tự động: quá giờ 12:00 mà chưa đi khám.',NULL,'2026-05-12 05:00:00.016665',NULL,'DA_DAT','VANG',4),(41,'Tự động: quá giờ 12:00 mà chưa đi khám.',NULL,'2026-05-12 05:00:00.031633',NULL,'DA_DAT','VANG',5),(42,'Tự động: quá giờ 12:00 mà chưa đi khám.',NULL,'2026-05-12 05:00:00.031633',NULL,'DA_DAT','VANG',6),(43,NULL,1,'2026-05-12 16:46:28.054232','admin','DA_DAT','DA_TIEP_NHAN',7),(44,NULL,1,'2026-05-12 16:48:38.478813','admin','DA_DAT','VANG',3),(45,NULL,1,'2026-05-13 00:45:41.174493','admin','DA_DAT','VANG',8),(46,NULL,1,'2026-05-13 08:15:41.168992','admin','DA_DAT','VANG',9);
+INSERT INTO `lich_su_trang_thai_lich_hen` VALUES (1,NULL,1,'2026-05-02 18:43:43.944174','admin','DA_DAT','DA_TIEP_NHAN',1),(2,NULL,1,'2026-05-02 18:43:45.104393','admin','DA_TIEP_NHAN','DA_DAT',1),(3,NULL,1,'2026-05-02 18:43:45.648383','admin','DA_DAT','DA_TIEP_NHAN',1),(4,NULL,1,'2026-05-02 18:43:47.072023','admin','DA_TIEP_NHAN','DA_DAT',1),(5,NULL,1,'2026-05-02 18:43:47.712013','admin','DA_DAT','DA_TIEP_NHAN',1),(6,NULL,1,'2026-05-02 18:43:48.082623','admin','DA_TIEP_NHAN','DANG_KHAM',1),(7,NULL,1,'2026-05-02 18:43:53.001139','admin','DANG_KHAM','DA_DAT',1),(8,NULL,1,'2026-05-02 18:43:53.587524','admin','DA_DAT','DA_TIEP_NHAN',1),(9,NULL,1,'2026-05-02 18:43:53.968522','admin','DA_TIEP_NHAN','DANG_KHAM',1),(10,NULL,1,'2026-05-02 18:43:54.304529','admin','DANG_KHAM','XET_NGHIEM',1),(11,NULL,1,'2026-05-02 18:43:59.189878','admin','XET_NGHIEM','DA_KE_DON',1),(12,NULL,1,'2026-05-02 18:44:02.504169','admin','DA_KE_DON','DA_THANH_TOAN',1),(13,NULL,1,'2026-05-02 18:44:03.224277','admin','DA_THANH_TOAN','HUY',1),(14,NULL,1,'2026-05-02 18:44:03.634281','admin','HUY','VANG',1),(15,NULL,1,'2026-05-02 18:44:04.967316','admin','VANG','HUY',1),(16,NULL,1,'2026-05-02 18:44:05.376327','admin','HUY','DA_THANH_TOAN',1),(17,NULL,1,'2026-05-02 18:44:05.955878','admin','DA_THANH_TOAN','DA_KE_DON',1),(18,NULL,1,'2026-05-02 18:44:06.357512','admin','DA_KE_DON','XET_NGHIEM',1),(19,NULL,1,'2026-05-02 18:44:06.738511','admin','XET_NGHIEM','DANG_KHAM',1),(20,NULL,1,'2026-05-02 18:44:07.053510','admin','DANG_KHAM','DA_DAT',1),(21,NULL,1,'2026-05-02 18:44:07.470517','admin','DA_DAT','DA_TIEP_NHAN',1),(22,NULL,1,'2026-05-02 18:44:07.718511','admin','DA_TIEP_NHAN','DANG_KHAM',1),(23,NULL,1,'2026-05-02 18:44:08.267536','admin','DANG_KHAM','XET_NGHIEM',1),(24,NULL,1,'2026-05-02 18:44:08.590538','admin','XET_NGHIEM','DA_KE_DON',1),(25,NULL,1,'2026-05-02 18:44:09.485543','admin','DA_KE_DON','HUY',1),(26,NULL,1,'2026-05-02 18:44:09.954604','admin','HUY','VANG',1),(27,NULL,1,'2026-05-02 18:44:10.516236','admin','VANG','DA_THANH_TOAN',1),(28,NULL,1,'2026-05-02 18:44:18.281188','admin','DA_THANH_TOAN','DA_DAT',1),(29,NULL,1,'2026-05-02 19:20:41.671605','admin','DA_DAT','DA_THANH_TOAN',1),(30,NULL,1,'2026-05-02 20:31:51.022221','admin','DA_DAT','DA_KE_DON',2),(31,NULL,1,'2026-05-02 20:36:00.563188','admin','DA_KE_DON','DA_THANH_TOAN',2),(32,NULL,1,'2026-05-03 08:40:11.353334','admin','DA_THANH_TOAN','DA_DAT',1),(33,NULL,1,'2026-05-03 08:40:12.357869','admin','DA_DAT','DA_TIEP_NHAN',1),(34,NULL,1,'2026-05-03 08:40:12.926610','admin','DA_TIEP_NHAN','DANG_KHAM',1),(35,NULL,1,'2026-05-03 08:40:34.123263','admin','DANG_KHAM','XET_NGHIEM',1),(36,NULL,1,'2026-05-03 08:40:35.617213','admin','XET_NGHIEM','DA_KE_DON',1),(37,NULL,1,'2026-05-03 08:44:02.998530','admin','DA_KE_DON','CHO_THANH_TOAN',1),(38,NULL,1,'2026-05-03 08:44:06.041846','admin','CHO_THANH_TOAN','DA_KE_DON',1),(39,NULL,1,'2026-05-03 08:44:06.517472','admin','DA_KE_DON','CHO_THANH_TOAN',1),(40,'Tự động: quá giờ 12:00 mà chưa đi khám.',NULL,'2026-05-12 05:00:00.016665',NULL,'DA_DAT','VANG',4),(41,'Tự động: quá giờ 12:00 mà chưa đi khám.',NULL,'2026-05-12 05:00:00.031633',NULL,'DA_DAT','VANG',5),(42,'Tự động: quá giờ 12:00 mà chưa đi khám.',NULL,'2026-05-12 05:00:00.031633',NULL,'DA_DAT','VANG',6),(43,NULL,1,'2026-05-12 16:46:28.054232','admin','DA_DAT','DA_TIEP_NHAN',7),(44,NULL,1,'2026-05-12 16:48:38.478813','admin','DA_DAT','VANG',3),(45,NULL,1,'2026-05-13 00:45:41.174493','admin','DA_DAT','VANG',8),(46,NULL,1,'2026-05-13 08:15:41.168992','admin','DA_DAT','VANG',9),(47,NULL,1,'2026-05-13 20:00:27.469886','admin','DA_DAT','DA_TIEP_NHAN',10),(48,NULL,1,'2026-05-13 20:00:29.086306','admin','DA_TIEP_NHAN','DANG_KHAM',10),(49,NULL,1,'2026-05-13 20:00:30.700030','admin','DANG_KHAM','XET_NGHIEM',10),(50,NULL,1,'2026-05-13 20:00:35.525463','admin','XET_NGHIEM','DA_KE_DON',10),(51,NULL,1,'2026-05-13 21:05:42.782218','admin','DA_KE_DON','CHO_THANH_TOAN',10);
 /*!40000 ALTER TABLE `lich_su_trang_thai_lich_hen` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -635,7 +642,7 @@ CREATE TABLE `nhat_ky_nhac_lich` (
   PRIMARY KEY (`id`),
   KEY `FKj6awlsm1uj8eiu3esdku2xxfd` (`ma_lich_hen`),
   CONSTRAINT `FKj6awlsm1uj8eiu3esdku2xxfd` FOREIGN KEY (`ma_lich_hen`) REFERENCES `lich_hen` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -644,6 +651,7 @@ CREATE TABLE `nhat_ky_nhac_lich` (
 
 LOCK TABLES `nhat_ky_nhac_lich` WRITE;
 /*!40000 ALTER TABLE `nhat_ky_nhac_lich` DISABLE KEYS */;
+INSERT INTO `nhat_ky_nhac_lich` VALUES (1,'THU_DIEN_TU','2026-05-13 21:25:10.408186',11),(2,'THU_DIEN_TU','2026-05-13 21:26:11.901395',12);
 /*!40000 ALTER TABLE `nhat_ky_nhac_lich` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -664,7 +672,7 @@ CREATE TABLE `pay_os_don_hang` (
   `tao_luc` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UK_5n6rh8q3aycamvxjf7h5fx8ry` (`order_code`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -673,7 +681,7 @@ CREATE TABLE `pay_os_don_hang` (
 
 LOCK TABLES `pay_os_don_hang` WRITE;
 /*!40000 ALTER TABLE `pay_os_don_hang` DISABLE KEYS */;
-INSERT INTO `pay_os_don_hang` VALUES (1,_binary '\0',3,854443052,'82e602b6c32b4954a8479a59d0fe9b57',180000,'2026-05-12 16:42:36.069433'),(2,_binary '\0',3,150890166,'86912c279ba34789a6ffec9a94c5be29',180000,'2026-05-12 20:43:40.082795');
+INSERT INTO `pay_os_don_hang` VALUES (1,_binary '\0',3,854443052,'82e602b6c32b4954a8479a59d0fe9b57',180000,'2026-05-12 16:42:36.069433'),(2,_binary '\0',3,150890166,'86912c279ba34789a6ffec9a94c5be29',180000,'2026-05-12 20:43:40.082795'),(3,_binary '\0',4,2120023124,'79d55e61d7ec4cca89d40b533e90e731',2000,'2026-05-13 21:05:54.880045'),(4,_binary '\0',4,1722863730,'b69bee61a66f48abbb75738762c013b7',2000,'2026-05-13 21:08:38.794314');
 /*!40000 ALTER TABLE `pay_os_don_hang` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -850,4 +858,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-05-14  1:35:37
+-- Dump completed on 2026-05-14  4:40:17

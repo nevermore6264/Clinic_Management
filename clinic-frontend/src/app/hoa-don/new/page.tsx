@@ -331,16 +331,16 @@ function NewInvoicePageInner() {
                         />
                       </td>
                       <td className="align-middle text-center">
-                        <button
-                          type="button"
-                          className="btn btn-sm lich-hen-remove-row-thuoc"
-                          disabled={lapBiChan}
-                          onClick={() => removeItem(i)}
-                          title="Xóa dòng"
-                          aria-label="Xóa dòng dịch vụ"
-                        >
-                          <i className="bi bi-x-lg" aria-hidden />
-                        </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm lich-hen-remove-row-thuoc"
+                            disabled={lapBiChan}
+                            onClick={() => removeItem(i)}
+                            title="Xóa dòng dịch vụ"
+                          >
+                            <i className="bi bi-x-lg" aria-hidden />
+                            <span>Xóa</span>
+                          </button>
                       </td>
                     </tr>
                   ))}

@@ -22,10 +22,20 @@ import {
 } from "@/lib/lichHenStatus";
 import { laBacSiKhongXemHoaDon, laChiTaiKhoanBenhNhan, laNhanVien } from "@/lib/roles";
 import { formatGioHen, formatNgayDdMmYyyy } from "@/lib/formatInstantVi";
+import { formatVndInputMoneyUnit } from "@/lib/moneyVnd";
 import { ThuocChonModal } from "@/components/ThuocChonModal";
 
 function newRow(maThuoc: number): ChiTietDonThuoc {
   return { maThuoc, soLuong: 1, lieuDung: "" };
+}
+
+function thuocCatalogTheoMa(list: Thuoc[], maThuoc: number): Thuoc | undefined {
+  return list.find((x) => x.id === maThuoc);
+}
+
+function oCell(s?: string | null): string {
+  const t = s?.trim();
+  return t ? t : "—";
 }
 
 export default function AppointmentDetailPage() {
@@ -315,72 +325,121 @@ export default function AppointmentDetailPage() {
               </p>
             )}
             {rows.length > 0 && (
-              <Table responsive size="sm" bordered className="mb-2">
+              <Table
+                responsive
+                size="sm"
+                bordered
+                className="mb-2 lich-hen-don-thuoc-table"
+              >
                 <thead>
-                  <tr>
+                  <tr className="text-nowrap small">
                     <th>Thuốc</th>
-                    <th style={{ width: 90 }}>Số lượng</th>
+                    <th>Đơn vị</th>
+                    <th>Hàm lượng</th>
+                    <th>Dạng</th>
+                    <th>Hoạt chất</th>
+                    <th>Hãng / nước SX</th>
+                    <th className="text-end">Giá bán</th>
+                    <th className="text-end">Tồn</th>
+                    <th className="text-center">SL</th>
                     <th>Liều dùng / ghi chú</th>
-                    <th style={{ width: 56 }}></th>
+                    <th className="text-center">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map((row, idx) => (
-                    <tr key={idx}>
-                      <td className="lich-hen-thuoc-chon-cell">
-                        <div className="d-flex flex-column gap-1 align-items-start">
-                          <span className="small text-break fw-medium text-body-secondary">
-                            {row.tenThuoc?.trim() ||
-                              thuocList.find((x) => x.id === row.maThuoc)?.tenThuoc?.trim() ||
-                              "—"}
-                          </span>
-                          <Button
+                  {rows.map((row, idx) => {
+                    const tCat = thuocCatalogTheoMa(thuocList, row.maThuoc);
+                    const tenHien =
+                      tCat?.tenThuoc?.trim() ||
+                      row.tenThuoc?.trim() ||
+                      "—";
+                    const coGiaBan =
+                      tCat?.giaBan != null && !Number.isNaN(Number(tCat.giaBan));
+                    const coTon =
+                      tCat?.tonKho != null && !Number.isNaN(Number(tCat.tonKho));
+                    const hangNuoc = [tCat?.hangSanXuat?.trim(), tCat?.nuocSanXuat?.trim()]
+                      .filter(Boolean)
+                      .join(" · ");
+                    return (
+                      <tr key={idx}>
+                        <td className="lich-hen-thuoc-chon-cell align-top">
+                          <div className="lich-hen-thuoc-cell-block d-flex flex-column gap-2 align-items-start">
+                            <div className="lich-hen-thuoc-cell__title text-break min-w-0">
+                              {tenHien}
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline-primary"
+                              size="sm"
+                              className="d-inline-flex align-items-center gap-1"
+                              onClick={() => setThuocModalRow(idx)}
+                            >
+                              <i className="bi bi-capsule" aria-hidden />
+                              Chọn thuốc
+                            </Button>
+                          </div>
+                        </td>
+                        <td className="align-middle small text-break">
+                          {oCell(tCat?.donVi)}
+                        </td>
+                        <td className="align-middle small text-break">
+                          {oCell(tCat?.hamLuong)}
+                        </td>
+                        <td className="align-middle small text-break">
+                          {oCell(tCat?.dangBaoChe)}
+                        </td>
+                        <td className="align-middle small text-break">
+                          {oCell(tCat?.hoatChat)}
+                        </td>
+                        <td className="align-middle small text-break">
+                          {hangNuoc || "—"}
+                        </td>
+                        <td className="align-middle small text-end text-nowrap">
+                          {coGiaBan ? formatVndInputMoneyUnit(tCat!.giaBan) : "—"}
+                        </td>
+                        <td className="align-middle small text-end text-nowrap">
+                          {coTon
+                            ? Number(tCat!.tonKho).toLocaleString("vi-VN")
+                            : "—"}
+                        </td>
+                        <td className="align-middle text-center">
+                          <Form.Control
+                            type="number"
+                            min={1}
+                            placeholder="1"
+                            className="lich-hen-don-thuoc-qty"
+                            value={row.soLuong ?? 1}
+                            onChange={(e) =>
+                              patchRow(idx, {
+                                soLuong: Number(e.target.value) || 1,
+                              })
+                            }
+                          />
+                        </td>
+                        <td className="align-middle">
+                          <Form.Control
+                            placeholder="VD: Sau ăn, 2 viên/lần"
+                            value={row.lieuDung ?? ""}
+                            onChange={(e) =>
+                              patchRow(idx, { lieuDung: e.target.value })
+                            }
+                          />
+                        </td>
+                        <td className="align-middle text-center">
+                          <button
                             type="button"
-                            variant="outline-primary"
-                            size="sm"
-                            className="d-inline-flex align-items-center gap-1"
-                            onClick={() => setThuocModalRow(idx)}
+                            className="btn btn-sm lich-hen-remove-row-thuoc"
+                            onClick={() => removeRow(idx)}
+                            title="Xóa dòng thuốc"
+                            aria-label="Xóa dòng thuốc"
                           >
-                            <i className="bi bi-capsule" aria-hidden />
-                            Chọn thuốc
-                          </Button>
-                        </div>
-                      </td>
-                      <td>
-                        <Form.Control
-                          type="number"
-                          min={1}
-                          placeholder="1"
-                          value={row.soLuong ?? 1}
-                          onChange={(e) =>
-                            patchRow(idx, {
-                              soLuong: Number(e.target.value) || 1,
-                            })
-                          }
-                        />
-                      </td>
-                      <td>
-                        <Form.Control
-                          placeholder="VD: Sau ăn, 2 viên/lần"
-                          value={row.lieuDung ?? ""}
-                          onChange={(e) =>
-                            patchRow(idx, { lieuDung: e.target.value })
-                          }
-                        />
-                      </td>
-                      <td className="align-middle text-center">
-                        <button
-                          type="button"
-                          className="btn btn-sm lich-hen-remove-row-thuoc"
-                          onClick={() => removeRow(idx)}
-                          title="Xóa dòng"
-                          aria-label="Xóa dòng thuốc"
-                        >
-                          <i className="bi bi-x-lg" aria-hidden />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                            <i className="bi bi-x-lg" aria-hidden />
+                            <span>Xóa</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </Table>
             )}

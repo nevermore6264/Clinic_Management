@@ -32,7 +32,7 @@ import java.util.Locale;
 @Slf4j
 public class NhacLichHenService {
 
-    private static final String TEN_PHONG_KHAM = "Phòng khám";
+    private static final String TEN_PHONG_KHAM = "Phòng khám MEDLATEC";
 
     private final CauHinhNhacLichRepository khoCauHinh;
     private final NhatKyNhacLichRepository khoNhatKy;
@@ -284,10 +284,10 @@ public class NhacLichHenService {
                     <td align="center">
                       <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:620px;border-collapse:collapse;background:#ffffff;border-radius:2px;overflow:hidden;box-shadow:0 12px 40px rgba(15,23,42,0.12);border:1px solid #d4dce6;">
                         <tr>
-                          <td style="height:5px;background:linear-gradient(90deg,#1e3a5f 0%%,#0f2744 35%%,#c5a572 100%%);font-size:0;line-height:0;">&nbsp;</td>
+                          <td style="height:5px;background:linear-gradient(90deg,#1e3a5f 0%,#0f2744 35%,#c5a572 100%);font-size:0;line-height:0;">&nbsp;</td>
                         </tr>
                         <tr>
-                          <td style="padding:32px 40px 28px;background:linear-gradient(180deg,#1e3a5f 0%%,#152a45 100%%);color:#f8fafc;">
+                          <td style="padding:32px 40px 28px;background:linear-gradient(180deg,#1e3a5f 0%,#152a45 100%);color:#f8fafc;">
                             <p style="margin:0 0 10px;font-size:11px;font-weight:600;letter-spacing:0.22em;text-transform:uppercase;color:#c5a572;">Thông báo chính thức</p>
                             <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:600;line-height:1.25;letter-spacing:-0.02em;">Thư nhắc lịch hẹn khám</h1>
                             <p style="margin:12px 0 0;font-size:14px;line-height:1.55;opacity:0.88;border-left:3px solid #c5a572;padding-left:14px;">
@@ -342,10 +342,11 @@ public class NhacLichHenService {
                             <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:32px 0 0;border-collapse:collapse;">
                               <tr>
                                 <td align="center" style="padding:8px 0 4px;">
-                                  <a href=""""
+                                  """
+                + "<a href=\""
                 + linkEsc
+                + "\" style=\"display:inline-block;padding:14px 32px;background:#1e3a5f;color:#f8fafc !important;text-decoration:none;font-size:14px;font-weight:600;letter-spacing:0.04em;border-radius:2px;border:1px solid #152a45;\">Xem chi tiết lịch hẹn trên hệ thống</a>"
                 + """
-                " style="display:inline-block;padding:14px 32px;background:#1e3a5f;color:#f8fafc !important;text-decoration:none;font-size:14px;font-weight:600;letter-spacing:0.04em;border-radius:2px;border:1px solid #152a45;">Xem chi tiết lịch hẹn trên hệ thống</a>
                                 </td>
                               </tr>
                               <tr>
@@ -388,8 +389,8 @@ public class NhacLichHenService {
     private static String hangBang(String tieuDe, String giaTri, boolean dongCuoi) {
         String vienDuoi = dongCuoi ? "none" : "1px solid #e2e8f0";
         return "<tr>"
-                + "<td style=\"padding:10px 0 10px 0;vertical-align:top;width:38%;font-size:13px;font-weight:600;color:#475569;\">"
-                + esc(tieuDe) + "</td>"
+                + "<td style=\"padding:10px 0;vertical-align:top;width:38%;font-size:13px;font-weight:600;color:#475569;border-bottom:"
+                + vienDuoi + ";\">" + esc(tieuDe) + "</td>"
                 + "<td style=\"padding:10px 0 10px 16px;vertical-align:top;font-size:15px;color:#0f172a;font-weight:500;border-bottom:"
                 + vienDuoi + ";\">" + giaTri + "</td>"
                 + "</tr>";

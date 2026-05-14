@@ -4,7 +4,14 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Table, Button, Form, Alert, Modal, Pagination } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
-import { patientsApi, usersApi, type BenhNhan, type ThongTinNguoiDungDto } from "@/lib/api";
+import {
+  patientsApi,
+  usersApi,
+  doctorsApi,
+  type BenhNhan,
+  type BacSi,
+  type ThongTinNguoiDungDto,
+} from "@/lib/api";
 import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
 
 const ROLES = ["QUAN_TRI", "LE_TAN", "BAC_SI", "THU_NGAN", "BENH_NHAN"];
@@ -43,7 +50,11 @@ export default function UsersPage() {
     role: "LE_TAN",
   });
   const [danhSachBenhNhan, setDanhSachBenhNhan] = useState<BenhNhan[]>([]);
+  const [danhSachBacSi, setDanhSachBacSi] = useState<BacSi[]>([]);
   const [benhNhanDaChon, setBenhNhanDaChon] = useState("");
+  const [bacSiDaChon, setBacSiDaChon] = useState("");
+  const [editBenhNhanId, setEditBenhNhanId] = useState("");
+  const [editBacSiId, setEditBacSiId] = useState("");
   const [editForm, setEditForm] = useState({
     fullName: "",
     email: "",
@@ -69,6 +80,12 @@ export default function UsersPage() {
       .then((r) => setDanhSachBenhNhan(r.content ?? []))
       .catch((e) => setError(e.message));
 
+  const loadDoctors = () =>
+    doctorsApi
+      .list()
+      .then(setDanhSachBacSi)
+      .catch((e) => setError(e.message));
+
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
     if (user && !user.cacVaiTro.includes("QUAN_TRI")) router.replace("/bang-dieu-khien");
@@ -80,15 +97,18 @@ export default function UsersPage() {
   }, [user]);
 
   useEffect(() => {
-    if (!showCreate) return;
+    if (!showCreate && !showEdit) return;
     loadPatients();
-  }, [showCreate]);
+    loadDoctors();
+  }, [showCreate, showEdit]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     const laTaiKhoanBenhNhan = createForm.role === "BENH_NHAN";
+    const laTaiKhoanBacSi = createForm.role === "BAC_SI";
     const benhNhanChon = danhSachBenhNhan.find((bn) => String(bn.id) === benhNhanDaChon);
+    const bacSiChon = danhSachBacSi.find((bs) => String(bs.id) === bacSiDaChon);
     if (!createForm.username.trim()) {
       setError("Vui lòng nhập tên đăng nhập.");
       return;
@@ -105,14 +125,22 @@ export default function UsersPage() {
       setError("Vui lòng chọn bệnh nhân trước khi tạo tài khoản.");
       return;
     }
+    if (laTaiKhoanBacSi && !bacSiChon) {
+      setError("Vui lòng chọn bác sĩ (hồ sơ chưa gán tài khoản) trước khi tạo.");
+      return;
+    }
     try {
       await usersApi.create({
         username: createForm.username,
         password: createForm.password,
         fullName: laTaiKhoanBenhNhan
           ? benhNhanChon?.hoTen
-          : createForm.fullName || undefined,
+          : laTaiKhoanBacSi
+            ? bacSiChon?.hoTen ?? createForm.fullName
+            : createForm.fullName || undefined,
         roles: [createForm.role],
+        maBenhNhan: laTaiKhoanBenhNhan ? benhNhanChon?.id : undefined,
+        maBacSi: laTaiKhoanBacSi ? bacSiChon?.id : undefined,
       });
       await loadUsers();
       setShowCreate(false);
@@ -123,6 +151,7 @@ export default function UsersPage() {
         role: "LE_TAN",
       });
       setBenhNhanDaChon("");
+      setBacSiDaChon("");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Lỗi");
     }
@@ -139,6 +168,8 @@ export default function UsersPage() {
       phone: u.soDienThoai || "",
       role: vaiTroHienTai,
     });
+    setEditBenhNhanId(u.maBenhNhan != null ? String(u.maBenhNhan) : "");
+    setEditBacSiId(u.maBacSi != null ? String(u.maBacSi) : "");
     setShowEdit(true);
   };
 
@@ -150,16 +181,46 @@ export default function UsersPage() {
       setError("Vui lòng nhập họ tên.");
       return;
     }
+    if (editForm.role === "BENH_NHAN") {
+      const maBn = editBenhNhanId
+        ? Number(editBenhNhanId)
+        : editingUser.maBenhNhan;
+      if (maBn == null || Number.isNaN(maBn)) {
+        setError("Vui lòng chọn bệnh nhân gán với tài khoản.");
+        return;
+      }
+    }
+    if (editForm.role === "BAC_SI") {
+      const maBs = editBacSiId ? Number(editBacSiId) : editingUser.maBacSi;
+      if (maBs == null || Number.isNaN(maBs)) {
+        setError("Vui lòng chọn bác sĩ gán với tài khoản.");
+        return;
+      }
+    }
     try {
       await usersApi.update(editingUser.id, {
         fullName: editForm.fullName,
         email: editForm.email || undefined,
         phone: editForm.phone || undefined,
         roles: [editForm.role],
+        maBenhNhan:
+          editForm.role === "BENH_NHAN"
+            ? editBenhNhanId
+              ? Number(editBenhNhanId)
+              : editingUser.maBenhNhan
+            : undefined,
+        maBacSi:
+          editForm.role === "BAC_SI"
+            ? editBacSiId
+              ? Number(editBacSiId)
+              : editingUser.maBacSi
+            : undefined,
       });
       await loadUsers();
       setShowEdit(false);
       setEditingUser(null);
+      setEditBenhNhanId("");
+      setEditBacSiId("");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Lỗi");
     }
@@ -498,7 +559,15 @@ export default function UsersPage() {
         </div>
       ) : null}
 
-      <Modal show={showCreate} onHide={() => setShowCreate(false)} centered>
+      <Modal
+        show={showCreate}
+        onHide={() => {
+          setShowCreate(false);
+          setBenhNhanDaChon("");
+          setBacSiDaChon("");
+        }}
+        centered
+      >
         <Modal.Header closeButton>Tạo tài khoản</Modal.Header>
         <Form noValidate onSubmit={handleCreate}>
           <Modal.Body>

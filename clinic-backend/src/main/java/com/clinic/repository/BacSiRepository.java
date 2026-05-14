@@ -12,5 +12,7 @@ public interface BacSiRepository extends JpaRepository<BacSi, Long> {
 
     Optional<BacSi> findByNguoiDung_Id(Long maNguoiDung);
 
+    List<BacSi> findByNguoiDungIsNullAndHoatDongTrue();
+
     long countByChuyenKhoa_Id(Long maChuyenKhoa);
 }

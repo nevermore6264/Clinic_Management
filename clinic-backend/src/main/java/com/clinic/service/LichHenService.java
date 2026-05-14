@@ -247,11 +247,6 @@ public class LichHenService {
         return ketQua;
     }
 
-    /**
-     * Các giờ bắt đầu lịch (mỗi lượt 1 giờ): bước nhảy 1 giờ từ {@code batDau}, chỉ lấy khi
-     * {@code batDau + 1h <= ketThuc}. Nếu biên kết thúc không trùn giờ tròn (vd 19:30), bổ sung
-     * thêm một khung bắt đầu lệch nửa giờ sau mốc giờ tròn cuối (vd 17:00–19:30 → thêm 18:30).
-     */
     private List<LocalTime> tachTheoCa1Gio(LocalTime batDau, LocalTime ketThuc) {
         if (batDau == null || ketThuc == null || !batDau.isBefore(ketThuc)) {
             return List.of();

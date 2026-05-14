@@ -84,6 +84,8 @@ export interface ThongTinNguoiDungDto {
   soDienThoai?: string;
   hoatDong: boolean;
   cacVaiTro: string[];
+  maBenhNhan?: number;
+  maBacSi?: number;
 }
 
 export const nguoiDungApi = {
@@ -95,6 +97,8 @@ export const nguoiDungApi = {
     thuDienTu?: string;
     soDienThoai?: string;
     cacVaiTro: string[];
+    maBenhNhan?: number;
+    maBacSi?: number;
   }) =>
     api<ThongTinNguoiDungDto>("/nguoi-dung", {
       method: "POST",
@@ -107,6 +111,8 @@ export const nguoiDungApi = {
       thuDienTu?: string;
       soDienThoai?: string;
       cacVaiTro: string[];
+      maBenhNhan?: number;
+      maBacSi?: number;
     },
   ) =>
     api<ThongTinNguoiDungDto>(`/nguoi-dung/${id}`, {
@@ -711,12 +717,16 @@ export const usersApi = {
     password: string;
     fullName?: string;
     roles: string[];
+    maBenhNhan?: number;
+    maBacSi?: number;
   }) =>
     nguoiDungApi.tao({
       tenDangNhap: data.username,
       matKhau: data.password,
       hoTen: data.fullName,
       cacVaiTro: data.roles,
+      maBenhNhan: data.maBenhNhan,
+      maBacSi: data.maBacSi,
     }),
   update: (
     id: number,
@@ -725,6 +735,8 @@ export const usersApi = {
       email?: string;
       phone?: string;
       roles: string[];
+      maBenhNhan?: number;
+      maBacSi?: number;
     },
   ) =>
     nguoiDungApi.capNhat(id, {
@@ -732,6 +744,8 @@ export const usersApi = {
       thuDienTu: data.email,
       soDienThoai: data.phone,
       cacVaiTro: data.roles,
+      maBenhNhan: data.maBenhNhan,
+      maBacSi: data.maBacSi,
     }),
   lock: nguoiDungApi.khoa,
   unlock: nguoiDungApi.moKhoa,

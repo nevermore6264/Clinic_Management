@@ -14,4 +14,6 @@ public class CapNhatNguoiDungYeuCau {
     private String soDienThoai;
     @NotEmpty
     private Set<String> cacVaiTro;
+    private Long maBenhNhan;
+    private Long maBacSi;
 }

@@ -13,4 +13,6 @@ public class ThongTinNguoiDungDto {
     private String soDienThoai;
     private boolean hoatDong;
     private Set<String> cacVaiTro;
+    private Long maBenhNhan;
+    private Long maBacSi;
 }

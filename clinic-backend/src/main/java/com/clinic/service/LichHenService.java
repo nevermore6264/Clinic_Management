@@ -43,6 +43,7 @@ public class LichHenService {
     private final QuyenTruyCapHoSoBenhNhan quyenTruyCapHoSoBenhNhan;
     private final QuyenTruyCapLichLamViecBacSi quyenTruyCapLichLamViecBacSi;
     private static final int SUC_CHUA_MOI_GIO = 10;
+    private static final int BUOC_SLOT_PHUT = 15;
     private static final EnumSet<LichHen.TrangThaiLichHen> TRANG_THAI_KHONG_TINH_SLOT =
             EnumSet.of(LichHen.TrangThaiLichHen.HUY, LichHen.TrangThaiLichHen.VANG);
 
@@ -253,19 +254,10 @@ public class LichHenService {
         }
         List<LocalTime> gio = new ArrayList<>();
         LocalTime t = batDau;
-        LocalTime mocGioTronCuoi = null;
-        while (!t.plusHours(1).isAfter(ketThuc)) {
+        while (!t.plusMinutes(BUOC_SLOT_PHUT).isAfter(ketThuc)) {
             gio.add(t);
-            mocGioTronCuoi = t;
-            t = t.plusHours(1);
+            t = t.plusMinutes(BUOC_SLOT_PHUT);
         }
-        if (mocGioTronCuoi != null) {
-            LocalTime lechNuaGio = mocGioTronCuoi.plusMinutes(30);
-            if (!lechNuaGio.isBefore(batDau) && !lechNuaGio.plusHours(1).isAfter(ketThuc)) {
-                gio.add(lechNuaGio);
-            }
-        }
-        gio.sort(Comparator.naturalOrder());
         return gio;
     }
 

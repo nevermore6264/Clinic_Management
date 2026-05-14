@@ -185,7 +185,7 @@ export default function InvoiceDetailPage() {
       ["QUAN_TRI", "LE_TAN", "THU_NGAN"].includes(r),
     ) ?? false;
 
-  const taiPayOs = async (tabDaGiuCho: Window | null) => {
+  const taiPayOs = async () => {
     setPayOsLoading(true);
     setError("");
     try {
@@ -194,17 +194,10 @@ export default function InvoiceDetailPage() {
       daMoPayOsSession.current = true;
       const url = link.checkoutUrl?.trim();
       if (url) {
-        if (tabDaGiuCho && !tabDaGiuCho.closed) {
-          tabDaGiuCho.location.href = url;
-        } else {
-          window.open(url, "_blank", "noopener,noreferrer");
-        }
+        window.open(url, "_blank", "noopener,noreferrer");
       }
       startPayOsPoll();
     } catch (e: unknown) {
-      if (tabDaGiuCho && !tabDaGiuCho.closed) {
-        tabDaGiuCho.close();
-      }
       setError(e instanceof Error ? e.message : "Lỗi PayOS");
     } finally {
       setPayOsLoading(false);
@@ -308,17 +301,7 @@ export default function InvoiceDetailPage() {
                   variant="primary"
                   className="d-inline-flex align-items-center gap-2"
                   disabled={payOsLoading}
-                  onClick={() => {
-                    const tab =
-                      typeof window !== "undefined"
-                        ? window.open(
-                            "about:blank",
-                            "_blank",
-                            "noopener,noreferrer",
-                          )
-                        : null;
-                    void taiPayOs(tab);
-                  }}
+                  onClick={() => void taiPayOs()}
                 >
                   <i className="bi bi-box-arrow-up-right" aria-hidden />
                   {payOsLoading

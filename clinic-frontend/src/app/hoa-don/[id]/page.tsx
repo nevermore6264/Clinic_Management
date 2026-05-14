@@ -1,15 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, Table, Button, Form, Alert, Modal } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
-import {
-  invoicesApi,
-  type HoaDon,
-  type PayOsTaoLinkPhanHoi,
-} from "@/lib/api";
+import { invoicesApi, type HoaDon, type PayOsTaoLinkPhanHoi } from "@/lib/api";
 import { HoaDonStatusTag } from "@/components/HoaDonStatusTag";
 import { PhuongThucThanhToanTag } from "@/components/PhuongThucThanhToanTag";
 import { formatVndInput, parseVndInput } from "@/lib/moneyVnd";
@@ -32,9 +28,11 @@ export default function InvoiceDetailPage() {
   const [payOsLoading, setPayOsLoading] = useState(false);
 
   const [dongBoBusy, setDongBoBusy] = useState(false);
+  const daMoPayOsSession = useRef(false);
 
   useEffect(() => {
     setPayOs(null);
+    daMoPayOsSession.current = false;
   }, [id]);
 
   useEffect(() => {
@@ -72,7 +70,9 @@ export default function InvoiceDetailPage() {
     const remainingOf = (u: HoaDon) => {
       const tong = Number(u.tongTien);
       const da = Number(u.soTienDaTra);
-      return (Number.isFinite(tong) ? tong : 0) - (Number.isFinite(da) ? da : 0);
+      return (
+        (Number.isFinite(tong) ? tong : 0) - (Number.isFinite(da) ? da : 0)
+      );
     };
 
     const run = async () => {
@@ -87,7 +87,9 @@ export default function InvoiceDetailPage() {
             if (remainingOf(u) <= 0.000001) break;
           } catch (e: unknown) {
             if (!cancelled) {
-              setError(e instanceof Error ? e.message : "Đồng bộ PayOS thất bại");
+              setError(
+                e instanceof Error ? e.message : "Đồng bộ PayOS thất bại",
+              );
             }
             break;
           }
@@ -109,18 +111,28 @@ export default function InvoiceDetailPage() {
     };
   }, [user, id, router]);
 
-  const dongBoMotLan = async () => {
-    setDongBoBusy(true);
-    setError("");
-    try {
-      const u = await invoicesApi.syncPayOs(id);
-      setInv(u);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Đồng bộ PayOS thất bại");
-    } finally {
-      setDongBoBusy(false);
-    }
-  };
+  /** Sau khi đã mở PayOS: mỗi lần quay lại tab này, đồng bộ nhẹ (hữu ích khi webhook chưa tới). */
+  useEffect(() => {
+    if (!user || !id || typeof document === "undefined") return;
+    let lastAt = 0;
+    const gapMs = 5000;
+    const onVis = () => {
+      if (document.visibilityState !== "visible") return;
+      if (!daMoPayOsSession.current) return;
+      const now = Date.now();
+      if (now - lastAt < gapMs) return;
+      lastAt = now;
+      void invoicesApi
+        .syncPayOs(id)
+        .then((u) => {
+          setInv(u);
+          setError("");
+        })
+        .catch(() => {});
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [user, id]);
 
   const submitPayment = async () => {
     const amount = parseVndInput(payAmount);
@@ -155,6 +167,7 @@ export default function InvoiceDetailPage() {
     try {
       const link = await invoicesApi.createPayOsLink(id);
       setPayOs(link);
+      daMoPayOsSession.current = true;
       const url = link.checkoutUrl?.trim();
       if (url) {
         if (tabDaGiuCho && !tabDaGiuCho.closed) {
@@ -190,70 +203,92 @@ export default function InvoiceDetailPage() {
   return (
     <div className="hoa-don-detail-page">
       <div className="hoa-don-printable">
-      <h2 className="mb-4">Hóa đơn {inv.soHoaDon}</h2>
-      {error && (
-        <Alert variant="danger" dismissible onClose={() => setError("")} className="no-print">
-          {error}
-        </Alert>
-      )}
-      <Card className="mb-3">
-        <Card.Body>
-          <p>
-            <strong>Bệnh nhân:</strong> {inv.tenBenhNhan}
-          </p>
-          <p>
-            <strong>Tổng tiền:</strong>{" "}
-            {inv.tongTien?.toLocaleString("vi-VN")}đ
-          </p>
-          <p>
-            <strong>Đã thanh toán:</strong>{" "}
-            {inv.soTienDaTra?.toLocaleString("vi-VN")}đ
-          </p>
-          <p>
-            <strong>Còn lại:</strong>{" "}
-            {Number.isFinite(remaining)
-              ? remaining.toLocaleString("vi-VN")
-              : "—"}
-            đ
-          </p>
-          <p className="d-flex align-items-center flex-wrap gap-2 mb-0">
-            <strong>Trạng thái:</strong>{" "}
-            <HoaDonStatusTag trangThai={inv.trangThai} />
-          </p>
-        </Card.Body>
-      </Card>
-
-      {!conNo && (
-        <Alert variant="secondary" className="no-print mb-3">
-          Hóa đơn không còn số tiền cần thanh toán.
-        </Alert>
-      )}
-
-      {conNo && (
-        <Card className="no-print mb-3 border-primary border-2">
-          <Card.Header className="bg-primary text-white py-3 fw-semibold">
-            <i className="bi bi-credit-card me-2" aria-hidden />
-            Thanh toán
-          </Card.Header>
+        <h2 className="mb-4">Hóa đơn {inv.soHoaDon}</h2>
+        {error && (
+          <Alert
+            variant="danger"
+            dismissible
+            onClose={() => setError("")}
+            className="no-print"
+          >
+            {error}
+          </Alert>
+        )}
+        <Card className="mb-3">
           <Card.Body>
-            <div className="mb-4 pb-4 border-bottom">
-              <p className="fw-semibold mb-2">Trực tuyến (PayOS)</p>
-                <p className="text-muted small mb-3">
-                  Bấm nút bên dưới để mở <strong>trang thanh toán PayOS</strong> trong tab mới. Sau khi
-                  thanh toán xong, quay lại tab này — nếu PayOS chuyển hướng về với{" "}
-                  <code>?payos=success</code>, hệ thống tự đồng bộ vài lần. PayOS cũng có thể gửi{" "}
-                  <strong>webhook</strong> tới máy chủ công khai; trên localhost hoặc khi webhook chưa
-                  tới, hãy bấm <strong>Đồng bộ trạng thái PayOS</strong>.
+            <p>
+              <strong>Bệnh nhân:</strong> {inv.tenBenhNhan}
+            </p>
+            <p>
+              <strong>Tổng tiền:</strong>{" "}
+              {inv.tongTien?.toLocaleString("vi-VN")}đ
+            </p>
+            <p>
+              <strong>Đã thanh toán:</strong>{" "}
+              {inv.soTienDaTra?.toLocaleString("vi-VN")}đ
+            </p>
+            <p>
+              <strong>Còn lại:</strong>{" "}
+              {Number.isFinite(remaining)
+                ? remaining.toLocaleString("vi-VN")
+                : "—"}
+              đ
+            </p>
+            <p className="d-flex align-items-center flex-wrap gap-2 mb-0">
+              <strong>Trạng thái:</strong>{" "}
+              <HoaDonStatusTag trangThai={inv.trangThai} />
+            </p>
+          </Card.Body>
+        </Card>
+
+        {!conNo && (
+          <Alert variant="secondary" className="no-print mb-3">
+            Hóa đơn không còn số tiền cần thanh toán.
+          </Alert>
+        )}
+
+        {conNo && (
+          <Card className="no-print mb-3 border-primary border-2">
+            <Card.Header className="bg-primary py-3 fw-semibold">
+              <i className="bi bi-credit-card me-2" aria-hidden />
+              Thanh toán
+            </Card.Header>
+            <Card.Body>
+              {dongBoBusy ? (
+                <p className="small text-primary mb-2">
+                  <i className="bi bi-arrow-repeat me-1" aria-hidden />
+                  Đang cập nhật trạng thái từ PayOS…
                 </p>
-                <div className="d-flex flex-wrap gap-2 align-items-center">
+              ) : null}
+              <div className="d-flex flex-wrap gap-2 align-items-center">
+                {hienGhiNhanThuCong ? (
+                  <Button
+                    type="button"
+                    variant="outline-primary"
+                    className="d-inline-flex align-items-center gap-2"
+                    disabled={payOsLoading}
+                    onClick={() => {
+                      setPayAmount(formatVndInput(remaining));
+                      setShowPayment(true);
+                    }}
+                  >
+                    <i className="bi bi-cash-stack" aria-hidden />
+                    Ghi nhận thanh toán
+                  </Button>
+                ) : null}
                 <Button
+                  type="button"
                   variant="primary"
                   className="d-inline-flex align-items-center gap-2"
                   disabled={payOsLoading}
                   onClick={() => {
                     const tab =
                       typeof window !== "undefined"
-                        ? window.open("about:blank", "_blank", "noopener,noreferrer")
+                        ? window.open(
+                            "about:blank",
+                            "_blank",
+                            "noopener,noreferrer",
+                          )
                         : null;
                     void taiPayOs(tab);
                   }}
@@ -262,149 +297,96 @@ export default function InvoiceDetailPage() {
                   {payOsLoading
                     ? "Đang mở PayOS…"
                     : payOs
-                      ? "Tạo link mới và mở PayOS"
-                      : "Thanh toán PayOS (tab mới)"}
+                      ? "Thanh toán online qua PayOS (link mới)"
+                      : "Thanh toán online qua PayOS"}
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline-primary"
-                  className="d-inline-flex align-items-center gap-2"
-                  disabled={dongBoBusy || payOsLoading}
-                  onClick={() => void dongBoMotLan()}
-                >
-                  <i className="bi bi-arrow-repeat" aria-hidden />
-                  {dongBoBusy ? "Đang đồng bộ…" : "Đồng bộ trạng thái PayOS"}
-                </Button>
-                </div>
-                {payOs && (
-                  <div className="mt-3 rounded border bg-light p-3">
-                    <p className="small mb-2">
-                      Đã mở (hoặc chuẩn bị mở) trang PayOS. Số tiền link:{" "}
-                      <strong>{payOs.amount.toLocaleString("vi-VN")}đ</strong>
-                    </p>
-                    {(payOs.accountNumber || payOs.accountName) && (
-                      <p className="small text-muted mb-2">
-                        {payOs.accountNumber ? `STK: ${payOs.accountNumber}` : null}
-                        {payOs.accountNumber && payOs.accountName ? " — " : null}
-                        {payOs.accountName || null}
-                      </p>
-                    )}
-                    <div className="d-flex flex-wrap gap-2">
-                      <Button
-                        variant="outline-primary"
-                        size="sm"
-                        className="d-inline-flex align-items-center gap-2"
-                        href={payOs.checkoutUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <i className="bi bi-box-arrow-up-right" aria-hidden />
-                        Mở lại trang PayOS
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline-secondary"
-                        size="sm"
-                        className="d-inline-flex align-items-center gap-2"
-                        disabled={dongBoBusy}
-                        onClick={() => void dongBoMotLan()}
-                      >
-                        <i className="bi bi-arrow-repeat" aria-hidden />
-                        Cập nhật sau khi thanh toán
-                      </Button>
-                    </div>
-                  </div>
-                )}
               </div>
-
-            {hienGhiNhanThuCong && (
-              <div>
-                <p className="fw-semibold mb-2">Tại quầy (ghi nhận tay)</p>
-                <p className="text-muted small mb-3">
-                  Dùng khi thu tiền mặt / thẻ / chuyển khoản tại phòng khám.
+              {payOs ? (
+                <p className="small text-muted mt-3 mb-0">
+                  Link gần nhất: {payOs.amount.toLocaleString("vi-VN")}đ
+                  {payOs.accountNumber || payOs.accountName ? (
+                    <>
+                      {" "}
+                      ·{" "}
+                      {payOs.accountNumber ? `STK ${payOs.accountNumber}` : ""}
+                      {payOs.accountNumber && payOs.accountName ? " — " : ""}
+                      {payOs.accountName ?? ""}
+                    </>
+                  ) : null}
+                  {" · "}
+                  <a
+                    href={payOs.checkoutUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Mở lại PayOS
+                  </a>
                 </p>
-                <Button
-                  variant="outline-primary"
-                  className="d-inline-flex align-items-center gap-2"
-                  onClick={() => {
-                    setPayAmount(formatVndInput(remaining));
-                    setShowPayment(true);
-                  }}
-                >
-                  <i className="bi bi-cash-stack" aria-hidden />
-                  Ghi nhận thanh toán
-                </Button>
-              </div>
-            )}
+              ) : null}
+              {!hienGhiNhanThuCong ? (
+                <p className="text-muted small mb-0 mt-3">
+                  Ghi nhận tại quầy: cần tài khoản quản trị, lễ tân hoặc thu
+                  ngân.
+                </p>
+              ) : null}
+            </Card.Body>
+          </Card>
+        )}
 
-            {!hienGhiNhanThuCong && (
-              <p className="text-muted small mb-0 mt-2">
-                Ghi nhận tiền mặt/thẻ/chuyển khoản tại quầy: cần tài khoản quản
-                trị, lễ tân hoặc thu ngân.
-              </p>
-            )}
-          </Card.Body>
-        </Card>
-      )}
-
-      <Card className="mb-3">
-        <Card.Header>Chi tiết dịch vụ</Card.Header>
-        <Table size="sm" className="mb-0">
-          <thead>
-            <tr>
-              <th>Dịch vụ</th>
-              <th>Đơn giá</th>
-              <th>SL</th>
-              <th>Thành tiền</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inv.chiTiet?.map((i) => (
-              <tr key={i.id}>
-                <td>{i.tenDichVu}</td>
-                <td>{i.donGia?.toLocaleString("vi-VN")}đ</td>
-                <td>{i.soLuong}</td>
-                <td>{i.thanhTien?.toLocaleString("vi-VN")}đ</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card>
-      {inv.giaoDichThanhToan?.length > 0 && (
-        <Card>
-          <Card.Header>Lịch sử thanh toán</Card.Header>
+        <Card className="mb-3">
+          <Card.Header>Chi tiết dịch vụ</Card.Header>
           <Table size="sm" className="mb-0">
             <thead>
               <tr>
-                <th>Số tiền</th>
-                <th>Hình thức</th>
-                <th>Mã GD</th>
-                <th>Thời gian</th>
+                <th>Dịch vụ</th>
+                <th>Đơn giá</th>
+                <th>SL</th>
+                <th>Thành tiền</th>
               </tr>
             </thead>
             <tbody>
-              {inv.giaoDichThanhToan.map((p) => (
-                <tr key={p.id}>
-                  <td>{p.soTien?.toLocaleString("vi-VN")}đ</td>
-                  <td>
-                    <PhuongThucThanhToanTag phuongThuc={p.phuongThuc} />
-                  </td>
-                  <td>{p.maThamChieu || "—"}</td>
-                  <td className="text-nowrap">
-                    {formatInstantVi(p.lucThanhToan)}
-                  </td>
+              {inv.chiTiet?.map((i) => (
+                <tr key={i.id}>
+                  <td>{i.tenDichVu}</td>
+                  <td>{i.donGia?.toLocaleString("vi-VN")}đ</td>
+                  <td>{i.soLuong}</td>
+                  <td>{i.thanhTien?.toLocaleString("vi-VN")}đ</td>
                 </tr>
               ))}
             </tbody>
           </Table>
         </Card>
-      )}
+        {inv.giaoDichThanhToan?.length > 0 && (
+          <Card>
+            <Card.Header>Lịch sử thanh toán</Card.Header>
+            <Table size="sm" className="mb-0">
+              <thead>
+                <tr>
+                  <th>Số tiền</th>
+                  <th>Hình thức</th>
+                  <th>Mã GD</th>
+                  <th>Thời gian</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inv.giaoDichThanhToan.map((p) => (
+                  <tr key={p.id}>
+                    <td>{p.soTien?.toLocaleString("vi-VN")}đ</td>
+                    <td>
+                      <PhuongThucThanhToanTag phuongThuc={p.phuongThuc} />
+                    </td>
+                    <td>{p.maThamChieu || "—"}</td>
+                    <td className="text-nowrap">
+                      {formatInstantVi(p.lucThanhToan)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Card>
+        )}
       </div>
-      <Modal
-        show={showPayment}
-        onHide={() => setShowPayment(false)}
-        centered
-      >
+      <Modal show={showPayment} onHide={() => setShowPayment(false)} centered>
         <Modal.Header closeButton>Ghi nhận thanh toán</Modal.Header>
         <Modal.Body>
           <Form.Group className="mb-2">
@@ -452,11 +434,7 @@ export default function InvoiceDetailPage() {
             <i className="bi bi-x-lg me-2" aria-hidden />
             Hủy
           </Button>
-          <Button
-            type="button"
-            variant="primary"
-            onClick={submitPayment}
-          >
+          <Button type="button" variant="primary" onClick={submitPayment}>
             <i className="bi bi-check2-circle me-2" aria-hidden />
             Xác nhận
           </Button>

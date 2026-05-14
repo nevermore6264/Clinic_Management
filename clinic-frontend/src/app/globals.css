@@ -2780,15 +2780,6 @@ html.app-ready body {
   filter: brightness(0.98);
 }
 
-.nguoi-dung-chon-modal__hint {
-  line-height: 1.45;
-  padding: 0.65rem 0.85rem;
-  border-radius: var(--clinic-radius-sm);
-  background: var(--clinic-blue-faint);
-  border: 1px solid rgba(37, 99, 235, 0.12);
-  color: var(--clinic-navy-mid) !important;
-}
-
 .nguoi-dung-chon-modal__toolbar {
   gap: 0.5rem 0.65rem;
 }
@@ -2840,17 +2831,6 @@ html.app-ready body {
   border-color: var(--clinic-blue-dark) !important;
   color: #1e3a8a !important;
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.22);
-}
-
-.nguoi-dung-inline-ho-so-link {
-  font-weight: 600;
-  color: var(--clinic-blue-dark) !important;
-  text-decoration: underline !important;
-  text-underline-offset: 2px;
-}
-
-.nguoi-dung-inline-ho-so-link:hover {
-  color: var(--clinic-blue-bright) !important;
 }
 
 .patient-create-modal .modal-header {

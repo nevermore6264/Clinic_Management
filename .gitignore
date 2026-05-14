@@ -47,3 +47,4 @@ clinic-backend/uploads/
 scripts/
 diagrams/
 docs/
+*.mdc

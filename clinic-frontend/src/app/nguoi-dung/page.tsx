@@ -720,18 +720,6 @@ export default function UsersPage() {
                       Tìm &amp; chọn
                     </Button>
                   </div>
-                  <Form.Text className="text-muted small">
-                    Mỗi tài khoản bệnh nhân gắn với đúng một hồ sơ. Chưa có hồ sơ thì{" "}
-                    <Link
-                      href="/benh-nhan"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="nguoi-dung-inline-ho-so-link"
-                    >
-                      sang trang Bệnh nhân
-                    </Link>{" "}
-                    tạo trước. Bấm «Tìm &amp; chọn» để mở danh sách (danh sách được làm mới mỗi lần mở).
-                  </Form.Text>
                 </>
               ) : createForm.role === "BAC_SI" ? (
                 <>
@@ -759,18 +747,6 @@ export default function UsersPage() {
                       Tìm &amp; chọn
                     </Button>
                   </div>
-                  <Form.Text className="text-muted small">
-                    Chỉ hiện bác sĩ chưa có tài khoản đăng nhập. Cần người mới thì{" "}
-                    <Link
-                      href="/bac-si"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="nguoi-dung-inline-ho-so-link"
-                    >
-                      sang trang Bác sĩ
-                    </Link>{" "}
-                    tạo hồ sơ, rồi bấm «Tìm &amp; chọn» lại (danh sách làm mới mỗi lần mở).
-                  </Form.Text>
                 </>
               ) : (
                 <>
@@ -920,18 +896,6 @@ export default function UsersPage() {
                     Tìm &amp; chọn
                   </Button>
                 </div>
-                <Form.Text className="text-muted small">
-                  Chọn hồ sơ đúng với tài khoản. Đổi bằng «Tìm &amp; chọn». Thiếu hồ sơ:{" "}
-                  <Link
-                    href="/benh-nhan"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="nguoi-dung-inline-ho-so-link"
-                  >
-                    Bệnh nhân
-                  </Link>
-                  .
-                </Form.Text>
               </Form.Group>
             ) : null}
             {editForm.role === "BAC_SI" ? (
@@ -960,18 +924,6 @@ export default function UsersPage() {
                     Tìm &amp; chọn
                   </Button>
                 </div>
-                <Form.Text className="text-muted small">
-                  Giữ bác sĩ hiện tại hoặc đổi sang người khác (chưa có tài khoản). Thêm hồ sơ:{" "}
-                  <Link
-                    href="/bac-si"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="nguoi-dung-inline-ho-so-link"
-                  >
-                    Bác sĩ
-                  </Link>
-                  .
-                </Form.Text>
               </Form.Group>
             ) : null}
           </Modal.Body>
@@ -1018,19 +970,6 @@ export default function UsersPage() {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="pt-0">
-          <p className="nguoi-dung-chon-modal__hint small mb-3">
-            {chonModal === "create-bn" || chonModal === "edit-bn" ? (
-              <>
-                Gõ để lọc, bấm một dòng để chọn. Cần hồ sơ mới: nút xanh bên cạnh (mở tab mới) — lưu
-                xong đóng tab và mở lại «Tìm &amp; chọn» trên form; danh sách ở đây đã được làm mới.
-              </>
-            ) : chonModal === "create-bs" || chonModal === "edit-bs" ? (
-              <>
-                Gõ để lọc, bấm một dòng để chọn. Thêm bác sĩ: nút xanh dương bên cạnh, lưu hồ sơ rồi
-                mở lại «Tìm &amp; chọn» trên form.
-              </>
-            ) : null}
-          </p>
           <div className="d-flex flex-wrap align-items-stretch mb-3 nguoi-dung-chon-modal__toolbar">
             <Form.Control
               type="search"

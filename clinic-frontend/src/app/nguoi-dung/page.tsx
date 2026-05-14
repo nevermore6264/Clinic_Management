@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Card, Table, Button, Form, Alert, Modal, Pagination } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
 import {
@@ -50,8 +49,6 @@ export default function UsersPage() {
     fullName: "",
     role: "LE_TAN",
   });
-  const [danhSachBenhNhan, setDanhSachBenhNhan] = useState<BenhNhan[]>([]);
-  const [danhSachBacSi, setDanhSachBacSi] = useState<BacSi[]>([]);
   const [benhNhanDaChon, setBenhNhanDaChon] = useState("");
   const [bacSiDaChon, setBacSiDaChon] = useState("");
   const [editBenhNhanId, setEditBenhNhanId] = useState("");
@@ -68,25 +65,29 @@ export default function UsersPage() {
   const [dangKhoa, setDangKhoa] = useState(false);
   const [trang, setTrang] = useState(0);
   const KICH_THUOC_TRANG = 15;
+  const CHON_MODAL_KICH_THUOC = 12;
 
   const [chonModal, setChonModal] = useState<
     null | "create-bn" | "create-bs" | "edit-bn" | "edit-bs"
   >(null);
   const [chonTimKiem, setChonTimKiem] = useState("");
+  const [danhSachBacSi, setDanhSachBacSi] = useState<BacSi[]>([]);
+  const [tomTatBenhNhanTao, setTomTatBenhNhanTao] = useState<BenhNhan | null>(null);
+  const [tomTatBenhNhanSua, setTomTatBenhNhanSua] = useState<BenhNhan | null>(null);
+  const [tomTatBacSiTao, setTomTatBacSiTao] = useState<BacSi | null>(null);
+  const [tomTatBacSiSua, setTomTatBacSiSua] = useState<BacSi | null>(null);
+  const [chonBnRows, setChonBnRows] = useState<BenhNhan[]>([]);
+  const [chonBnTrang, setChonBnTrang] = useState(0);
+  const [chonBnTongTrang, setChonBnTongTrang] = useState(1);
+  const [chonBnTongSo, setChonBnTongSo] = useState(0);
+  const [chonBnDangTai, setChonBnDangTai] = useState(false);
+  const [chonBsTrang, setChonBsTrang] = useState(0);
 
-  const danhSachChonModal = useMemo(() => {
+  const bacSiDaLocChiTiet = useMemo(() => {
+    if (chonModal !== "create-bs" && chonModal !== "edit-bs") return [];
     const q = chonTimKiem.trim().toLowerCase();
     const hop = (s: string | undefined | null) =>
       !q || (s != null && String(s).toLowerCase().includes(q));
-    if (chonModal === "create-bn" || chonModal === "edit-bn") {
-      return danhSachBenhNhan.filter(
-        (bn) =>
-          hop(bn.hoTen) ||
-          hop(bn.soDienThoai) ||
-          hop(bn.thuDienTu) ||
-          hop(bn.diaChi),
-      );
-    }
     if (chonModal === "create-bs") {
       return danhSachBacSi
         .filter((bs) => !bs.maNguoiDung)
@@ -97,31 +98,58 @@ export default function UsersPage() {
             hop(bs.chuyenMon),
         );
     }
-    if (chonModal === "edit-bs") {
-      return danhSachBacSi
-        .filter(
-          (bs) =>
-            !bs.maNguoiDung ||
-            (editingUser?.maBacSi != null && bs.id === editingUser.maBacSi),
-        )
-        .filter(
-          (bs) =>
-            hop(bs.hoTen) ||
-            hop(bs.tenChuyenKhoa) ||
-            hop(bs.chuyenMon),
-        );
+    return danhSachBacSi
+      .filter(
+        (bs) =>
+          !bs.maNguoiDung ||
+          (editingUser?.maBacSi != null && bs.id === editingUser.maBacSi),
+      )
+      .filter(
+        (bs) =>
+          hop(bs.hoTen) ||
+          hop(bs.tenChuyenKhoa) ||
+          hop(bs.chuyenMon),
+      );
+  }, [chonModal, chonTimKiem, danhSachBacSi, editingUser]);
+
+  const chonBsTongTrang = useMemo(
+    () => tongSoTrangClient(bacSiDaLocChiTiet.length, CHON_MODAL_KICH_THUOC),
+    [bacSiDaLocChiTiet.length],
+  );
+
+  const chonBsRows = useMemo(
+    () => catTrang(bacSiDaLocChiTiet, chonBsTrang, CHON_MODAL_KICH_THUOC),
+    [bacSiDaLocChiTiet, chonBsTrang],
+  );
+
+  const taiBenhNhanTrangChon = useCallback(async (trangBn: number, tuKhoa: string) => {
+    setChonBnDangTai(true);
+    setError("");
+    try {
+      const r = await patientsApi.list(trangBn, CHON_MODAL_KICH_THUOC, {
+        ten: tuKhoa.trim() || undefined,
+        trangThaiHoSo: "tat-ca",
+      });
+      setChonBnRows(r.content ?? []);
+      setChonBnTongTrang(Math.max(1, r.totalPages ?? 1));
+      setChonBnTongSo(r.totalElements ?? 0);
+      setChonBnTrang(typeof r.number === "number" ? r.number : trangBn);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Lỗi");
+    } finally {
+      setChonBnDangTai(false);
     }
-    return [];
-  }, [chonModal, chonTimKiem, danhSachBenhNhan, danhSachBacSi, editingUser]);
+  }, []);
 
   const moChonBenhNhan = (mode: "create" | "edit") => {
     setChonTimKiem("");
-    void loadPatients();
+    setChonBnTrang(0);
     setChonModal(mode === "create" ? "create-bn" : "edit-bn");
   };
 
   const moChonBacSi = (mode: "create" | "edit") => {
     setChonTimKiem("");
+    setChonBsTrang(0);
     void loadDoctors();
     setChonModal(mode === "create" ? "create-bs" : "edit-bs");
   };
@@ -131,28 +159,43 @@ export default function UsersPage() {
     setChonTimKiem("");
   };
 
-  const apChonBenhNhan = (id: number) => {
-    const s = String(id);
-    if (chonModal === "create-bn") setBenhNhanDaChon(s);
-    else if (chonModal === "edit-bn") setEditBenhNhanId(s);
+  const apChonBenhNhan = (bn: BenhNhan) => {
+    if (bn.id == null) return;
+    const s = String(bn.id);
+    if (chonModal === "create-bn") {
+      setBenhNhanDaChon(s);
+      setTomTatBenhNhanTao(bn);
+    } else if (chonModal === "edit-bn") {
+      setEditBenhNhanId(s);
+      setTomTatBenhNhanSua(bn);
+    }
     dongChonModal();
   };
 
-  const apChonBacSi = (id: number) => {
-    const s = String(id);
-    if (chonModal === "create-bs") setBacSiDaChon(s);
-    else if (chonModal === "edit-bs") setEditBacSiId(s);
+  const apChonBacSi = (bs: BacSi) => {
+    const s = String(bs.id);
+    if (chonModal === "create-bs") {
+      setBacSiDaChon(s);
+      setTomTatBacSiTao(bs);
+    } else if (chonModal === "edit-bs") {
+      setEditBacSiId(s);
+      setTomTatBacSiSua(bs);
+    }
     dongChonModal();
   };
 
   const nhanBenhNhanDaChon = () =>
-    danhSachBenhNhan.find((bn) => String(bn.id) === benhNhanDaChon);
+    tomTatBenhNhanTao && String(tomTatBenhNhanTao.id) === benhNhanDaChon
+      ? tomTatBenhNhanTao
+      : undefined;
   const nhanBacSiDaChon = () =>
-    danhSachBacSi.find((bs) => String(bs.id) === bacSiDaChon);
+    tomTatBacSiTao && String(tomTatBacSiTao.id) === bacSiDaChon ? tomTatBacSiTao : undefined;
   const nhanBenhNhanSua = () =>
-    danhSachBenhNhan.find((bn) => String(bn.id) === editBenhNhanId);
+    tomTatBenhNhanSua && String(tomTatBenhNhanSua.id) === editBenhNhanId
+      ? tomTatBenhNhanSua
+      : undefined;
   const nhanBacSiSua = () =>
-    danhSachBacSi.find((bs) => String(bs.id) === editBacSiId);
+    tomTatBacSiSua && String(tomTatBacSiSua.id) === editBacSiId ? tomTatBacSiSua : undefined;
 
   const loadUsers = () =>
     usersApi
@@ -160,17 +203,24 @@ export default function UsersPage() {
       .then(setList)
       .catch((e) => setError(e.message));
 
-  const loadPatients = () =>
-    patientsApi
-      .list(0, 3000)
-      .then((r) => setDanhSachBenhNhan(r.content ?? []))
-      .catch((e) => setError(e.message));
-
   const loadDoctors = () =>
     doctorsApi
-      .list()
+      .listAll()
       .then(setDanhSachBacSi)
       .catch((e) => setError(e.message));
+
+  useEffect(() => {
+    if (chonModal === "create-bs" || chonModal === "edit-bs") setChonBsTrang(0);
+  }, [chonModal, chonTimKiem]);
+
+  useEffect(() => {
+    if (chonModal !== "create-bn" && chonModal !== "edit-bn") return;
+    const delay = chonTimKiem.trim() ? 300 : 0;
+    const id = setTimeout(() => {
+      void taiBenhNhanTrangChon(0, chonTimKiem);
+    }, delay);
+    return () => clearTimeout(id);
+  }, [chonTimKiem, chonModal, taiBenhNhanTrangChon]);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -184,8 +234,7 @@ export default function UsersPage() {
 
   useEffect(() => {
     if (!showCreate && !showEdit) return;
-    loadPatients();
-    loadDoctors();
+    void loadDoctors();
   }, [showCreate, showEdit]);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -193,8 +242,8 @@ export default function UsersPage() {
     setError("");
     const laTaiKhoanBenhNhan = createForm.role === "BENH_NHAN";
     const laTaiKhoanBacSi = createForm.role === "BAC_SI";
-    const benhNhanChon = danhSachBenhNhan.find((bn) => String(bn.id) === benhNhanDaChon);
-    const bacSiChon = danhSachBacSi.find((bs) => String(bs.id) === bacSiDaChon);
+    const benhNhanChon = nhanBenhNhanDaChon();
+    const bacSiChon = nhanBacSiDaChon();
     if (!createForm.username.trim()) {
       setError("Vui lòng nhập tên đăng nhập.");
       return;
@@ -238,6 +287,8 @@ export default function UsersPage() {
       });
       setBenhNhanDaChon("");
       setBacSiDaChon("");
+      setTomTatBenhNhanTao(null);
+      setTomTatBacSiTao(null);
       setChonModal(null);
       setChonTimKiem("");
     } catch (err: unknown) {
@@ -258,7 +309,21 @@ export default function UsersPage() {
     });
     setEditBenhNhanId(u.maBenhNhan != null ? String(u.maBenhNhan) : "");
     setEditBacSiId(u.maBacSi != null ? String(u.maBacSi) : "");
+    setTomTatBenhNhanSua(null);
+    setTomTatBacSiSua(null);
     setShowEdit(true);
+    if (u.maBenhNhan != null) {
+      void patientsApi
+        .get(u.maBenhNhan)
+        .then(setTomTatBenhNhanSua)
+        .catch(() => setTomTatBenhNhanSua(null));
+    }
+    if (u.maBacSi != null) {
+      void doctorsApi
+        .get(u.maBacSi)
+        .then(setTomTatBacSiSua)
+        .catch(() => setTomTatBacSiSua(null));
+    }
   };
 
   const handleEdit = async (e: React.FormEvent) => {
@@ -311,6 +376,8 @@ export default function UsersPage() {
       setEditingUser(null);
       setEditBenhNhanId("");
       setEditBacSiId("");
+      setTomTatBenhNhanSua(null);
+      setTomTatBacSiSua(null);
       setChonModal(null);
       setChonTimKiem("");
     } catch (err: unknown) {
@@ -660,6 +727,8 @@ export default function UsersPage() {
           setShowCreate(false);
           setBenhNhanDaChon("");
           setBacSiDaChon("");
+          setTomTatBenhNhanTao(null);
+          setTomTatBacSiTao(null);
           setChonModal(null);
           setChonTimKiem("");
         }}
@@ -768,8 +837,14 @@ export default function UsersPage() {
                 onChange={(e) => {
                   const role = e.target.value;
                   setCreateForm((f) => ({ ...f, role }));
-                  if (role !== "BENH_NHAN") setBenhNhanDaChon("");
-                  if (role !== "BAC_SI") setBacSiDaChon("");
+                  if (role !== "BENH_NHAN") {
+                    setBenhNhanDaChon("");
+                    setTomTatBenhNhanTao(null);
+                  }
+                  if (role !== "BAC_SI") {
+                    setBacSiDaChon("");
+                    setTomTatBacSiTao(null);
+                  }
                   setChonModal(null);
                   setChonTimKiem("");
                 }}
@@ -790,6 +865,8 @@ export default function UsersPage() {
                 setShowCreate(false);
                 setBenhNhanDaChon("");
                 setBacSiDaChon("");
+                setTomTatBenhNhanTao(null);
+                setTomTatBacSiTao(null);
                 setChonModal(null);
                 setChonTimKiem("");
               }}
@@ -816,6 +893,8 @@ export default function UsersPage() {
           setEditingUser(null);
           setEditBenhNhanId("");
           setEditBacSiId("");
+          setTomTatBenhNhanSua(null);
+          setTomTatBacSiSua(null);
           setChonModal(null);
           setChonTimKiem("");
         }}
@@ -858,8 +937,14 @@ export default function UsersPage() {
                 onChange={(e) => {
                   const role = e.target.value;
                   setEditForm({ ...editForm, role });
-                  if (role !== "BENH_NHAN") setEditBenhNhanId("");
-                  if (role !== "BAC_SI") setEditBacSiId("");
+                  if (role !== "BENH_NHAN") {
+                    setEditBenhNhanId("");
+                    setTomTatBenhNhanSua(null);
+                  }
+                  if (role !== "BAC_SI") {
+                    setEditBacSiId("");
+                    setTomTatBacSiSua(null);
+                  }
                   setChonModal(null);
                   setChonTimKiem("");
                 }}
@@ -883,7 +968,9 @@ export default function UsersPage() {
                               ? ` · ${nhanBenhNhanSua()!.soDienThoai}`
                               : ""
                           }`
-                        : "Chưa chọn hồ sơ"}
+                        : editBenhNhanId
+                          ? "Đang tải…"
+                          : "Chưa chọn hồ sơ"}
                     </span>
                   </div>
                   <Button
@@ -911,7 +998,9 @@ export default function UsersPage() {
                               ? ` · ${nhanBacSiSua()!.tenChuyenKhoa ?? nhanBacSiSua()!.chuyenMon}`
                               : ""
                           }`
-                        : "Chưa chọn hồ sơ"}
+                        : editBacSiId
+                          ? "Đang tải…"
+                          : "Chưa chọn hồ sơ"}
                     </span>
                   </div>
                   <Button
@@ -936,6 +1025,8 @@ export default function UsersPage() {
                 setEditingUser(null);
                 setEditBenhNhanId("");
                 setEditBacSiId("");
+                setTomTatBenhNhanSua(null);
+                setTomTatBacSiSua(null);
                 setChonModal(null);
                 setChonTimKiem("");
               }}
@@ -983,34 +1074,15 @@ export default function UsersPage() {
               onChange={(e) => setChonTimKiem(e.target.value)}
               autoFocus
             />
-            {chonModal === "create-bn" || chonModal === "edit-bn" ? (
-              <Link
-                href="/benh-nhan"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nguoi-dung-them-ho-so-btn nguoi-dung-them-ho-so-btn--bn"
-              >
-                <i className="bi bi-person-plus-fill me-1" aria-hidden />
-                Tạo hồ sơ bệnh nhân
-              </Link>
-            ) : chonModal === "create-bs" || chonModal === "edit-bs" ? (
-              <Link
-                href="/bac-si"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nguoi-dung-them-ho-so-btn nguoi-dung-them-ho-so-btn--bs"
-              >
-                <i className="bi bi-person-badge me-1" aria-hidden />
-                Tạo hồ sơ bác sĩ
-              </Link>
-            ) : null}
           </div>
           <div
             className="border rounded overflow-auto"
             style={{ maxHeight: "min(55vh, 520px)" }}
           >
             {chonModal === "create-bn" || chonModal === "edit-bn" ? (
-              danhSachChonModal.length === 0 ? (
+              chonBnDangTai && chonBnRows.length === 0 ? (
+                <p className="text-muted small p-3 mb-0">Đang tải…</p>
+              ) : !chonBnDangTai && chonBnRows.length === 0 ? (
                 <p className="text-muted small p-3 mb-0">Không có bản ghi phù hợp.</p>
               ) : (
                 <Table hover responsive size="sm" className="mb-0 align-middle">
@@ -1023,12 +1095,12 @@ export default function UsersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(danhSachChonModal as BenhNhan[]).map((bn) => (
+                    {chonBnRows.map((bn) => (
                       <tr
                         key={bn.id ?? bn.hoTen}
                         style={{ cursor: "pointer" }}
                         onClick={() => {
-                          if (bn.id != null) apChonBenhNhan(bn.id);
+                          if (bn.id != null) apChonBenhNhan(bn);
                         }}
                       >
                         <td className="text-muted">{bn.id}</td>
@@ -1043,7 +1115,7 @@ export default function UsersPage() {
                 </Table>
               )
             ) : chonModal === "create-bs" || chonModal === "edit-bs" ? (
-              danhSachChonModal.length === 0 ? (
+              bacSiDaLocChiTiet.length === 0 ? (
                 <p className="text-muted small p-3 mb-0">Không có bản ghi phù hợp.</p>
               ) : (
                 <Table hover responsive size="sm" className="mb-0 align-middle">
@@ -1055,11 +1127,11 @@ export default function UsersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(danhSachChonModal as BacSi[]).map((bs) => (
+                    {chonBsRows.map((bs) => (
                       <tr
                         key={bs.id}
                         style={{ cursor: "pointer" }}
-                        onClick={() => apChonBacSi(bs.id)}
+                        onClick={() => apChonBacSi(bs)}
                       >
                         <td className="text-muted">{bs.id}</td>
                         <td>{bs.hoTen ?? "—"}</td>
@@ -1073,6 +1145,63 @@ export default function UsersPage() {
               )
             ) : null}
           </div>
+          {(chonModal === "create-bn" || chonModal === "edit-bn") &&
+          (chonBnTongSo > 0 || chonBnDangTai) ? (
+            <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2 pt-2 border-top">
+              <span className="small text-muted">
+                {chonBnDangTai
+                  ? "Đang tải…"
+                  : `${chonBnTongSo} hồ sơ · trang ${chonBnTrang + 1}/${chonBnTongTrang}`}
+              </span>
+              {chonBnTongTrang > 1 ? (
+                <Pagination className="mb-0 flex-wrap">
+                  <Pagination.Prev
+                    disabled={chonBnTrang <= 0 || chonBnDangTai}
+                    onClick={() =>
+                      void taiBenhNhanTrangChon(Math.max(0, chonBnTrang - 1), chonTimKiem)
+                    }
+                  />
+                  <Pagination.Item active className="user-select-none">
+                    {chonBnTrang + 1} / {chonBnTongTrang}
+                  </Pagination.Item>
+                  <Pagination.Next
+                    disabled={chonBnTrang >= chonBnTongTrang - 1 || chonBnDangTai}
+                    onClick={() =>
+                      void taiBenhNhanTrangChon(
+                        Math.min(chonBnTongTrang - 1, chonBnTrang + 1),
+                        chonTimKiem,
+                      )
+                    }
+                  />
+                </Pagination>
+              ) : null}
+            </div>
+          ) : null}
+          {(chonModal === "create-bs" || chonModal === "edit-bs") &&
+          bacSiDaLocChiTiet.length > 0 ? (
+            <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2 pt-2 border-top">
+              <span className="small text-muted">
+                {bacSiDaLocChiTiet.length} bác sĩ · trang {chonBsTrang + 1}/{chonBsTongTrang}
+              </span>
+              {chonBsTongTrang > 1 ? (
+                <Pagination className="mb-0 flex-wrap">
+                  <Pagination.Prev
+                    disabled={chonBsTrang <= 0}
+                    onClick={() => setChonBsTrang((p) => Math.max(0, p - 1))}
+                  />
+                  <Pagination.Item active className="user-select-none">
+                    {chonBsTrang + 1} / {chonBsTongTrang}
+                  </Pagination.Item>
+                  <Pagination.Next
+                    disabled={chonBsTrang >= chonBsTongTrang - 1}
+                    onClick={() =>
+                      setChonBsTrang((p) => Math.min(chonBsTongTrang - 1, p + 1))
+                    }
+                  />
+                </Pagination>
+              ) : null}
+            </div>
+          ) : null}
         </Modal.Body>
         <Modal.Footer className="clinic-modal-footer-actions">
           <Button type="button" className="btn-modal-dismiss" onClick={dongChonModal}>

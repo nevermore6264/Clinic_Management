@@ -2784,55 +2784,6 @@ html.app-ready body {
   gap: 0.5rem 0.65rem;
 }
 
-.nguoi-dung-chon-modal .nguoi-dung-them-ho-so-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 0.8125rem;
-  line-height: 1.2;
-  border-radius: var(--clinic-radius-sm);
-  padding: 0.5rem 0.95rem;
-  text-decoration: none !important;
-  white-space: nowrap;
-  border: 1px solid transparent;
-  transition:
-    background var(--transition-fast),
-    border-color var(--transition-fast),
-    color var(--transition-fast),
-    box-shadow var(--transition-fast);
-}
-
-.nguoi-dung-them-ho-so-btn--bn {
-  border-color: #059669 !important;
-  background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%);
-  color: #047857 !important;
-  box-shadow: 0 1px 0 rgba(5, 150, 105, 0.12);
-}
-
-.nguoi-dung-them-ho-so-btn--bn:hover,
-.nguoi-dung-them-ho-so-btn--bn:focus-visible {
-  background: linear-gradient(180deg, #d1fae5 0%, #a7f3d0 100%);
-  border-color: #047857 !important;
-  color: #065f46 !important;
-  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
-}
-
-.nguoi-dung-them-ho-so-btn--bs {
-  border-color: var(--clinic-blue) !important;
-  background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
-  color: var(--clinic-blue-dark) !important;
-  box-shadow: 0 1px 0 rgba(37, 99, 235, 0.12);
-}
-
-.nguoi-dung-them-ho-so-btn--bs:hover,
-.nguoi-dung-them-ho-so-btn--bs:focus-visible {
-  background: linear-gradient(180deg, #dbeafe 0%, #bfdbfe 100%);
-  border-color: var(--clinic-blue-dark) !important;
-  color: #1e3a8a !important;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.22);
-}
-
 .patient-create-modal .modal-header {
   border-bottom: 1px solid var(--clinic-border);
   background: linear-gradient(

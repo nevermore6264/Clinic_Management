@@ -19,7 +19,11 @@ public interface BenhNhanRepository extends JpaRepository<BenhNhan, Long> {
 
     @Query("""
             SELECT b FROM BenhNhan b WHERE
-            (:ten IS NULL OR :ten = '' OR LOWER(b.hoTen) LIKE LOWER(CONCAT('%', :ten, '%'))) AND
+            (:ten IS NULL OR :ten = '' OR
+              LOWER(b.hoTen) LIKE LOWER(CONCAT('%', :ten, '%')) OR
+              LOWER(COALESCE(b.soDienThoai, '')) LIKE LOWER(CONCAT('%', :ten, '%')) OR
+              LOWER(COALESCE(b.thuDienTu, '')) LIKE LOWER(CONCAT('%', :ten, '%')) OR
+              LOWER(COALESCE(b.diaChi, '')) LIKE LOWER(CONCAT('%', :ten, '%'))) AND
             (:hoatDong IS NULL OR b.hoatDong = :hoatDong) AND
             (:gioiTinh IS NULL OR :gioiTinh = '' OR b.gioiTinh = :gioiTinh) AND
             (:nhomMau IS NULL OR :nhomMau = '' OR b.nhomMau = :nhomMau)

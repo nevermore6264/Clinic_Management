@@ -1899,7 +1899,9 @@ function AppointmentsPageInner() {
                 }}
               />
               <Form.Text className="text-muted">
-                Chọn ngày từ hôm nay — hệ thống chỉ hiển thị bác sĩ có lịch trực (cố định hoặc ngoại lệ) trong ngày đó.
+                Chọn ngày từ hôm nay — chỉ hiện bác sĩ còn khung giờ hợp lệ:{" "}
+                <strong>ca cố định theo thứ</strong> cộng thêm <strong>ca ngoại lệ (đổi giờ)</strong> trong ngày;
+                nghỉ cả ngày thì không có giờ.
                 {appointmentDate === todayStr ? (
                   <> Nếu chọn hôm nay, các khung giờ đã qua sẽ không hiển thị.</>
                 ) : null}

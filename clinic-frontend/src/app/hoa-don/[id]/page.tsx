@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, Table, Button, Form, Alert, Modal } from "react-bootstrap";
 import Link from "next/link";
-import QRCode from "react-qr-code";
 import { useAuth } from "@/lib/useAuth";
 import {
   invoicesApi,
@@ -17,24 +16,6 @@ import { formatVndInput, parseVndInput } from "@/lib/moneyVnd";
 import { formatInstantVi } from "@/lib/formatInstantVi";
 import { laBacSiKhongXemHoaDon } from "@/lib/roles";
 import { LoadingState } from "@/components/LoadingState";
-
-function payOsQrLaNguonAnh(qr: string): boolean {
-  const t = qr.trim();
-  if (!t) return false;
-  if (t.startsWith("http://") || t.startsWith("https://")) return true;
-  if (t.startsWith("data:image")) return true;
-  if (t.startsWith("iVBOR") || t.startsWith("/9j") || t.startsWith("R0lGOD"))
-    return true;
-  return false;
-}
-
-function qrPayOsSrcAnh(qr: string): string {
-  if (!qr) return "";
-  const t = qr.trim();
-  if (t.startsWith("data:") || t.startsWith("http://") || t.startsWith("https://"))
-    return t;
-  return `data:image/png;base64,${t}`;
-}
 
 export default function InvoiceDetailPage() {
   const params = useParams();
@@ -168,13 +149,24 @@ export default function InvoiceDetailPage() {
       ["QUAN_TRI", "LE_TAN", "THU_NGAN"].includes(r),
     ) ?? false;
 
-  const taiPayOs = async () => {
+  const taiPayOs = async (tabDaGiuCho: Window | null) => {
     setPayOsLoading(true);
     setError("");
     try {
       const link = await invoicesApi.createPayOsLink(id);
       setPayOs(link);
+      const url = link.checkoutUrl?.trim();
+      if (url) {
+        if (tabDaGiuCho && !tabDaGiuCho.closed) {
+          tabDaGiuCho.location.href = url;
+        } else {
+          window.open(url, "_blank", "noopener,noreferrer");
+        }
+      }
     } catch (e: unknown) {
+      if (tabDaGiuCho && !tabDaGiuCho.closed) {
+        tabDaGiuCho.close();
+      }
       setError(e instanceof Error ? e.message : "Lỗi PayOS");
     } finally {
       setPayOsLoading(false);
@@ -247,25 +239,31 @@ export default function InvoiceDetailPage() {
             <div className="mb-4 pb-4 border-bottom">
               <p className="fw-semibold mb-2">Trực tuyến (PayOS)</p>
                 <p className="text-muted small mb-3">
-                  PayOS có thể gửi <strong>webhook</strong> tới máy chủ công khai để ghi nhận tự động.
-                  Trên localhost hoặc khi chưa cấu hình URL webhook, sau khi khách thanh toán hãy bấm{" "}
-                  <strong>Đồng bộ trạng thái PayOS</strong> — hệ thống sẽ hỏi trực tiếp PayOS (API lấy
-                  thông tin link). Khi quay lại từ PayOS với <code>?payos=success</code>, trang cũng tự
-                  đồng bộ vài lần cho tới khi đủ tiền hoặc hết thời gian chờ.
+                  Bấm nút bên dưới để mở <strong>trang thanh toán PayOS</strong> trong tab mới. Sau khi
+                  thanh toán xong, quay lại tab này — nếu PayOS chuyển hướng về với{" "}
+                  <code>?payos=success</code>, hệ thống tự đồng bộ vài lần. PayOS cũng có thể gửi{" "}
+                  <strong>webhook</strong> tới máy chủ công khai; trên localhost hoặc khi webhook chưa
+                  tới, hãy bấm <strong>Đồng bộ trạng thái PayOS</strong>.
                 </p>
                 <div className="d-flex flex-wrap gap-2 align-items-center">
                 <Button
                   variant="primary"
                   className="d-inline-flex align-items-center gap-2"
                   disabled={payOsLoading}
-                  onClick={() => void taiPayOs()}
+                  onClick={() => {
+                    const tab =
+                      typeof window !== "undefined"
+                        ? window.open("about:blank", "_blank", "noopener,noreferrer")
+                        : null;
+                    void taiPayOs(tab);
+                  }}
                 >
-                  <i className="bi bi-qr-code-scan" aria-hidden />
+                  <i className="bi bi-box-arrow-up-right" aria-hidden />
                   {payOsLoading
-                    ? "Đang tạo link…"
+                    ? "Đang mở PayOS…"
                     : payOs
-                      ? "Tạo QR / link mới"
-                      : "Tạo QR / link thanh toán"}
+                      ? "Tạo link mới và mở PayOS"
+                      : "Thanh toán PayOS (tab mới)"}
                 </Button>
                 <Button
                   type="button"
@@ -279,60 +277,41 @@ export default function InvoiceDetailPage() {
                 </Button>
                 </div>
                 {payOs && (
-                  <div className="mt-3">
-                    {payOs.qrCode ? (
-                      payOsQrLaNguonAnh(payOs.qrCode) ? (
-                        <img
-                          src={qrPayOsSrcAnh(payOs.qrCode)}
-                          alt="Mã QR PayOS"
-                          className="d-block mb-2 border rounded bg-white p-1"
-                          width={220}
-                          height={220}
-                        />
-                      ) : (
-                        <div className="d-inline-block mb-2 border rounded bg-white p-2">
-                          <QRCode
-                            value={payOs.qrCode.trim()}
-                            size={220}
-                            level="M"
-                            title="Mã QR thanh toán PayOS"
-                          />
-                        </div>
-                      )
-                    ) : null}
-                    <p className="small text-muted mb-1">
-                      Số tiền: {payOs.amount.toLocaleString("vi-VN")}đ
+                  <div className="mt-3 rounded border bg-light p-3">
+                    <p className="small mb-2">
+                      Đã mở (hoặc chuẩn bị mở) trang PayOS. Số tiền link:{" "}
+                      <strong>{payOs.amount.toLocaleString("vi-VN")}đ</strong>
                     </p>
                     {(payOs.accountNumber || payOs.accountName) && (
-                      <p className="small mb-2">
-                        {payOs.accountNumber
-                          ? `STK: ${payOs.accountNumber}`
-                          : null}
+                      <p className="small text-muted mb-2">
+                        {payOs.accountNumber ? `STK: ${payOs.accountNumber}` : null}
                         {payOs.accountNumber && payOs.accountName ? " — " : null}
                         {payOs.accountName || null}
                       </p>
                     )}
-                    <div className="d-flex flex-wrap gap-2 mt-3">
-                    <Button
-                      variant="success"
-                      className="d-inline-flex align-items-center gap-2"
-                      href={payOs.checkoutUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <i className="bi bi-box-arrow-up-right" aria-hidden />
-                      Mở trang thanh toán PayOS
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline-secondary"
-                      className="d-inline-flex align-items-center gap-2"
-                      disabled={dongBoBusy}
-                      onClick={() => void dongBoMotLan()}
-                    >
-                      <i className="bi bi-arrow-repeat" aria-hidden />
-                      Cập nhật sau khi quét QR
-                    </Button>
+                    <div className="d-flex flex-wrap gap-2">
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        className="d-inline-flex align-items-center gap-2"
+                        href={payOs.checkoutUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <i className="bi bi-box-arrow-up-right" aria-hidden />
+                        Mở lại trang PayOS
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline-secondary"
+                        size="sm"
+                        className="d-inline-flex align-items-center gap-2"
+                        disabled={dongBoBusy}
+                        onClick={() => void dongBoMotLan()}
+                      >
+                        <i className="bi bi-arrow-repeat" aria-hidden />
+                        Cập nhật sau khi thanh toán
+                      </Button>
                     </div>
                   </div>
                 )}

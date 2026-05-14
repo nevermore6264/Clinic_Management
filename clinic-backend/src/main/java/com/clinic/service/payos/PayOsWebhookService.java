@@ -84,9 +84,6 @@ public class PayOsWebhookService {
         ghiNhanTuDonHangNeuChuaXuLy(dh, amountFromHook, maThamChieu);
     }
 
-    /**
-     * Ghi nhận thanh toán cho một đơn PayOS đã lưu (webhook hoặc đồng bộ chủ động qua API PayOS).
-     */
     @Transactional
     public void ghiNhanTuDonHangNeuChuaXuLy(PayOsDonHang dh, int soTienTuPayOsVnd, String maThamChieuGoiY) {
         if (dh.isDaXuLyWebhook()) {

@@ -140,13 +140,6 @@ function chuanGio(t?: string) {
   return t.length >= 5 ? t.slice(0, 5) : t;
 }
 
-function thuTuNgayIso(iso: string): number {
-  const [y, m, d] = iso.split("-").map(Number);
-  if (!y || !m || !d) return 0;
-  const dow = new Date(y, m - 1, d).getDay();
-  return dow === 0 ? 7 : dow;
-}
-
 function thuHaiIsoVi(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
   if (!y || !m || !d) return iso;
@@ -169,22 +162,6 @@ function congNgayIso(iso: string, soNgay: number): string {
   const mm = String(dt.getMonth() + 1).padStart(2, "0");
   const dd = String(dt.getDate()).padStart(2, "0");
   return `${yy}-${mm}-${dd}`;
-}
-
-function hmsToPhut(t?: string): number {
-  if (!t) return -1;
-  const [h, m] = t.split(":").map(Number);
-  if (Number.isNaN(h) || Number.isNaN(m)) return -1;
-  return h * 60 + m;
-}
-
-function chongLan(a1: string, a2: string, b1: string, b2: string): boolean {
-  const A1 = hmsToPhut(a1);
-  const A2 = hmsToPhut(a2);
-  const B1 = hmsToPhut(b1);
-  const B2 = hmsToPhut(b2);
-  if (A1 < 0 || A2 < 0 || B1 < 0 || B2 < 0) return false;
-  return A1 < B2 && B1 < A2;
 }
 
 export default function LichLamViecBacSisPage() {
@@ -339,22 +316,6 @@ export default function LichLamViecBacSisPage() {
     };
   }, [user, doctorId, date]);
 
-  const thuTrongTuanHomNay = useMemo(() => thuTuNgayIso(date), [date]);
-
-  const gioHanhChinhHomNay = useMemo(() => {
-    const dsThu = thuTrongTuanHomNay;
-    return coDinhList
-      .filter(
-        (c) =>
-          (c.thuTrongTuan === 0 ? 7 : c.thuTrongTuan) === dsThu,
-      )
-      .map((c) => ({
-        batDau: chuanGio(c.khungGioBatDau),
-        ketThuc: chuanGio(c.khungGioKetThuc),
-      }))
-      .sort((a, b) => a.batDau.localeCompare(b.batDau));
-  }, [coDinhList, thuTrongTuanHomNay]);
-
   const tuanBatDauTuNgay = useMemo(() => thuHaiIsoVi(date), [date]);
   const tuanChuNhatIso = useMemo(
     () => congNgayIso(tuanBatDauTuNgay, 6),
@@ -370,20 +331,6 @@ export default function LichLamViecBacSisPage() {
       newSlot.khungGioBatDau >= newSlot.khungGioKetThuc
     ) {
       setLoiNgoaiLe("Giờ bắt đầu phải trước giờ kết thúc.");
-      return;
-    }
-    const trung = gioHanhChinhHomNay.find((g) =>
-      chongLan(
-        newSlot.khungGioBatDau,
-        newSlot.khungGioKetThuc,
-        g.batDau,
-        g.ketThuc,
-      ),
-    );
-    if (trung) {
-      setLoiNgoaiLe(
-        `Ca ngoại lệ chồng với giờ hành chính ${trung.batDau}–${trung.ketThuc}. Ngoại lệ chỉ được tạo ngoài khung giờ hành chính.`,
-      );
       return;
     }
     setError("");
@@ -613,7 +560,7 @@ export default function LichLamViecBacSisPage() {
         subtitle={
           chiBsChiMinh
             ? "Bạn chỉ xem và chỉnh lịch làm việc của chính mình (theo tài khoản đã gắn hồ sơ bác sĩ)."
-            : "Quản lý ca cố định theo tuần và các ngoại lệ trong ngày."
+            : "Ca cố định lặp theo tuần; ngày có ngoại lệ đổi giờ thì đặt lịch chỉ theo khung ngoại lệ (không cộng thêm ca cố định)."
         }
       />
 
@@ -1013,8 +960,8 @@ export default function LichLamViecBacSisPage() {
                 title="Ca ngoại lệ"
                 subtitle={
                   <>
-                    Bảy ô T2–CN như tab ca cố định; mỗi ô chỉ hiển thị{" "}
-                    <strong>ngoại lệ / lịch cũ theo ngày</strong> (không hiển thị ca mẫu tuần).{" "}
+                    Mỗi ngày: nếu có ngoại lệ đổi giờ thì chỉ áp dụng các khung đó (thay cho ca cố định cùng thứ);
+                    không có ngoại lệ thì dùng ca cố định.{" "}
                     <Button
                       type="button"
                       variant="link"
@@ -1149,9 +1096,20 @@ export default function LichLamViecBacSisPage() {
                                       setLoiNgoaiLe("");
                                       setShowAdd(!dangMoFormChoNgayNay);
                                     }}
-                                    title={`Thêm ca ngoại lệ ${formatNgay(dayIso)}`}
+                                    title={
+                                      dangMoFormChoNgayNay
+                                        ? `Đóng form ${formatNgay(dayIso)}`
+                                        : `Thêm ca ngoại lệ ${formatNgay(dayIso)}`
+                                    }
                                   >
-                                    <i className="bi bi-plus-lg me-sm-1" aria-hidden />
+                                    <i
+                                      className={
+                                        dangMoFormChoNgayNay
+                                          ? "bi bi-x-lg me-sm-1"
+                                          : "bi bi-plus-lg me-sm-1"
+                                      }
+                                      aria-hidden
+                                    />
                                     <span className="d-none d-sm-inline">
                                       {dangMoFormChoNgayNay ? "Đóng form" : "Thêm ca"}
                                     </span>
@@ -1182,9 +1140,9 @@ export default function LichLamViecBacSisPage() {
                                       <div className="fw-semibold text-body">Thêm ca ngoại lệ</div>
                                       <div className="small text-muted">{formatNgay(dayIso)}</div>
                                       <div className="small text-muted mt-1">
-                                        Giờ hành chính {TEN_THU[thu] ?? "—"}:{" "}
+                                        Ca cố định {TEN_THU[thu] ?? "—"} (tham khảo):{" "}
                                         {gioHanhChinhThu.length === 0 ? (
-                                          <em>Nghỉ (không có ca cố định)</em>
+                                          <em>không có — ngày đó mặc định không mở theo tuần</em>
                                         ) : (
                                           gioHanhChinhThu.map((g, i) => (
                                             <span key={`${g.batDau}-${g.ketThuc}`}>
@@ -1195,22 +1153,11 @@ export default function LichLamViecBacSisPage() {
                                             </span>
                                           ))
                                         )}
-                                        . Ca ngoại lệ phải nằm <strong>ngoài</strong> các khung đó.
+                                        . Nếu bạn thêm ngoại lệ cho{" "}
+                                        <span className="font-monospace">{formatNgay(dayIso)}</span>,{" "}
+                                        ngày đó chỉ nhận đặt lịch trong khung ngoại lệ (không dùng thêm ca cố định).
                                       </div>
                                     </div>
-                                    <Button
-                                      type="button"
-                                      variant="outline-secondary"
-                                      size="sm"
-                                      className="flex-shrink-0 rounded-pill px-3 lich-bs-btn-ngoai-le-dong"
-                                      onClick={() => {
-                                        setLoiNgoaiLe("");
-                                        setShowAdd(false);
-                                      }}
-                                    >
-                                      <i className="bi bi-x-lg me-1" aria-hidden />
-                                      Đóng
-                                    </Button>
                                   </div>
                                   {loiNgoaiLe ? (
                                     <Alert

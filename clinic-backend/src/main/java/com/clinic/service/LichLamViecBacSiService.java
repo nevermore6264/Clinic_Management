@@ -57,6 +57,17 @@ public class LichLamViecBacSiService {
             ketQua.add(sangDtoTuNgoaiLe(nghiRows.get(0), maBacSi, tenBs, ngay));
             return ketQua;
         }
+        List<LichNgoaiLe> doiGio = ngoaiLe.stream()
+                .filter(x -> x.getLoaiNgoaiLe() == LichNgoaiLe.LoaiNgoaiLe.DOI_GIO)
+                .sorted(Comparator.comparing(LichNgoaiLe::getId))
+                .toList();
+        if (!doiGio.isEmpty()) {
+            for (LichNgoaiLe nl : doiGio) {
+                ketQua.add(sangDtoTuNgoaiLe(nl, maBacSi, tenBs, ngay));
+            }
+            ketQua.sort(Comparator.comparing(LichLamViecBacSiDto::getKhungGioBatDau, Comparator.nullsLast(LocalTime::compareTo)));
+            return ketQua;
+        }
         int thu = ngay.getDayOfWeek().getValue();
         Set<Integer> thuCan = new LinkedHashSet<>();
         thuCan.add(thu);
@@ -66,13 +77,6 @@ public class LichLamViecBacSiService {
                 .thenComparing(LichLamViecCoDinh::getId));
         for (LichLamViecCoDinh cd : coDinh) {
             ketQua.add(sangDtoTuCoDinh(cd, maBacSi, tenBs, ngay));
-        }
-        List<LichNgoaiLe> doiGio = ngoaiLe.stream()
-                .filter(x -> x.getLoaiNgoaiLe() == LichNgoaiLe.LoaiNgoaiLe.DOI_GIO)
-                .sorted(Comparator.comparing(LichNgoaiLe::getId))
-                .toList();
-        for (LichNgoaiLe nl : doiGio) {
-            ketQua.add(sangDtoTuNgoaiLe(nl, maBacSi, tenBs, ngay));
         }
         List<LichLamViecBacSi> legacy = khoLichLamViec.findByBacSiIdAndNgayLich(maBacSi, ngay);
         for (LichLamViecBacSi leg : legacy) {
@@ -118,7 +122,6 @@ public class LichLamViecBacSiService {
         if (!dto.getKhungGioBatDau().isBefore(dto.getKhungGioKetThuc())) {
             throw new RuntimeException("Giờ bắt đầu phải trước giờ kết thúc.");
         }
-        kiemTraNgoaiGioHanhChinh(bs.getId(), ngay, dto.getKhungGioBatDau(), dto.getKhungGioKetThuc());
         LichNgoaiLe nl = LichNgoaiLe.builder()
                 .bacSi(bs)
                 .ngayNgoaiLe(ngay)
@@ -128,26 +131,6 @@ public class LichLamViecBacSiService {
                 .build();
         LichNgoaiLe daLuu = lichNgoaiLeRepository.save(nl);
         return sangDtoTuNgoaiLe(daLuu, bs.getId(), layTenBacSi(bs), ngay);
-    }
-
-    private void kiemTraNgoaiGioHanhChinh(Long maBacSi, LocalDate ngay,
-                                         LocalTime batDau, LocalTime ketThuc) {
-        int thu = ngay.getDayOfWeek().getValue();
-        Set<Integer> thuCan = new LinkedHashSet<>();
-        thuCan.add(thu);
-        thuCan.add(thu % 7);
-        List<LichLamViecCoDinh> coDinh = lichLamViecCoDinhRepository.findByBacSiIdAndThuTrongTuanIn(maBacSi, thuCan);
-        for (LichLamViecCoDinh cd : coDinh) {
-            LocalTime a = cd.getKhungGioBatDau();
-            LocalTime b = cd.getKhungGioKetThuc();
-            if (a == null || b == null) continue;
-            if (batDau.isBefore(b) && a.isBefore(ketThuc)) {
-                throw new RuntimeException(
-                        "Ca ngoại lệ " + batDau + "–" + ketThuc
-                        + " chồng với giờ hành chính " + a + "–" + b
-                        + ". Ngoại lệ chỉ được tạo ngoài khung giờ hành chính.");
-            }
-        }
     }
 
     @Transactional
@@ -165,9 +148,6 @@ public class LichLamViecBacSiService {
                 if (!dto.getKhungGioBatDau().isBefore(dto.getKhungGioKetThuc())) {
                     throw new RuntimeException("Giờ bắt đầu phải trước giờ kết thúc.");
                 }
-                LocalDate ngayKt = dto.getNgayLich() != null ? dto.getNgayLich() : nl.getNgayNgoaiLe();
-                kiemTraNgoaiGioHanhChinh(nl.getBacSi().getId(), ngayKt,
-                        dto.getKhungGioBatDau(), dto.getKhungGioKetThuc());
                 nl.setGioBatDau(dto.getKhungGioBatDau());
                 nl.setGioKetThuc(dto.getKhungGioKetThuc());
                 if (dto.getNgayLich() != null) {

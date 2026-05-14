@@ -229,6 +229,16 @@ public class LichHenService {
         if (coNghi) {
             return Set.of();
         }
+        List<LichNgoaiLe> doiGio = ngoaiLe.stream()
+                .filter(x -> x.getLoaiNgoaiLe() == LichNgoaiLe.LoaiNgoaiLe.DOI_GIO)
+                .toList();
+        if (!doiGio.isEmpty()) {
+            Set<LocalTime> chiTheoNgoaiLe = new HashSet<>();
+            for (LichNgoaiLe item : doiGio) {
+                chiTheoNgoaiLe.addAll(tachTheoCa1Gio(item.getGioBatDau(), item.getGioKetThuc()));
+            }
+            return chiTheoNgoaiLe;
+        }
         int thu = ngay.getDayOfWeek().getValue();
         List<Integer> thuCanKiemTra = new ArrayList<>();
         thuCanKiemTra.add(thu);
@@ -236,16 +246,9 @@ public class LichHenService {
         if (!thuCanKiemTra.contains(thuChuNhatDangSo0)) {
             thuCanKiemTra.add(thuChuNhatDangSo0);
         }
-        Set<LocalTime> ketQua = lichLamViecCoDinhRepository.findByBacSiIdAndThuTrongTuanIn(maBacSi, thuCanKiemTra).stream()
+        return lichLamViecCoDinhRepository.findByBacSiIdAndThuTrongTuanIn(maBacSi, thuCanKiemTra).stream()
                 .flatMap(x -> tachTheoCa1Gio(x.getKhungGioBatDau(), x.getKhungGioKetThuc()).stream())
-                .collect(Collectors.toCollection(() -> new HashSet<LocalTime>()));
-        List<LichNgoaiLe> doiGio = ngoaiLe.stream()
-                .filter(x -> x.getLoaiNgoaiLe() == LichNgoaiLe.LoaiNgoaiLe.DOI_GIO)
-                .toList();
-        for (LichNgoaiLe item : doiGio) {
-            ketQua.addAll(tachTheoCa1Gio(item.getGioBatDau(), item.getGioKetThuc()));
-        }
-        return ketQua;
+                .collect(Collectors.toCollection(HashSet::new));
     }
 
     private List<LocalTime> tachTheoCa1Gio(LocalTime batDau, LocalTime ketThuc) {

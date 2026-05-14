@@ -7,6 +7,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,6 +16,14 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Slf4j
 public class XuLyNgoaiLeToanCuc {
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Void> handleNoResourceFound(NoResourceFoundException ex) {
+        if (log.isDebugEnabled()) {
+            log.debug("404 (không phải API): {}", ex.getResourcePath());
+        }
+        return ResponseEntity.notFound().build();
+    }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {

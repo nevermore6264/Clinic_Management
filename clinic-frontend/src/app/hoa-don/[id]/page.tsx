@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Card, Table, Button, Form, Alert, Modal } from "react-bootstrap";
 import Link from "next/link";
@@ -27,13 +27,62 @@ export default function InvoiceDetailPage() {
   const [payOs, setPayOs] = useState<PayOsTaoLinkPhanHoi | null>(null);
   const [payOsLoading, setPayOsLoading] = useState(false);
 
-  const [dongBoBusy, setDongBoBusy] = useState(false);
+  const [payOsNenPoll, setPayOsNenPoll] = useState(false);
   const daMoPayOsSession = useRef(false);
+  const payOsPollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const payOsPollDeadlineRef = useRef(0);
+
+  const remainingOfHoaDon = useCallback((u: HoaDon) => {
+    const tong = Number(u.tongTien);
+    const da = Number(u.soTienDaTra);
+    return (
+      (Number.isFinite(tong) ? tong : 0) - (Number.isFinite(da) ? da : 0)
+    );
+  }, []);
+
+  const clearPayOsPoll = useCallback(() => {
+    if (payOsPollTimerRef.current != null) {
+      clearInterval(payOsPollTimerRef.current);
+      payOsPollTimerRef.current = null;
+    }
+    payOsPollDeadlineRef.current = 0;
+    setPayOsNenPoll(false);
+  }, []);
+
+  const startPayOsPoll = useCallback(() => {
+    clearPayOsPoll();
+    const deadline = Date.now() + 120_000;
+    payOsPollDeadlineRef.current = deadline;
+    setPayOsNenPoll(true);
+    const tick = async () => {
+      if (Date.now() > payOsPollDeadlineRef.current) {
+        clearPayOsPoll();
+        return;
+      }
+      try {
+        const u = await invoicesApi.syncPayOs(id);
+        setInv(u);
+        setError("");
+        if (remainingOfHoaDon(u) <= 0.000001) {
+          clearPayOsPoll();
+        }
+      } catch {
+        // PayOS chưa PAID / API tạm lỗi — tiếp tục hỏi tới hết hạn (webhook không tới localhost).
+      }
+    };
+    void tick();
+    payOsPollTimerRef.current = setInterval(() => void tick(), 2500);
+  }, [id, clearPayOsPoll, remainingOfHoaDon]);
+
+  useEffect(() => {
+    return () => clearPayOsPoll();
+  }, [clearPayOsPoll]);
 
   useEffect(() => {
     setPayOs(null);
     daMoPayOsSession.current = false;
-  }, [id]);
+    clearPayOsPoll();
+  }, [id, clearPayOsPoll]);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -63,59 +112,14 @@ export default function InvoiceDetailPage() {
       return;
     }
     if (q !== "success") return;
+    router.replace(`/hoa-don/${id}`);
+    startPayOsPoll();
+  }, [user, id, router, startPayOsPoll]);
 
-    let cancelled = false;
-    const maxTicks = 24;
-
-    const remainingOf = (u: HoaDon) => {
-      const tong = Number(u.tongTien);
-      const da = Number(u.soTienDaTra);
-      return (
-        (Number.isFinite(tong) ? tong : 0) - (Number.isFinite(da) ? da : 0)
-      );
-    };
-
-    const run = async () => {
-      setDongBoBusy(true);
-      try {
-        for (let i = 0; i < maxTicks && !cancelled; i++) {
-          try {
-            const u = await invoicesApi.syncPayOs(id);
-            if (cancelled) break;
-            setInv(u);
-            setError("");
-            if (remainingOf(u) <= 0.000001) break;
-          } catch (e: unknown) {
-            if (!cancelled) {
-              setError(
-                e instanceof Error ? e.message : "Đồng bộ PayOS thất bại",
-              );
-            }
-            break;
-          }
-          if (cancelled || i === maxTicks - 1) break;
-          await new Promise((r) => setTimeout(r, 2500));
-        }
-      } finally {
-        if (!cancelled) {
-          setDongBoBusy(false);
-          router.replace(`/hoa-don/${id}`);
-        }
-      }
-    };
-
-    void run();
-    return () => {
-      cancelled = true;
-      setDongBoBusy(false);
-    };
-  }, [user, id, router]);
-
-  /** Sau khi đã mở PayOS: mỗi lần quay lại tab này, đồng bộ nhẹ (hữu ích khi webhook chưa tới). */
   useEffect(() => {
     if (!user || !id || typeof document === "undefined") return;
     let lastAt = 0;
-    const gapMs = 5000;
+    const gapMs = 4000;
     const onVis = () => {
       if (document.visibilityState !== "visible") return;
       if (!daMoPayOsSession.current) return;
@@ -148,6 +152,7 @@ export default function InvoiceDetailPage() {
       });
       const updated = await invoicesApi.get(id);
       setInv(updated);
+      clearPayOsPoll();
       setShowPayment(false);
       setPayAmount("");
       setPayRef("");
@@ -176,6 +181,7 @@ export default function InvoiceDetailPage() {
           window.open(url, "_blank", "noopener,noreferrer");
         }
       }
+      startPayOsPoll();
     } catch (e: unknown) {
       if (tabDaGiuCho && !tabDaGiuCho.closed) {
         tabDaGiuCho.close();
@@ -254,10 +260,12 @@ export default function InvoiceDetailPage() {
               Thanh toán
             </Card.Header>
             <Card.Body>
-              {dongBoBusy ? (
-                <p className="small text-primary mb-2">
+              {payOsNenPoll ? (
+                <p className="small text-muted mb-2">
                   <i className="bi bi-arrow-repeat me-1" aria-hidden />
-                  Đang cập nhật trạng thái từ PayOS…
+                  Đang hỏi PayOS định kỳ (tối đa ~2 phút). Trên localhost webhook thường
+                  không tới — hệ thống dùng API PayOS; khi thanh toán xong, số tiền đã trả sẽ
+                  cập nhật tự động.
                 </p>
               ) : null}
               <div className="d-flex flex-wrap gap-2 align-items-center">

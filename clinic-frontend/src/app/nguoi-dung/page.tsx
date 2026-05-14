@@ -205,13 +205,13 @@ export default function UsersPage() {
         roles: [editForm.role],
         maBenhNhan:
           editForm.role === "BENH_NHAN"
-            ? editBenhNhanId
+            ? editBenhNhanId.trim()
               ? Number(editBenhNhanId)
               : editingUser.maBenhNhan
             : undefined,
         maBacSi:
           editForm.role === "BAC_SI"
-            ? editBacSiId
+            ? editBacSiId.trim()
               ? Number(editBacSiId)
               : editingUser.maBacSi
             : undefined,
@@ -609,6 +609,33 @@ export default function UsersPage() {
                       </option>
                     ))}
                   </Form.Select>
+                  <Form.Text className="text-muted">
+                    Tài khoản sẽ được gán với hồ sơ bệnh nhân đã chọn.
+                  </Form.Text>
+                </>
+              ) : createForm.role === "BAC_SI" ? (
+                <>
+                  <Form.Label className="required">Chọn bác sĩ (chưa có tài khoản)</Form.Label>
+                  <Form.Select
+                    value={bacSiDaChon}
+                    onChange={(e) => setBacSiDaChon(e.target.value)}
+                  >
+                    <option value="">-- Chọn bác sĩ --</option>
+                    {danhSachBacSi
+                      .filter((bs) => !bs.maNguoiDung)
+                      .map((bs) => (
+                        <option key={bs.id} value={bs.id}>
+                          {bs.hoTen ?? "Bác sĩ"}
+                          {bs.tenChuyenKhoa || bs.chuyenMon
+                            ? ` — ${bs.tenChuyenKhoa ?? bs.chuyenMon}`
+                            : ""}
+                        </option>
+                      ))}
+                  </Form.Select>
+                  <Form.Text className="text-muted">
+                    Chỉ hiện bác sĩ chưa gán tài khoản đăng nhập. Tạo hồ sơ bác sĩ tại mục Bác sĩ
+                    nếu cần.
+                  </Form.Text>
                 </>
               ) : (
                 <>
@@ -631,6 +658,7 @@ export default function UsersPage() {
                   const role = e.target.value;
                   setCreateForm((f) => ({ ...f, role }));
                   if (role !== "BENH_NHAN") setBenhNhanDaChon("");
+                  if (role !== "BAC_SI") setBacSiDaChon("");
                 }}
               >
                 {ROLES.map((r) => (
@@ -645,7 +673,11 @@ export default function UsersPage() {
             <Button
               type="button"
               className="btn-modal-dismiss"
-              onClick={() => setShowCreate(false)}
+              onClick={() => {
+                setShowCreate(false);
+                setBenhNhanDaChon("");
+                setBacSiDaChon("");
+              }}
             >
               <i className="bi bi-x-lg me-2" aria-hidden />
               Hủy
@@ -664,6 +696,8 @@ export default function UsersPage() {
         onHide={() => {
           setShowEdit(false);
           setEditingUser(null);
+          setEditBenhNhanId("");
+          setEditBacSiId("");
         }}
       >
         <Modal.Header closeButton>
@@ -696,11 +730,16 @@ export default function UsersPage() {
                 onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
               />
             </Form.Group>
-            <Form.Group>
+            <Form.Group className="mb-2">
               <Form.Label className="required">Vai trò</Form.Label>
               <Form.Select
                 value={editForm.role}
-                onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                onChange={(e) => {
+                  const role = e.target.value;
+                  setEditForm({ ...editForm, role });
+                  if (role !== "BENH_NHAN") setEditBenhNhanId("");
+                  if (role !== "BAC_SI") setEditBacSiId("");
+                }}
               >
                 {ROLES.map((r) => (
                   <option key={r} value={r}>
@@ -709,6 +748,54 @@ export default function UsersPage() {
                 ))}
               </Form.Select>
             </Form.Group>
+            {editForm.role === "BENH_NHAN" ? (
+              <Form.Group className="mb-2">
+                <Form.Label className="required">Gán với bệnh nhân</Form.Label>
+                <Form.Select
+                  value={editBenhNhanId}
+                  onChange={(e) => setEditBenhNhanId(e.target.value)}
+                >
+                  <option value="">-- Chọn bệnh nhân --</option>
+                  {danhSachBenhNhan.map((bn) => (
+                    <option key={bn.id} value={String(bn.id)}>
+                      {bn.hoTen} {bn.soDienThoai ? `- ${bn.soDienThoai}` : ""}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Form.Text className="text-muted">
+                  Bắt buộc khi vai trò là Bệnh nhân — chọn đúng hồ sơ bệnh nhân cho tài khoản này.
+                </Form.Text>
+              </Form.Group>
+            ) : null}
+            {editForm.role === "BAC_SI" ? (
+              <Form.Group className="mb-2">
+                <Form.Label className="required">Gán với bác sĩ</Form.Label>
+                <Form.Select
+                  value={editBacSiId}
+                  onChange={(e) => setEditBacSiId(e.target.value)}
+                >
+                  <option value="">-- Chọn bác sĩ --</option>
+                  {danhSachBacSi
+                    .filter(
+                      (bs) =>
+                        !bs.maNguoiDung ||
+                        (editingUser?.maBacSi != null &&
+                          bs.id === editingUser.maBacSi),
+                    )
+                    .map((bs) => (
+                      <option key={bs.id} value={String(bs.id)}>
+                        {bs.hoTen ?? "Bác sĩ"}
+                        {bs.tenChuyenKhoa || bs.chuyenMon
+                          ? ` — ${bs.tenChuyenKhoa ?? bs.chuyenMon}`
+                          : ""}
+                      </option>
+                    ))}
+                </Form.Select>
+                <Form.Text className="text-muted">
+                  Chọn bác sĩ chưa có tài khoản, hoặc giữ bác sĩ đang gán.
+                </Form.Text>
+              </Form.Group>
+            ) : null}
           </Modal.Body>
           <Modal.Footer className="clinic-modal-footer-actions">
             <Button
@@ -717,6 +804,8 @@ export default function UsersPage() {
               onClick={() => {
                 setShowEdit(false);
                 setEditingUser(null);
+                setEditBenhNhanId("");
+                setEditBacSiId("");
               }}
             >
               <i className="bi bi-x-lg me-2" aria-hidden />

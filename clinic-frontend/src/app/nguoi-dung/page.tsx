@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card, Table, Button, Form, Alert, Modal, Pagination } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
 import {
@@ -68,6 +69,91 @@ export default function UsersPage() {
   const [trang, setTrang] = useState(0);
   const KICH_THUOC_TRANG = 15;
 
+  const [chonModal, setChonModal] = useState<
+    null | "create-bn" | "create-bs" | "edit-bn" | "edit-bs"
+  >(null);
+  const [chonTimKiem, setChonTimKiem] = useState("");
+
+  const danhSachChonModal = useMemo(() => {
+    const q = chonTimKiem.trim().toLowerCase();
+    const hop = (s: string | undefined | null) =>
+      !q || (s != null && String(s).toLowerCase().includes(q));
+    if (chonModal === "create-bn" || chonModal === "edit-bn") {
+      return danhSachBenhNhan.filter(
+        (bn) =>
+          hop(bn.hoTen) ||
+          hop(bn.soDienThoai) ||
+          hop(bn.thuDienTu) ||
+          hop(bn.diaChi),
+      );
+    }
+    if (chonModal === "create-bs") {
+      return danhSachBacSi
+        .filter((bs) => !bs.maNguoiDung)
+        .filter(
+          (bs) =>
+            hop(bs.hoTen) ||
+            hop(bs.tenChuyenKhoa) ||
+            hop(bs.chuyenMon),
+        );
+    }
+    if (chonModal === "edit-bs") {
+      return danhSachBacSi
+        .filter(
+          (bs) =>
+            !bs.maNguoiDung ||
+            (editingUser?.maBacSi != null && bs.id === editingUser.maBacSi),
+        )
+        .filter(
+          (bs) =>
+            hop(bs.hoTen) ||
+            hop(bs.tenChuyenKhoa) ||
+            hop(bs.chuyenMon),
+        );
+    }
+    return [];
+  }, [chonModal, chonTimKiem, danhSachBenhNhan, danhSachBacSi, editingUser]);
+
+  const moChonBenhNhan = (mode: "create" | "edit") => {
+    setChonTimKiem("");
+    void loadPatients();
+    setChonModal(mode === "create" ? "create-bn" : "edit-bn");
+  };
+
+  const moChonBacSi = (mode: "create" | "edit") => {
+    setChonTimKiem("");
+    void loadDoctors();
+    setChonModal(mode === "create" ? "create-bs" : "edit-bs");
+  };
+
+  const dongChonModal = () => {
+    setChonModal(null);
+    setChonTimKiem("");
+  };
+
+  const apChonBenhNhan = (id: number) => {
+    const s = String(id);
+    if (chonModal === "create-bn") setBenhNhanDaChon(s);
+    else if (chonModal === "edit-bn") setEditBenhNhanId(s);
+    dongChonModal();
+  };
+
+  const apChonBacSi = (id: number) => {
+    const s = String(id);
+    if (chonModal === "create-bs") setBacSiDaChon(s);
+    else if (chonModal === "edit-bs") setEditBacSiId(s);
+    dongChonModal();
+  };
+
+  const nhanBenhNhanDaChon = () =>
+    danhSachBenhNhan.find((bn) => String(bn.id) === benhNhanDaChon);
+  const nhanBacSiDaChon = () =>
+    danhSachBacSi.find((bs) => String(bs.id) === bacSiDaChon);
+  const nhanBenhNhanSua = () =>
+    danhSachBenhNhan.find((bn) => String(bn.id) === editBenhNhanId);
+  const nhanBacSiSua = () =>
+    danhSachBacSi.find((bs) => String(bs.id) === editBacSiId);
+
   const loadUsers = () =>
     usersApi
       .list()
@@ -76,7 +162,7 @@ export default function UsersPage() {
 
   const loadPatients = () =>
     patientsApi
-      .list(0, 500)
+      .list(0, 3000)
       .then((r) => setDanhSachBenhNhan(r.content ?? []))
       .catch((e) => setError(e.message));
 
@@ -152,6 +238,8 @@ export default function UsersPage() {
       });
       setBenhNhanDaChon("");
       setBacSiDaChon("");
+      setChonModal(null);
+      setChonTimKiem("");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Lỗi");
     }
@@ -182,7 +270,7 @@ export default function UsersPage() {
       return;
     }
     if (editForm.role === "BENH_NHAN") {
-      const maBn = editBenhNhanId
+      const maBn = editBenhNhanId.trim()
         ? Number(editBenhNhanId)
         : editingUser.maBenhNhan;
       if (maBn == null || Number.isNaN(maBn)) {
@@ -191,7 +279,9 @@ export default function UsersPage() {
       }
     }
     if (editForm.role === "BAC_SI") {
-      const maBs = editBacSiId ? Number(editBacSiId) : editingUser.maBacSi;
+      const maBs = editBacSiId.trim()
+        ? Number(editBacSiId)
+        : editingUser.maBacSi;
       if (maBs == null || Number.isNaN(maBs)) {
         setError("Vui lòng chọn bác sĩ gán với tài khoản.");
         return;
@@ -221,6 +311,8 @@ export default function UsersPage() {
       setEditingUser(null);
       setEditBenhNhanId("");
       setEditBacSiId("");
+      setChonModal(null);
+      setChonTimKiem("");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Lỗi");
     }
@@ -561,14 +653,22 @@ export default function UsersPage() {
 
       <Modal
         show={showCreate}
+        size="xl"
+        scrollable
+        dialogClassName="nguoi-dung-modal-xl"
         onHide={() => {
           setShowCreate(false);
           setBenhNhanDaChon("");
           setBacSiDaChon("");
+          setChonModal(null);
+          setChonTimKiem("");
         }}
         centered
+        enforceFocus={chonModal == null}
       >
-        <Modal.Header closeButton>Tạo tài khoản</Modal.Header>
+        <Modal.Header closeButton>
+          <Modal.Title>Thêm người dùng</Modal.Title>
+        </Modal.Header>
         <Form noValidate onSubmit={handleCreate}>
           <Modal.Body>
             <Form.Group className="mb-2">
@@ -597,44 +697,79 @@ export default function UsersPage() {
             <Form.Group className="mb-2">
               {createForm.role === "BENH_NHAN" ? (
                 <>
-                  <Form.Label className="required">Chọn bệnh nhân</Form.Label>
-                  <Form.Select
-                    value={benhNhanDaChon}
-                    onChange={(e) => setBenhNhanDaChon(e.target.value)}
-                  >
-                    <option value="">-- Chọn bệnh nhân --</option>
-                    {danhSachBenhNhan.map((bn) => (
-                      <option key={bn.id} value={bn.id}>
-                        {bn.hoTen} {bn.soDienThoai ? `- ${bn.soDienThoai}` : ""}
-                      </option>
-                    ))}
-                  </Form.Select>
-                  <Form.Text className="text-muted">
-                    Tài khoản sẽ được gán với hồ sơ bệnh nhân đã chọn.
+                  <Form.Label className="required">Bệnh nhân</Form.Label>
+                  <div className="d-flex flex-wrap gap-2 align-items-stretch">
+                    <div className="flex-grow-1 min-w-0 px-3 py-2 small d-flex align-items-center nguoi-dung-gan-ho-so-preview">
+                      <span className="text-truncate">
+                        {nhanBenhNhanDaChon()
+                          ? `${nhanBenhNhanDaChon()!.hoTen}${
+                              nhanBenhNhanDaChon()!.soDienThoai
+                                ? ` · ${nhanBenhNhanDaChon()!.soDienThoai}`
+                                : ""
+                            }`
+                          : "Chưa chọn hồ sơ"}
+                      </span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="primary"
+                      className="text-nowrap nguoi-dung-tim-chon-btn"
+                      onClick={() => moChonBenhNhan("create")}
+                    >
+                      <i className="bi bi-search me-1" aria-hidden />
+                      Tìm &amp; chọn
+                    </Button>
+                  </div>
+                  <Form.Text className="text-muted small">
+                    Mỗi tài khoản bệnh nhân gắn với đúng một hồ sơ. Chưa có hồ sơ thì{" "}
+                    <Link
+                      href="/benh-nhan"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="nguoi-dung-inline-ho-so-link"
+                    >
+                      sang trang Bệnh nhân
+                    </Link>{" "}
+                    tạo trước. Bấm «Tìm &amp; chọn» để mở danh sách (danh sách được làm mới mỗi lần mở).
                   </Form.Text>
                 </>
               ) : createForm.role === "BAC_SI" ? (
                 <>
-                  <Form.Label className="required">Chọn bác sĩ (chưa có tài khoản)</Form.Label>
-                  <Form.Select
-                    value={bacSiDaChon}
-                    onChange={(e) => setBacSiDaChon(e.target.value)}
-                  >
-                    <option value="">-- Chọn bác sĩ --</option>
-                    {danhSachBacSi
-                      .filter((bs) => !bs.maNguoiDung)
-                      .map((bs) => (
-                        <option key={bs.id} value={bs.id}>
-                          {bs.hoTen ?? "Bác sĩ"}
-                          {bs.tenChuyenKhoa || bs.chuyenMon
-                            ? ` — ${bs.tenChuyenKhoa ?? bs.chuyenMon}`
-                            : ""}
-                        </option>
-                      ))}
-                  </Form.Select>
-                  <Form.Text className="text-muted">
-                    Chỉ hiện bác sĩ chưa gán tài khoản đăng nhập. Tạo hồ sơ bác sĩ tại mục Bác sĩ
-                    nếu cần.
+                  <Form.Label className="required">Bác sĩ (chưa có tài khoản)</Form.Label>
+                  <div className="d-flex flex-wrap gap-2 align-items-stretch">
+                    <div className="flex-grow-1 min-w-0 px-3 py-2 small d-flex align-items-center nguoi-dung-gan-ho-so-preview">
+                      <span className="text-truncate">
+                        {nhanBacSiDaChon()
+                          ? `${nhanBacSiDaChon()!.hoTen ?? "Bác sĩ"}${
+                              nhanBacSiDaChon()!.tenChuyenKhoa ||
+                              nhanBacSiDaChon()!.chuyenMon
+                                ? ` · ${nhanBacSiDaChon()!.tenChuyenKhoa ?? nhanBacSiDaChon()!.chuyenMon}`
+                                : ""
+                            }`
+                          : "Chưa chọn hồ sơ"}
+                      </span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="primary"
+                      className="text-nowrap nguoi-dung-tim-chon-btn"
+                      onClick={() => moChonBacSi("create")}
+                    >
+                      <i className="bi bi-search me-1" aria-hidden />
+                      Tìm &amp; chọn
+                    </Button>
+                  </div>
+                  <Form.Text className="text-muted small">
+                    Chỉ hiện bác sĩ chưa có tài khoản đăng nhập. Cần người mới thì{" "}
+                    <Link
+                      href="/bac-si"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="nguoi-dung-inline-ho-so-link"
+                    >
+                      sang trang Bác sĩ
+                    </Link>{" "}
+                    tạo hồ sơ, rồi bấm «Tìm &amp; chọn» lại (danh sách làm mới mỗi lần mở).
                   </Form.Text>
                 </>
               ) : (
@@ -659,6 +794,8 @@ export default function UsersPage() {
                   setCreateForm((f) => ({ ...f, role }));
                   if (role !== "BENH_NHAN") setBenhNhanDaChon("");
                   if (role !== "BAC_SI") setBacSiDaChon("");
+                  setChonModal(null);
+                  setChonTimKiem("");
                 }}
               >
                 {ROLES.map((r) => (
@@ -677,6 +814,8 @@ export default function UsersPage() {
                 setShowCreate(false);
                 setBenhNhanDaChon("");
                 setBacSiDaChon("");
+                setChonModal(null);
+                setChonTimKiem("");
               }}
             >
               <i className="bi bi-x-lg me-2" aria-hidden />
@@ -684,7 +823,7 @@ export default function UsersPage() {
             </Button>
             <Button variant="primary" type="submit">
               <i className="bi bi-check2-circle me-2" aria-hidden />
-              Tạo
+              Lưu
             </Button>
           </Modal.Footer>
         </Form>
@@ -692,13 +831,19 @@ export default function UsersPage() {
 
       <Modal
         show={showEdit}
+        size="xl"
+        scrollable
+        dialogClassName="nguoi-dung-modal-xl"
         centered
         onHide={() => {
           setShowEdit(false);
           setEditingUser(null);
           setEditBenhNhanId("");
           setEditBacSiId("");
+          setChonModal(null);
+          setChonTimKiem("");
         }}
+        enforceFocus={chonModal == null}
       >
         <Modal.Header closeButton>
           <Modal.Title>Sửa tài khoản</Modal.Title>
@@ -739,6 +884,8 @@ export default function UsersPage() {
                   setEditForm({ ...editForm, role });
                   if (role !== "BENH_NHAN") setEditBenhNhanId("");
                   if (role !== "BAC_SI") setEditBacSiId("");
+                  setChonModal(null);
+                  setChonTimKiem("");
                 }}
               >
                 {ROLES.map((r) => (
@@ -751,48 +898,79 @@ export default function UsersPage() {
             {editForm.role === "BENH_NHAN" ? (
               <Form.Group className="mb-2">
                 <Form.Label className="required">Gán với bệnh nhân</Form.Label>
-                <Form.Select
-                  value={editBenhNhanId}
-                  onChange={(e) => setEditBenhNhanId(e.target.value)}
-                >
-                  <option value="">-- Chọn bệnh nhân --</option>
-                  {danhSachBenhNhan.map((bn) => (
-                    <option key={bn.id} value={String(bn.id)}>
-                      {bn.hoTen} {bn.soDienThoai ? `- ${bn.soDienThoai}` : ""}
-                    </option>
-                  ))}
-                </Form.Select>
-                <Form.Text className="text-muted">
-                  Bắt buộc khi vai trò là Bệnh nhân — chọn đúng hồ sơ bệnh nhân cho tài khoản này.
+                <div className="d-flex flex-wrap gap-2 align-items-stretch">
+                  <div className="flex-grow-1 min-w-0 px-3 py-2 small d-flex align-items-center nguoi-dung-gan-ho-so-preview">
+                    <span className="text-truncate">
+                      {nhanBenhNhanSua()
+                        ? `${nhanBenhNhanSua()!.hoTen}${
+                            nhanBenhNhanSua()!.soDienThoai
+                              ? ` · ${nhanBenhNhanSua()!.soDienThoai}`
+                              : ""
+                          }`
+                        : "Chưa chọn hồ sơ"}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    className="text-nowrap nguoi-dung-tim-chon-btn"
+                    onClick={() => moChonBenhNhan("edit")}
+                  >
+                    <i className="bi bi-search me-1" aria-hidden />
+                    Tìm &amp; chọn
+                  </Button>
+                </div>
+                <Form.Text className="text-muted small">
+                  Chọn hồ sơ đúng với tài khoản. Đổi bằng «Tìm &amp; chọn». Thiếu hồ sơ:{" "}
+                  <Link
+                    href="/benh-nhan"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="nguoi-dung-inline-ho-so-link"
+                  >
+                    Bệnh nhân
+                  </Link>
+                  .
                 </Form.Text>
               </Form.Group>
             ) : null}
             {editForm.role === "BAC_SI" ? (
               <Form.Group className="mb-2">
                 <Form.Label className="required">Gán với bác sĩ</Form.Label>
-                <Form.Select
-                  value={editBacSiId}
-                  onChange={(e) => setEditBacSiId(e.target.value)}
-                >
-                  <option value="">-- Chọn bác sĩ --</option>
-                  {danhSachBacSi
-                    .filter(
-                      (bs) =>
-                        !bs.maNguoiDung ||
-                        (editingUser?.maBacSi != null &&
-                          bs.id === editingUser.maBacSi),
-                    )
-                    .map((bs) => (
-                      <option key={bs.id} value={String(bs.id)}>
-                        {bs.hoTen ?? "Bác sĩ"}
-                        {bs.tenChuyenKhoa || bs.chuyenMon
-                          ? ` — ${bs.tenChuyenKhoa ?? bs.chuyenMon}`
-                          : ""}
-                      </option>
-                    ))}
-                </Form.Select>
-                <Form.Text className="text-muted">
-                  Chọn bác sĩ chưa có tài khoản, hoặc giữ bác sĩ đang gán.
+                <div className="d-flex flex-wrap gap-2 align-items-stretch">
+                  <div className="flex-grow-1 min-w-0 px-3 py-2 small d-flex align-items-center nguoi-dung-gan-ho-so-preview">
+                    <span className="text-truncate">
+                      {nhanBacSiSua()
+                        ? `${nhanBacSiSua()!.hoTen ?? "Bác sĩ"}${
+                            nhanBacSiSua()!.tenChuyenKhoa ||
+                            nhanBacSiSua()!.chuyenMon
+                              ? ` · ${nhanBacSiSua()!.tenChuyenKhoa ?? nhanBacSiSua()!.chuyenMon}`
+                              : ""
+                          }`
+                        : "Chưa chọn hồ sơ"}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    className="text-nowrap nguoi-dung-tim-chon-btn"
+                    onClick={() => moChonBacSi("edit")}
+                  >
+                    <i className="bi bi-search me-1" aria-hidden />
+                    Tìm &amp; chọn
+                  </Button>
+                </div>
+                <Form.Text className="text-muted small">
+                  Giữ bác sĩ hiện tại hoặc đổi sang người khác (chưa có tài khoản). Thêm hồ sơ:{" "}
+                  <Link
+                    href="/bac-si"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="nguoi-dung-inline-ho-so-link"
+                  >
+                    Bác sĩ
+                  </Link>
+                  .
                 </Form.Text>
               </Form.Group>
             ) : null}
@@ -806,6 +984,8 @@ export default function UsersPage() {
                 setEditingUser(null);
                 setEditBenhNhanId("");
                 setEditBacSiId("");
+                setChonModal(null);
+                setChonTimKiem("");
               }}
             >
               <i className="bi bi-x-lg me-2" aria-hidden />
@@ -817,6 +997,150 @@ export default function UsersPage() {
             </Button>
           </Modal.Footer>
         </Form>
+      </Modal>
+
+      <Modal
+        show={chonModal != null}
+        onHide={dongChonModal}
+        size="lg"
+        centered
+        scrollable
+        enforceFocus={false}
+        dialogClassName="nguoi-dung-chon-modal"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {chonModal === "create-bn" || chonModal === "edit-bn"
+              ? "Chọn bệnh nhân"
+              : chonModal === "create-bs" || chonModal === "edit-bs"
+                ? "Chọn bác sĩ"
+                : "Chọn"}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="pt-0">
+          <p className="nguoi-dung-chon-modal__hint small mb-3">
+            {chonModal === "create-bn" || chonModal === "edit-bn" ? (
+              <>
+                Gõ để lọc, bấm một dòng để chọn. Cần hồ sơ mới: nút xanh bên cạnh (mở tab mới) — lưu
+                xong đóng tab và mở lại «Tìm &amp; chọn» trên form; danh sách ở đây đã được làm mới.
+              </>
+            ) : chonModal === "create-bs" || chonModal === "edit-bs" ? (
+              <>
+                Gõ để lọc, bấm một dòng để chọn. Thêm bác sĩ: nút xanh dương bên cạnh, lưu hồ sơ rồi
+                mở lại «Tìm &amp; chọn» trên form.
+              </>
+            ) : null}
+          </p>
+          <div className="d-flex flex-wrap align-items-stretch mb-3 nguoi-dung-chon-modal__toolbar">
+            <Form.Control
+              type="search"
+              className="flex-grow-1 min-w-0"
+              placeholder={
+                chonModal === "create-bn" || chonModal === "edit-bn"
+                  ? "Tìm theo tên, SĐT, email, địa chỉ…"
+                  : "Tìm theo tên, chuyên khoa…"
+              }
+              value={chonTimKiem}
+              onChange={(e) => setChonTimKiem(e.target.value)}
+              autoFocus
+            />
+            {chonModal === "create-bn" || chonModal === "edit-bn" ? (
+              <Link
+                href="/benh-nhan"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="nguoi-dung-them-ho-so-btn nguoi-dung-them-ho-so-btn--bn"
+              >
+                <i className="bi bi-person-plus-fill me-1" aria-hidden />
+                Tạo hồ sơ bệnh nhân
+              </Link>
+            ) : chonModal === "create-bs" || chonModal === "edit-bs" ? (
+              <Link
+                href="/bac-si"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="nguoi-dung-them-ho-so-btn nguoi-dung-them-ho-so-btn--bs"
+              >
+                <i className="bi bi-person-badge me-1" aria-hidden />
+                Tạo hồ sơ bác sĩ
+              </Link>
+            ) : null}
+          </div>
+          <div
+            className="border rounded overflow-auto"
+            style={{ maxHeight: "min(55vh, 520px)" }}
+          >
+            {chonModal === "create-bn" || chonModal === "edit-bn" ? (
+              danhSachChonModal.length === 0 ? (
+                <p className="text-muted small p-3 mb-0">Không có bản ghi phù hợp.</p>
+              ) : (
+                <Table hover responsive size="sm" className="mb-0 align-middle">
+                  <thead className="table-light" style={{ position: "sticky", top: 0, zIndex: 1 }}>
+                    <tr>
+                      <th className="text-nowrap">#</th>
+                      <th>Họ tên</th>
+                      <th>SĐT</th>
+                      <th>Email</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(danhSachChonModal as BenhNhan[]).map((bn) => (
+                      <tr
+                        key={bn.id ?? bn.hoTen}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => {
+                          if (bn.id != null) apChonBenhNhan(bn.id);
+                        }}
+                      >
+                        <td className="text-muted">{bn.id}</td>
+                        <td>{bn.hoTen}</td>
+                        <td>{bn.soDienThoai ?? "—"}</td>
+                        <td className="text-truncate" style={{ maxWidth: 220 }}>
+                          {bn.thuDienTu ?? "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )
+            ) : chonModal === "create-bs" || chonModal === "edit-bs" ? (
+              danhSachChonModal.length === 0 ? (
+                <p className="text-muted small p-3 mb-0">Không có bản ghi phù hợp.</p>
+              ) : (
+                <Table hover responsive size="sm" className="mb-0 align-middle">
+                  <thead className="table-light" style={{ position: "sticky", top: 0, zIndex: 1 }}>
+                    <tr>
+                      <th className="text-nowrap">#</th>
+                      <th>Họ tên</th>
+                      <th>Chuyên khoa</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(danhSachChonModal as BacSi[]).map((bs) => (
+                      <tr
+                        key={bs.id}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => apChonBacSi(bs.id)}
+                      >
+                        <td className="text-muted">{bs.id}</td>
+                        <td>{bs.hoTen ?? "—"}</td>
+                        <td className="text-truncate" style={{ maxWidth: 280 }}>
+                          {bs.tenChuyenKhoa ?? bs.chuyenMon ?? "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              )
+            ) : null}
+          </div>
+        </Modal.Body>
+        <Modal.Footer className="clinic-modal-footer-actions">
+          <Button type="button" className="btn-modal-dismiss" onClick={dongChonModal}>
+            <i className="bi bi-x-lg me-2" aria-hidden />
+            Đóng
+          </Button>
+        </Modal.Footer>
       </Modal>
     </div>
   );

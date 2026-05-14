@@ -29,6 +29,7 @@ export default function InvoiceDetailPage() {
 
   const [payOsNenPoll, setPayOsNenPoll] = useState(false);
   const daMoPayOsSession = useRef(false);
+  const payOsDangHoiPollRef = useRef(false);
   const payOsPollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const payOsPollDeadlineRef = useRef(0);
 
@@ -46,13 +47,15 @@ export default function InvoiceDetailPage() {
       payOsPollTimerRef.current = null;
     }
     payOsPollDeadlineRef.current = 0;
+    payOsDangHoiPollRef.current = false;
     setPayOsNenPoll(false);
   }, []);
 
   const startPayOsPoll = useCallback(() => {
     clearPayOsPoll();
-    const deadline = Date.now() + 120_000;
+    const deadline = Date.now() + 180_000;
     payOsPollDeadlineRef.current = deadline;
+    payOsDangHoiPollRef.current = true;
     setPayOsNenPoll(true);
     const tick = async () => {
       if (Date.now() > payOsPollDeadlineRef.current) {
@@ -67,11 +70,11 @@ export default function InvoiceDetailPage() {
           clearPayOsPoll();
         }
       } catch {
-        // PayOS chưa PAID / API tạm lỗi — tiếp tục hỏi tới hết hạn (webhook không tới localhost).
+        // PayOS chưa PAID — tick sau sẽ hỏi lại.
       }
     };
     void tick();
-    payOsPollTimerRef.current = setInterval(() => void tick(), 2500);
+    payOsPollTimerRef.current = setInterval(() => void tick(), 1000);
   }, [id, clearPayOsPoll, remainingOfHoaDon]);
 
   useEffect(() => {
@@ -119,24 +122,40 @@ export default function InvoiceDetailPage() {
   useEffect(() => {
     if (!user || !id || typeof document === "undefined") return;
     let lastAt = 0;
-    const gapMs = 4000;
-    const onVis = () => {
-      if (document.visibilityState !== "visible") return;
-      if (!daMoPayOsSession.current) return;
-      const now = Date.now();
-      if (now - lastAt < gapMs) return;
-      lastAt = now;
+    const sync = () => {
       void invoicesApi
         .syncPayOs(id)
         .then((u) => {
           setInv(u);
           setError("");
+          if (remainingOfHoaDon(u) <= 0.000001) {
+            clearPayOsPoll();
+          }
         })
         .catch(() => {});
     };
+    const gapMs = () => (payOsDangHoiPollRef.current ? 300 : 4000);
+    const maybeSync = () => {
+      if (!daMoPayOsSession.current && !payOsDangHoiPollRef.current) return;
+      const now = Date.now();
+      if (now - lastAt < gapMs()) return;
+      lastAt = now;
+      sync();
+    };
+    const onVis = () => {
+      if (document.visibilityState !== "visible") return;
+      maybeSync();
+    };
+    const onFocus = () => {
+      maybeSync();
+    };
     document.addEventListener("visibilitychange", onVis);
-    return () => document.removeEventListener("visibilitychange", onVis);
-  }, [user, id]);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [user, id, remainingOfHoaDon, clearPayOsPoll]);
 
   const submitPayment = async () => {
     const amount = parseVndInput(payAmount);
@@ -263,9 +282,9 @@ export default function InvoiceDetailPage() {
               {payOsNenPoll ? (
                 <p className="small text-muted mb-2">
                   <i className="bi bi-arrow-repeat me-1" aria-hidden />
-                  Đang hỏi PayOS định kỳ (tối đa ~2 phút). Trên localhost webhook thường
-                  không tới — hệ thống dùng API PayOS; khi thanh toán xong, số tiền đã trả sẽ
-                  cập nhật tự động.
+                  Đang kiểm tra thanh toán với PayOS (mỗi giây). Số tiền đã trả cập nhật ngay khi
+                  PayOS báo đã thanh toán — thường vài giây sau khi bạn hoàn tất; nếu chưa thấy,
+                  bấm vào cửa sổ này một lần để kích hoạt cập nhật.
                 </p>
               ) : null}
               <div className="d-flex flex-wrap gap-2 align-items-center">

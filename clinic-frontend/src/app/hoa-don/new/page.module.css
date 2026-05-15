@@ -1,0 +1,65 @@
+.catalogScroll {
+  max-height: min(52vh, 28rem);
+  overflow-y: auto;
+}
+
+.catalogRow {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.08));
+  transition: background-color 0.12s ease;
+}
+
+.catalogRow:last-child {
+  border-bottom: none;
+}
+
+.catalogRow:hover:not(.catalogRowDisabled) {
+  background-color: var(--bs-light, #f8f9fa);
+}
+
+.catalogRowDisabled {
+  opacity: 0.55;
+}
+
+.catalogRowBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.catalogRowMeta {
+  font-size: 0.8rem;
+  color: var(--bs-secondary-color);
+  margin-top: 0.15rem;
+}
+
+.catalogRowPrice {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--bs-body-color);
+}
+
+.catalogRowActions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.selectedTableWrap {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  overflow: hidden;
+}
+
+.emptySelected {
+  padding: 1.25rem 1rem;
+  text-align: center;
+  color: var(--bs-secondary-color);
+  font-size: 0.9rem;
+  background: var(--bs-light);
+  border: 1px dashed var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+}

@@ -57,6 +57,40 @@ import {
   formatThangMmYyyyLabel,
   formatGioHen,
 } from "@/lib/formatInstantVi";
+import { chuoiTimKiemVi } from "@/lib/chuoiTimKiemVi";
+
+function DichVuChonTomTat({
+  s,
+  compact,
+  toggle,
+}: {
+  s: DichVu;
+  compact?: boolean;
+  toggle?: boolean;
+}) {
+  const giaStr = s.gia != null ? `${s.gia.toLocaleString("vi-VN")}đ` : "—";
+  const loai = s.tenLoaiDichVu?.trim() || "—";
+  return (
+    <div
+      className={[
+        "lich-hen-dv-pick__row",
+        compact ? "lich-hen-dv-pick__row--compact" : "",
+        toggle ? "lich-hen-dv-pick__row--toggle" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <span className="lich-hen-dv-pick__ten">{s.ten}</span>
+      <span
+        className="lich-hen-dv-pick__loai text-truncate"
+        title={loai === "—" ? undefined : loai}
+      >
+        {loai}
+      </span>
+      <span className="lich-hen-dv-pick__gia">{giaStr}</span>
+    </div>
+  );
+}
 
 const TRANG_THAI_CO_LICH_DANG_XU_LY = new Set([
   "DA_DAT",
@@ -712,7 +746,6 @@ function AppointmentsPageInner() {
   ]);
 
   const dichVuSauLoc = useMemo(() => {
-    const q = locDichVu.trim().toLowerCase();
     const maTuChuyenKhoa =
       locChuyenKhoaId && !Number.isNaN(Number(locChuyenKhoaId))
         ? Number(locChuyenKhoaId)
@@ -745,11 +778,20 @@ function AppointmentsPageInner() {
       }
     }
 
-    if (!q) return base;
+    const qn = chuoiTimKiemVi(locDichVu);
+    if (!qn) return base;
     return base.filter((s) => {
-      const ten = (s.ten ?? "").toLowerCase();
-      const gia = s.gia != null ? String(s.gia) : "";
-      return ten.includes(q) || gia.includes(q);
+      const haystack = chuoiTimKiemVi(
+        [
+          s.ten,
+          s.tenLoaiDichVu ?? "",
+          s.tenChuyenKhoa ?? "",
+          s.moTa ?? "",
+          s.gia != null ? String(s.gia) : "",
+          s.gia != null ? s.gia.toLocaleString("vi-VN") : "",
+        ].join(" "),
+      );
+      return haystack.includes(qn);
     });
   }, [services, locDichVu, locChuyenKhoaId, doctorId, doctors]);
 
@@ -774,16 +816,6 @@ function AppointmentsPageInner() {
     const ck = d.tenChuyenKhoa ?? d.chuyenMon;
     return ck ? `${d.hoTen} — ${ck}` : d.hoTen;
   }, [doctorId, doctors]);
-
-  const chonDichVuLabel = useMemo(() => {
-    if (!serviceId) return "— Chọn dịch vụ —";
-    const s = services.find((x) => String(x.id) === serviceId);
-    if (!s) return "— Chọn dịch vụ —";
-    const g =
-      s.gia != null ? ` — ${s.gia.toLocaleString("vi-VN")}đ` : "";
-    const ck = s.tenChuyenKhoa ? ` [${s.tenChuyenKhoa}]` : "";
-    return `${s.ten}${ck}${g}`;
-  }, [serviceId, services]);
 
   const slotsDaChon = useMemo(() => {
     const ma = Number(doctorId);
@@ -1938,18 +1970,22 @@ function AppointmentsPageInner() {
                 <Dropdown.Toggle
                   variant="outline-secondary"
                   id="dropdown-dat-dich-vu"
-                  className="w-100 text-start d-flex justify-content-between align-items-center"
+                  className="w-100 text-start d-flex justify-content-between align-items-center lich-hen-dv-pick__toggle"
                   aria-labelledby="label-dat-dv"
                 >
-                  <span className="text-truncate me-2 flex-grow-1">
-                    {chonDichVuLabel}
+                  <span className="me-2 flex-grow-1 min-width-0 w-100">
+                    {!serviceId || !dichVuDaChon ? (
+                      <span className="text-muted">— Chọn dịch vụ —</span>
+                    ) : (
+                      <DichVuChonTomTat s={dichVuDaChon} toggle />
+                    )}
                   </span>
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="bac-si-ck-dropdown__menu w-100 shadow-sm pt-2 px-2 pb-2">
                   <Form.Control
                     size="sm"
                     type="search"
-                    placeholder="Tìm trong danh sách…"
+                    placeholder="Tên, loại, chuyên khoa, giá…"
                     value={locDichVu}
                     onChange={(e) => setLocDichVu(e.target.value)}
                     onClick={(e) => e.stopPropagation()}
@@ -1960,8 +1996,18 @@ function AppointmentsPageInner() {
                   />
                   <div
                     className="bac-si-ck-dropdown__list border rounded"
-                    style={{ maxHeight: 220, overflowY: "auto" }}
+                    style={{ maxHeight: 280, overflowY: "auto" }}
                   >
+                    {dichVuSauLoc.length > 0 ? (
+                      <div
+                        className="lich-hen-dv-pick__colhead small text-muted px-2 py-1 border-bottom bg-light"
+                        aria-hidden
+                      >
+                        <span>Tên dịch vụ</span>
+                        <span>Loại dịch vụ</span>
+                        <span className="text-end">Giá</span>
+                      </div>
+                    ) : null}
                     {dichVuSauLoc.length === 0 ? (
                       <div className="px-2 py-3 text-muted small text-center">
                         {services.length === 0
@@ -1977,6 +2023,7 @@ function AppointmentsPageInner() {
                         <Dropdown.Item
                           key={s.id}
                           active={String(s.id) === serviceId}
+                          className="lich-hen-dv-pick__item"
                           onClick={() => {
                             setServiceId(String(s.id));
                             setLocDichVu("");
@@ -1990,11 +2037,7 @@ function AppointmentsPageInner() {
                             }
                           }}
                         >
-                          {s.ten}
-                          {s.tenChuyenKhoa ? ` [${s.tenChuyenKhoa}]` : ""} —{" "}
-                          {s.gia != null
-                            ? `${s.gia.toLocaleString("vi-VN")}đ`
-                            : "—"}
+                          <DichVuChonTomTat s={s} compact />
                         </Dropdown.Item>
                       ))
                     )}

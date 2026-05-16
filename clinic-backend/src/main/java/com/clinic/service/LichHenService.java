@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -42,8 +43,8 @@ public class LichHenService {
     private final LichSuTrangThaiLichHenRepository lichSuTrangThaiLichHenRepository;
     private final QuyenTruyCapHoSoBenhNhan quyenTruyCapHoSoBenhNhan;
     private final QuyenTruyCapLichLamViecBacSi quyenTruyCapLichLamViecBacSi;
-    private static final int SUC_CHUA_MOI_GIO = 10;
-    private static final int BUOC_SLOT_PHUT = 15;
+    private static final int SUC_CHUA_MOI_SLOT = 5;
+    private static final int BUOC_SLOT_PHUT = 30;
     private static final EnumSet<LichHen.TrangThaiLichHen> TRANG_THAI_KHONG_TINH_SLOT =
             EnumSet.of(LichHen.TrangThaiLichHen.HUY, LichHen.TrangThaiLichHen.VANG);
 
@@ -89,6 +90,12 @@ public class LichHenService {
         if (dto.getNgayHen().isBefore(LocalDate.now())) {
             throw new RuntimeException("Không thể đặt ngày quá khứ.");
         }
+        if (!gioHenHopLeKhiDat(dto.getNgayHen(), dto.getGioHen())) {
+            throw new RuntimeException(
+                    quyenTruyCapHoSoBenhNhan.laNhanVien()
+                            ? "Khung giờ không còn trong ca làm việc (ca 30 phút đã kết thúc) hoặc đã qua."
+                            : "Khung giờ này đã qua. Vui lòng chọn giờ khác hoặc ngày khác.");
+        }
         if (benhNhanTrungGio(dto.getMaBenhNhan(), dto.getNgayHen(), dto.getGioHen(), null)) {
             throw new RuntimeException("Bệnh nhân đã có lịch khác cùng ngày và cùng giờ.");
         }
@@ -114,6 +121,10 @@ public class LichHenService {
         LichHen.TrangThaiLichHen cu = lh.getTrangThai();
         if (cu == trangThai) {
             return sangDto(lh);
+        }
+        if (cu == LichHen.TrangThaiLichHen.DA_THANH_TOAN) {
+            throw new RuntimeException(
+                    "Lịch đã thanh toán — không thể đổi trạng thái. Xem hóa đơn nếu cần tra cứu.");
         }
         lh.setTrangThai(trangThai);
         LichHen daLuu = lichHenRepository.save(lh);
@@ -216,8 +227,8 @@ public class LichHenService {
                     SlotKhaDungDto dto = new SlotKhaDungDto();
                     dto.setGio(label);
                     dto.setSoLuongDaDat(daDat);
-                    dto.setSucChua(SUC_CHUA_MOI_GIO);
-                    dto.setDaDay(daDat >= SUC_CHUA_MOI_GIO);
+                    dto.setSucChua(SUC_CHUA_MOI_SLOT);
+                    dto.setDaDay(daDat >= SUC_CHUA_MOI_SLOT);
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -249,6 +260,26 @@ public class LichHenService {
         return lichLamViecCoDinhRepository.findByBacSiIdAndThuTrongTuanIn(maBacSi, thuCanKiemTra).stream()
                 .flatMap(x -> tachTheoCa1Gio(x.getKhungGioBatDau(), x.getKhungGioKetThuc()).stream())
                 .collect(Collectors.toCollection(HashSet::new));
+    }
+
+    private boolean gioHenHopLeKhiDat(LocalDate ngay, LocalTime gioHen) {
+        if (ngay == null || gioHen == null) {
+            return false;
+        }
+        LocalDate homNay = LocalDate.now();
+        if (ngay.isBefore(homNay)) {
+            return false;
+        }
+        if (ngay.isAfter(homNay)) {
+            return true;
+        }
+        LocalDateTime batDauCa = LocalDateTime.of(ngay, gioHen);
+        LocalDateTime ketThucCa = batDauCa.plusMinutes(BUOC_SLOT_PHUT);
+        LocalDateTime bayGio = LocalDateTime.now();
+        if (quyenTruyCapHoSoBenhNhan.laNhanVien()) {
+            return ketThucCa.isAfter(bayGio);
+        }
+        return batDauCa.isAfter(bayGio);
     }
 
     private List<LocalTime> tachTheoCa1Gio(LocalTime batDau, LocalTime ketThuc) {

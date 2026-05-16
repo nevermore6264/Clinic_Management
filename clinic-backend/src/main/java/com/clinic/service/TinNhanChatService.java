@@ -4,6 +4,7 @@ import com.clinic.dto.NguoiDungChatDto;
 import com.clinic.dto.TinNhanChatDto;
 import com.clinic.entity.NguoiDung;
 import com.clinic.entity.TinNhanChat;
+import com.clinic.entity.VaiTro;
 import com.clinic.repository.NguoiDungRepository;
 import com.clinic.repository.TinNhanChatRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +34,9 @@ public class TinNhanChatService {
     private final ObjectMapper objectMapper;
 
     private static final Long PHONG_MAC_DINH = 1L;
+
+    private static final Set<VaiTro> VAI_TRO_CHAT_NOI_BO = EnumSet.of(
+            VaiTro.QUAN_TRI, VaiTro.LE_TAN, VaiTro.BAC_SI, VaiTro.THU_NGAN);
 
     private static final Set<String> EMOJI_PHAN_UNG_HOP_LE = Set.of(
             "\uD83D\uDC4D", "\u2764\uFE0F", "\u2764", "\uD83D\uDE02", "\uD83D\uDE2E", "\uD83D\uDE22",
@@ -68,6 +73,7 @@ public class TinNhanChatService {
         if (maNguoiNhan == null || maNguoiNhan.equals(maNguoiGui)) {
             throw new RuntimeException("Người nhận không hợp lệ.");
         }
+        yeuCauChatNoiBo(maNguoiGui, maNguoiNhan);
         boolean coTep = dinhKemDuongDan != null && !dinhKemDuongDan.isBlank();
         boolean coChu = noiDung != null && !noiDung.trim().isEmpty();
         if (!coTep && !coChu) {
@@ -112,6 +118,7 @@ public class TinNhanChatService {
         if (maDoiTuong == null || maDoiTuong.equals(maNguoiDung)) {
             throw new RuntimeException("Đối tượng trò chuyện không hợp lệ.");
         }
+        yeuCauChatNoiBo(maNguoiDung, maDoiTuong);
         int limit = Math.min(Math.max(gioiHan, 1), 200);
         List<TinNhanChat> ds = khoTinNhan.timDoiThoai(maNguoiDung, maDoiTuong, PageRequest.of(0, limit));
         List<TinNhanChat> xep = new ArrayList<>(ds);
@@ -121,10 +128,33 @@ public class TinNhanChatService {
 
     @Transactional(readOnly = true)
     public List<NguoiDungChatDto> danhBaChat(Long boQuaMaNguoiDung) {
+        NguoiDung nguoiGo = nguoiDungRepository.findById(boQuaMaNguoiDung)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản."));
+        if (!laNguoiDungNoiBo(nguoiGo)) {
+            throw new RuntimeException(
+                    "Chat trong hệ thống chỉ dành cho nội bộ phòng khám. Bệnh nhân vui lòng liên hệ CSKH (Zalo / hotline).");
+        }
         return nguoiDungRepository.findByHoatDongTrueOrderByHoTenAsc().stream()
                 .filter(u -> !u.getId().equals(boQuaMaNguoiDung))
+                .filter(this::laNguoiDungNoiBo)
                 .map(u -> new NguoiDungChatDto(u.getId(), u.getHoTen(), u.getTenDangNhap()))
                 .collect(Collectors.toList());
+    }
+
+    private boolean laNguoiDungNoiBo(NguoiDung u) {
+        if (u.getCacVaiTro() == null || u.getCacVaiTro().isEmpty()) {
+            return false;
+        }
+        return u.getCacVaiTro().stream().anyMatch(VAI_TRO_CHAT_NOI_BO::contains);
+    }
+
+    private void yeuCauChatNoiBo(Long maNguoiGui, Long maNguoiNhan) {
+        NguoiDung gui = nguoiDungRepository.findById(maNguoiGui).orElseThrow();
+        NguoiDung nhan = nguoiDungRepository.findById(maNguoiNhan).orElseThrow();
+        if (!laNguoiDungNoiBo(gui) || !laNguoiDungNoiBo(nhan)) {
+            throw new RuntimeException(
+                    "Chỉ được nhắn tin giữa nhân viên nội bộ. Bệnh nhân liên hệ CSKH qua kênh công khai.");
+        }
     }
 
     @Transactional

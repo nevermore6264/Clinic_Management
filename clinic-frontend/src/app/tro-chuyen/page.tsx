@@ -19,6 +19,7 @@ import {
   type TroChuyenTaiLenResponse,
 } from "@/lib/api";
 import { LoadingState } from "@/components/LoadingState";
+import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
 import { ChatGeneratedAvatar } from "@/components/ChatGeneratedAvatar";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
@@ -279,6 +280,12 @@ export default function ChatPage() {
   }, [user, loading, router]);
 
   useEffect(() => {
+    if (!loading && user && laChiTaiKhoanBenhNhan(user)) {
+      router.replace("/bang-dieu-khien");
+    }
+  }, [user, loading, router]);
+
+  useEffect(() => {
     if (!user) return;
     chatApi
       .contacts()
@@ -516,8 +523,9 @@ export default function ChatPage() {
       <div className="chat-dm-app__header mb-3">
         <h2 className="h4 mb-1 fw-semibold">Tin nhắn</h2>
         <p className="text-muted small mb-0">
-          Trò chuyện riêng với đồng nghiệp trong hệ thống — chọn người trong danh
-          bạ bên trái để bắt đầu.
+          Chat <strong>nội bộ</strong> giữa nhân viên phòng khám (quản trị, lễ tân,
+          bác sĩ, thu ngân). Bệnh nhân liên hệ CSKH qua Zalo / hotline trên trang
+          chủ — không dùng mục này.
         </p>
       </div>
 

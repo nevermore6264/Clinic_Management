@@ -82,3 +82,7 @@ export function lichHenChoPhepLapHoaDon(trangThai?: string): boolean {
   if (!trangThai) return false;
   return !TRANG_THAI_KHONG_LAP_HOA_DON.has(trangThai);
 }
+
+export function lichHenKhoaDoiTrangThai(trangThai?: string): boolean {
+  return trangThai === "DA_THANH_TOAN";
+}

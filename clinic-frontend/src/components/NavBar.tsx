@@ -292,13 +292,6 @@ export function NavBar() {
                 >
                   Hóa đơn
                 </NavLinkItem>
-                <NavLinkItem
-                  href="/tro-chuyen"
-                  active={pathname === "/tro-chuyen"}
-                  icon="bi-chat-dots"
-                >
-                  Chat
-                </NavLinkItem>
               </>
             ) : (
               <>

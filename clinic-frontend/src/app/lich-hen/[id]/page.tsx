@@ -18,6 +18,7 @@ import {
   LICH_HEN_STATUS_FLOW as STATUS_FLOW,
   LICH_HEN_STATUS_LABEL as STATUS_LABEL,
   lichHenChoPhepLapHoaDon,
+  lichHenKhoaDoiTrangThai,
   metaTrangThaiLichHen as metaTrangThai,
 } from "@/lib/lichHenStatus";
 import { laBacSiKhongXemHoaDon, laChiTaiKhoanBenhNhan, laNhanVien } from "@/lib/roles";
@@ -125,6 +126,12 @@ export default function AppointmentDetailPage() {
       setError("Bạn không có quyền cập nhật trạng thái lịch hẹn.");
       return;
     }
+    if (app && lichHenKhoaDoiTrangThai(app.trangThai)) {
+      setError(
+        "Lịch đã thanh toán — không thể đổi trạng thái. Mở hóa đơn để xem hoặc in.",
+      );
+      return;
+    }
     try {
       await appointmentsApi.updateStatus(id, status);
       if (app) setApp({ ...app, trangThai: status });
@@ -180,6 +187,7 @@ export default function AppointmentDetailPage() {
   if (!app) return <div className="py-4">Đang tải...</div>;
 
   const tagMeta = metaTrangThai(app.trangThai);
+  const khoaTrangThai = lichHenKhoaDoiTrangThai(app.trangThai);
 
   return (
     <div className="lich-hen-detail-page">
@@ -218,6 +226,12 @@ export default function AppointmentDetailPage() {
           )}
           {canUpdateAppointmentStatus ? (
             <>
+              {khoaTrangThai ? (
+                <Alert variant="secondary" className="mb-3 py-2 small">
+                  Lịch đã <strong>thanh toán</strong> — trạng thái được khóa. Chỉ xem hồ sơ /
+                  hóa đơn, không đổi quy trình khám nữa.
+                </Alert>
+              ) : null}
               <div className="lich-hen-flow-label mb-2 fw-semibold text-secondary">
                 Cập nhật trạng thái
               </div>
@@ -229,6 +243,7 @@ export default function AppointmentDetailPage() {
                     className={`lich-hen-flow-btn lich-hen-flow-btn--${s.slug}${
                       app.trangThai === s.value ? " is-active" : ""
                     }`}
+                    disabled={khoaTrangThai}
                     onClick={() => updateStatus(s.value)}
                   >
                     <i

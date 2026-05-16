@@ -45,7 +45,14 @@ import {
   laChiTaiKhoanBacSiXemLichHomNay,
   laCoTuDongBaoVangLichHen,
   laDuocGuiEmailNhacLichThuCong,
+  laNhanVien,
 } from "@/lib/roles";
+import {
+  locSlotTheoThoiGian,
+  slotHopLeDatOnline,
+  slotHopLeDatQuay,
+  thoiDiemGioHenMs,
+} from "@/lib/lichHenSlot";
 import { consumeLandingBookingDraft } from "@/lib/landingBookingDraft";
 import {
   GIAI_DOAN_LICH_HEN_LABEL,
@@ -69,13 +76,29 @@ function DichVuChonTomTat({
   toggle?: boolean;
 }) {
   const giaStr = s.gia != null ? `${s.gia.toLocaleString("vi-VN")}đ` : "—";
-  const loai = s.tenLoaiDichVu?.trim() || "—";
+  const loai = s.tenLoaiDichVu?.trim();
+
+  if (toggle) {
+    return (
+      <span className="lich-hen-dv-pick__toggle-inner d-block text-start w-100">
+        <span className="lich-hen-dv-pick__toggle-line">
+          <span className="lich-hen-dv-pick__ten text-truncate">{s.ten}</span>
+          <span className="lich-hen-dv-pick__gia">{giaStr}</span>
+        </span>
+        {loai ? (
+          <span className="lich-hen-dv-pick__toggle-meta text-truncate d-block">
+            {loai}
+          </span>
+        ) : null}
+      </span>
+    );
+  }
+
   return (
     <div
       className={[
         "lich-hen-dv-pick__row",
         compact ? "lich-hen-dv-pick__row--compact" : "",
-        toggle ? "lich-hen-dv-pick__row--toggle" : "",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -83,9 +106,9 @@ function DichVuChonTomTat({
       <span className="lich-hen-dv-pick__ten">{s.ten}</span>
       <span
         className="lich-hen-dv-pick__loai text-truncate"
-        title={loai === "—" ? undefined : loai}
+        title={loai || undefined}
       >
-        {loai}
+        {loai || "—"}
       </span>
       <span className="lich-hen-dv-pick__gia">{giaStr}</span>
     </div>
@@ -100,7 +123,7 @@ const TRANG_THAI_CO_LICH_DANG_XU_LY = new Set([
   "DA_KE_DON",
   "CHO_THANH_TOAN",
 ]);
-const SO_LUONG_TOI_DA_MOI_GIO = 10;
+const SUC_CHUA_MOI_SLOT = 5;
 
 const GIAI_DOAN_FROM_URL = new Set([
   "CHO_TIEP_NHAN",
@@ -121,15 +144,6 @@ function normalizeTime(value?: string): string {
 }
 
 const MS_15_PHUT = 15 * 60 * 1000;
-
-function thoiDiemGioHenMs(ngayHen: string, gioHen?: string | null): number {
-  const t = normalizeTime(gioHen ?? "00:00");
-  const [y, m, d] = ngayHen.split("-").map(Number);
-  if (!y || !m || !d) return NaN;
-  const [hh, mm] = t.split(":").map(Number);
-  if (Number.isNaN(hh) || Number.isNaN(mm)) return NaN;
-  return new Date(y, m - 1, d, hh, mm, 0, 0).getTime();
-}
 
 function formatKhoangThoiGianBangTiengViet(tongGiay: number): string {
   const s = Math.max(0, Math.floor(tongGiay));
@@ -274,6 +288,7 @@ function AppointmentsPageInner() {
   const [kheGioHomNayTick, setKheGioHomNayTick] = useState(0);
   const [chuyenKhoa, setChuyenKhoa] = useState<ChuyenKhoa[]>([]);
   const [locChuyenKhoaId, setLocChuyenKhoaId] = useState("");
+  const [hienKhungQuayCaHienTai, setHienKhungQuayCaHienTai] = useState(true);
 
   const [locBenhNhan, setLocBenhNhan] = useState("");
   const [locBacSi, setLocBacSi] = useState("");
@@ -316,6 +331,11 @@ function AppointmentsPageInner() {
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- một lần khi mount; có draft thì mở modal
   }, [user, resetDatLichForm]);
+
+  const datLichTaiQuay = useMemo(
+    () => Boolean(user && laNhanVien(user) && !laChiTaiKhoanBenhNhan(user)),
+    [user],
+  );
 
   const chiTaiKhoanBn = useMemo(
     () => !!user && laChiTaiKhoanBenhNhan(user),
@@ -686,8 +706,7 @@ function AppointmentsPageInner() {
 
   const bacSiCoCaTheoNgay = useMemo(() => {
     const today = isoDateLocal(new Date());
-    const laHomNay = appointmentDate === today;
-    const now = Date.now();
+    const datQuay = datLichTaiQuay && hienKhungQuayCaHienTai;
     const out: Record<number, boolean> = {};
     for (const d of doctors) {
       const id = d.id;
@@ -695,18 +714,24 @@ function AppointmentsPageInner() {
       const numId = Number(id);
       if (Number.isNaN(numId)) continue;
       const raw = slotsTheoBacSi[numId] ?? [];
-      const slots =
-        laHomNay && appointmentDate
-          ? raw.filter((s) => {
-              const t = thoiDiemGioHenMs(appointmentDate, s.gio);
-              return !Number.isNaN(t) && t > now;
-            })
-          : raw;
+      const slots = locSlotTheoThoiGian(
+        raw,
+        appointmentDate,
+        today,
+        datQuay,
+      );
       out[numId] = slots.length > 0;
     }
     void kheGioHomNayTick;
     return out;
-  }, [doctors, slotsTheoBacSi, appointmentDate, kheGioHomNayTick]);
+  }, [
+    doctors,
+    slotsTheoBacSi,
+    appointmentDate,
+    kheGioHomNayTick,
+    datLichTaiQuay,
+    hienKhungQuayCaHienTai,
+  ]);
 
   const bacSiSauLoc = useMemo(() => {
     const q = locBacSi.trim().toLowerCase();
@@ -822,14 +847,17 @@ function AppointmentsPageInner() {
     if (!ma || Number.isNaN(ma)) return [];
     const raw = slotsTheoBacSi[ma] ?? [];
     const today = isoDateLocal(new Date());
-    if (!appointmentDate || appointmentDate !== today) return raw;
-    const now = Date.now();
     void kheGioHomNayTick;
-    return raw.filter((s) => {
-      const t = thoiDiemGioHenMs(appointmentDate, s.gio);
-      return !Number.isNaN(t) && t > now;
-    });
-  }, [doctorId, slotsTheoBacSi, appointmentDate, kheGioHomNayTick]);
+    const datQuay = datLichTaiQuay && hienKhungQuayCaHienTai;
+    return locSlotTheoThoiGian(raw, appointmentDate, today, datQuay);
+  }, [
+    doctorId,
+    slotsTheoBacSi,
+    appointmentDate,
+    kheGioHomNayTick,
+    datLichTaiQuay,
+    hienKhungQuayCaHienTai,
+  ]);
 
   const appointmentTimeLabel = useMemo(() => {
     if (!appointmentTime) return "— Chọn khung giờ —";
@@ -979,14 +1007,16 @@ function AppointmentsPageInner() {
       setModalError("Không thể đặt lịch cho ngày quá khứ.");
       return;
     }
-    if (
-      appointmentDate === todayLocal &&
-      appointmentTime
-    ) {
-      const tSlot = thoiDiemGioHenMs(appointmentDate, appointmentTime);
-      if (!Number.isNaN(tSlot) && tSlot <= Date.now()) {
+    if (appointmentDate === todayLocal && appointmentTime) {
+      const datQuay = datLichTaiQuay && hienKhungQuayCaHienTai;
+      const hopLe = datQuay
+        ? slotHopLeDatQuay(appointmentDate, appointmentTime)
+        : slotHopLeDatOnline(appointmentDate, appointmentTime);
+      if (!hopLe) {
         setModalError(
-          "Khung giờ này đã qua trong hôm nay. Vui lòng chọn giờ khác hoặc ngày khác.",
+          datQuay
+            ? "Ca 30 phút của khung giờ này đã kết thúc. Chọn khung khác hoặc tắt «Hiện ca đang diễn ra» nếu chỉ đặt giờ tương lai."
+            : "Khung giờ này đã qua trong hôm nay. Vui lòng chọn giờ khác hoặc ngày khác.",
         );
         return;
       }
@@ -1050,7 +1080,7 @@ function AppointmentsPageInner() {
         slotsMap[item.maBacSi] = (item.slots ?? []).map((s) => ({
           gio: normalizeTime(s.gio),
           tong: s.soLuongDaDat ?? 0,
-          sucChua: s.sucChua ?? SO_LUONG_TOI_DA_MOI_GIO,
+          sucChua: s.sucChua ?? SUC_CHUA_MOI_SLOT,
         }));
       }
       setSlotsTheoBacSi(slotsMap);
@@ -1962,11 +1992,11 @@ function AppointmentsPageInner() {
                 Đổi chuyên khoa sẽ bỏ chọn bác sĩ và giờ; dịch vụ không còn khớp cũng bị bỏ chọn.
               </Form.Text>
             </Form.Group>
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3 lich-hen-dat-lich__dv-col">
               <Form.Label className="required" id="label-dat-dv">
                 Dịch vụ
               </Form.Label>
-              <Dropdown className="bac-si-ck-dropdown w-100">
+              <Dropdown className="bac-si-ck-dropdown lich-hen-dv-pick w-100">
                 <Dropdown.Toggle
                   variant="outline-secondary"
                   id="dropdown-dat-dich-vu"
@@ -2045,7 +2075,7 @@ function AppointmentsPageInner() {
                 </Dropdown.Menu>
               </Dropdown>
             </Form.Group>
-            <Form.Group className="mb-3 lich-hen-dat-lich__span-2">
+            <Form.Group className="mb-3">
               <Form.Label className="required" id="label-dat-bs">
                 Bác sĩ
               </Form.Label>
@@ -2115,7 +2145,7 @@ function AppointmentsPageInner() {
                 </Dropdown.Menu>
               </Dropdown>
             </Form.Group>
-            <Form.Group className="mb-3 lich-hen-dat-lich__span-2">
+            <Form.Group className="mb-3">
               <Form.Label className="required">Giờ khám</Form.Label>
               <Dropdown className="bac-si-ck-dropdown w-100">
                 <Dropdown.Toggle
@@ -2139,7 +2169,9 @@ function AppointmentsPageInner() {
                     ) : slotsDaChon.length === 0 ? (
                       <div className="px-2 py-3 text-muted small text-center">
                         {appointmentDate === todayStr
-                          ? "Không còn khung giờ còn lại hôm nay (các giờ đã qua được ẩn) hoặc đã đầy. Thử ngày khác."
+                          ? datLichTaiQuay && hienKhungQuayCaHienTai
+                            ? "Không còn khung giờ trong ca đang diễn ra hoặc ca sắp tới. Thử bật/tắt «Hiện ca đang diễn ra» hoặc chọn ngày khác."
+                            : "Không còn khung giờ còn lại hôm nay (các giờ đã qua được ẩn) hoặc đã đầy. Thử ngày khác."
                           : "Không có khung giờ hợp lệ trong ngày này."}
                       </div>
                     ) : (
@@ -2165,6 +2197,24 @@ function AppointmentsPageInner() {
                 </Dropdown.Menu>
               </Dropdown>
             </Form.Group>
+            {datLichTaiQuay ? (
+              <Form.Group className="mb-3 lich-hen-dat-lich__span-2">
+                <Form.Check
+                  type="switch"
+                  id="hien-khung-quay-ca-hien-tai"
+                  label="Hiện ca đang diễn ra (đặt tại quầy — ca 30 phút, tối đa 5 BN/ca)"
+                  checked={hienKhungQuayCaHienTai}
+                  onChange={(e) => {
+                    setHienKhungQuayCaHienTai(e.target.checked);
+                    setAppointmentTime("");
+                  }}
+                />
+                <Form.Text className="text-muted d-block">
+                  Bật để lễ tân đặt bệnh nhân đến trực tiếp vào ca hiện tại (ví dụ 8:01 vẫn
+                  chọn ca 8:00 nếu còn chỗ). Tắt thì giống đặt online — ẩn giờ đã bắt đầu.
+                </Form.Text>
+              </Form.Group>
+            ) : null}
             <Form.Group className="mb-0 mt-3 lich-hen-dat-lich__span-2">
               <Form.Label>Ghi chú</Form.Label>
               <Form.Control

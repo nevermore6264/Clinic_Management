@@ -96,9 +96,19 @@ function NewInvoicePageInner() {
     [services],
   );
 
+  const idDaChon = useMemo(
+    () => new Set(items.map((i) => i.serviceId)),
+    [items],
+  );
+
+  const dichVuChuaLenHd = useMemo(
+    () => dichVuHoatDong.filter((s) => !idDaChon.has(s.id)),
+    [dichVuHoatDong, idDaChon],
+  );
+
   const dichVuKhopLoc = useMemo(
-    () => dichVuHoatDong.filter((s) => dichVuKhopBoLoc(s, locDichVu)),
-    [dichVuHoatDong, locDichVu],
+    () => dichVuChuaLenHd.filter((s) => dichVuKhopBoLoc(s, locDichVu)),
+    [dichVuChuaLenHd, locDichVu],
   );
 
   const tongTamTinh = useMemo(() => {
@@ -339,8 +349,9 @@ function NewInvoicePageInner() {
           <Form onSubmit={handleSubmit}>
             <div className="fw-semibold mb-2">Dịch vụ trên hóa đơn</div>
             <p className="small text-muted mb-3">
-              Tìm bên trái, bấm <strong>Thêm</strong> để đưa vào hóa đơn; bấm lại
-              cùng một dịch vụ để tăng số lượng. Chỉnh SL hoặc xóa dòng bên phải.
+              Tìm bên trái, bấm <strong>Thêm</strong> để đưa vào hóa đơn; dịch vụ
+              đã có trên hóa đơn sẽ không còn trong danh sách trái. Chỉnh số
+              lượng hoặc <strong>Xóa</strong> dòng ở bảng bên phải.
             </p>
             <Row className="g-3 mb-3">
               <Col xs={12} lg={5}>
@@ -350,89 +361,102 @@ function NewInvoicePageInner() {
                       <span className="fw-semibold small text-uppercase text-muted mb-0">
                         Danh mục dịch vụ
                       </span>
-                      <span className="badge bg-secondary-subtle text-secondary border small fw-normal">
-                        {dichVuKhopLoc.length}/{dichVuHoatDong.length}
+                      <span
+                        className="badge bg-secondary-subtle text-secondary border small fw-normal"
+                        title="Số dòng khớp ô tìm / số dịch vụ còn có thể thêm (chưa trên hóa đơn)"
+                      >
+                        {dichVuKhopLoc.length}/{dichVuChuaLenHd.length}
                       </span>
                     </div>
-                    <InputGroup size="sm">
-                      <InputGroup.Text className="bg-white text-muted border-end-0">
-                        <i className="bi bi-search" aria-hidden />
-                      </InputGroup.Text>
+                    <div className={styles.catalogSearchWrap}>
+                      <i
+                        className={`bi bi-search ${styles.catalogSearchIcon}`}
+                        aria-hidden
+                      />
                       <Form.Control
                         type="search"
+                        size="sm"
                         autoComplete="off"
                         spellCheck={false}
                         disabled={lapBiChan}
-                        placeholder="Tên, loại, chuyên khoa…"
+                        placeholder="Tìm tên, loại, chuyên khoa…"
                         value={locDichVu}
                         onChange={(e) => setLocDichVu(e.target.value)}
-                        className="border-start-0"
+                        className={styles.catalogSearchInput}
+                        aria-label="Tìm dịch vụ trong danh mục"
                       />
-                    </InputGroup>
+                    </div>
                   </div>
                   <div className={styles.catalogScroll}>
                     {dichVuKhopLoc.length === 0 ? (
                       <div className="p-4 text-center text-muted small">
                         {dichVuHoatDong.length === 0
                           ? "Chưa có dịch vụ trong hệ thống."
-                          : "Không tìm thấy dịch vụ phù hợp — thử từ khóa khác."}
+                          : dichVuChuaLenHd.length === 0
+                            ? "Tất cả dịch vụ đang hoạt động đã có trên hóa đơn. Xóa một dòng bên phải nếu cần chọn lại."
+                            : "Không tìm thấy dịch vụ phù hợp — thử từ khóa khác."}
                       </div>
                     ) : (
-                      dichVuKhopLoc.map((s) => {
-                        const daChon = items.some((it) => it.serviceId === s.id);
-                        return (
-                          <div
-                            key={s.id}
-                            className={`${styles.catalogRow} ${lapBiChan ? styles.catalogRowDisabled : ""}`}
-                          >
-                            <div className={styles.catalogRowBody}>
-                              <div className="fw-medium text-break">{s.ten}</div>
-                              <div className={styles.catalogRowMeta}>
-                                {[s.tenLoaiDichVu, s.tenChuyenKhoa]
-                                  .filter(Boolean)
-                                  .join(" · ") || "—"}
-                              </div>
-                              <div className={`${styles.catalogRowPrice} mt-1`}>
+                      dichVuKhopLoc.map((s) => (
+                        <div
+                          key={s.id}
+                          className={`${styles.catalogRow} ${lapBiChan ? styles.catalogRowDisabled : ""}`}
+                        >
+                          <div className={styles.catalogRowBody}>
+                            <div className={styles.catalogTitleLine}>
+                              <span className={styles.catalogTitle}>
+                                {s.ten}
+                              </span>
+                              <span className={styles.catalogRowPrice}>
                                 {s.gia?.toLocaleString("vi-VN")}đ
-                              </div>
+                              </span>
                             </div>
-                            <div className={styles.catalogRowActions}>
-                              <Button
-                                type="button"
-                                variant={daChon ? "outline-primary" : "primary"}
-                                size="sm"
-                                className="text-nowrap"
-                                disabled={lapBiChan}
-                                onClick={() => themDichVu(s.id)}
-                                title={
-                                  daChon
-                                    ? "Thêm một lượt (tăng SL)"
-                                    : "Thêm vào hóa đơn"
-                                }
-                              >
-                                <i className="bi bi-plus-lg me-1" aria-hidden />
-                                Thêm
-                              </Button>
+                            <div className={styles.catalogRowMeta}>
+                              {[s.tenLoaiDichVu, s.tenChuyenKhoa]
+                                .filter(Boolean)
+                                .join(" · ") || "—"}
                             </div>
                           </div>
-                        );
-                      })
+                          <div className={styles.catalogRowActions}>
+                            <Button
+                              type="button"
+                              variant="outline-primary"
+                              size="sm"
+                              className={styles.catalogAddBtn}
+                              disabled={lapBiChan}
+                              onClick={() => themDichVu(s.id)}
+                              title="Thêm vào hóa đơn"
+                            >
+                              <i className="bi bi-plus-lg" aria-hidden />
+                              <span>Thêm</span>
+                            </Button>
+                          </div>
+                        </div>
+                      ))
                     )}
                   </div>
                 </div>
               </Col>
               <Col xs={12} lg={7}>
-                <div className="d-flex align-items-center justify-content-between gap-2 mb-2">
+                <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-2">
                   <span className="fw-semibold small text-uppercase text-muted mb-0">
                     Đã chọn
                   </span>
                   {items.length > 0 ? (
-                    <span className="small text-muted">
-                      {items.length} dòng · tạm tính{" "}
-                      <strong className="text-body">
+                    <div
+                      className={styles.tamTinhBanner}
+                      role="status"
+                      aria-live="polite"
+                      aria-label={`Tạm tính ${tongTamTinh.toLocaleString("vi-VN")} đồng, ${items.length} dòng`}
+                    >
+                      <i className="bi bi-calculator" aria-hidden />
+                      <span className={styles.tamTinhMeta}>
+                        {items.length} dòng · tạm tính
+                      </span>
+                      <span className={styles.tamTinhSo}>
                         {tongTamTinh.toLocaleString("vi-VN")}đ
-                      </strong>
-                    </span>
+                      </span>
+                    </div>
                   ) : null}
                 </div>
                 {items.length === 0 ? (
@@ -446,14 +470,15 @@ function NewInvoicePageInner() {
                     <Table
                       responsive
                       size="sm"
-                      className="mb-0 lich-hen-don-thuoc-table align-middle"
+                      className={`mb-0 lich-hen-don-thuoc-table hoa-don-new-line-items align-middle ${styles.selectedTable}`}
                     >
                       <thead className="table-light">
                         <tr>
                           <th>Dịch vụ</th>
+                          <th>Loại dịch vụ</th>
                           <th className="text-end text-nowrap">Đơn giá</th>
-                          <th style={{ width: "9rem" }}>SL</th>
-                          <th style={{ width: "4.5rem" }} aria-label="Thao tác" />
+                          <th className="text-end">SL</th>
+                          <th className="text-end" aria-label="Thao tác" />
                         </tr>
                       </thead>
                       <tbody>
@@ -461,36 +486,38 @@ function NewInvoicePageInner() {
                           const dv = services.find((x) => x.id === item.serviceId);
                           return (
                             <tr key={`${item.serviceId}-${i}`}>
-                              <td>
-                                <div className="fw-medium">
+                              <td className={styles.selectedCellTen}>
+                                <div className="fw-medium text-break">
                                   {dv?.ten ?? `Mã #${item.serviceId}`}
                                 </div>
-                                {dv?.tenLoaiDichVu ? (
-                                  <div className="small text-muted">
-                                    {dv.tenLoaiDichVu}
-                                  </div>
-                                ) : null}
                               </td>
-                              <td className="text-end text-nowrap small">
+                              <td className={`small ${styles.selectedCellLoai}`}>
+                                {dv?.tenLoaiDichVu?.trim() || "—"}
+                              </td>
+                              <td className="text-end text-nowrap small fw-semibold">
                                 {dv?.gia != null
                                   ? `${dv.gia.toLocaleString("vi-VN")}đ`
                                   : "—"}
                               </td>
-                              <td>
-                                <InputGroup size="sm" className="lich-hen-don-thuoc-qty">
+                              <td className={styles.selectedCellQty}>
+                                <InputGroup
+                                  size="sm"
+                                  className={styles.qtyInputGroup}
+                                >
                                   <Button
                                     type="button"
-                                    variant="outline-secondary"
+                                    variant="light"
+                                    className={styles.qtyStepBtn}
                                     disabled={lapBiChan || item.quantity <= 1}
                                     onClick={() => dieuChinhSoLuong(i, -1)}
                                     aria-label="Giảm số lượng"
                                   >
-                                    −
+                                    <i className="bi bi-dash-lg" aria-hidden />
                                   </Button>
                                   <Form.Control
                                     type="number"
                                     min={1}
-                                    className="text-center"
+                                    className={styles.qtyStepValue}
                                     disabled={lapBiChan}
                                     value={item.quantity}
                                     onChange={(e) =>
@@ -502,24 +529,25 @@ function NewInvoicePageInner() {
                                   />
                                   <Button
                                     type="button"
-                                    variant="outline-secondary"
+                                    variant="light"
+                                    className={styles.qtyStepBtn}
                                     disabled={lapBiChan}
                                     onClick={() => dieuChinhSoLuong(i, 1)}
                                     aria-label="Tăng số lượng"
                                   >
-                                    +
+                                    <i className="bi bi-plus-lg" aria-hidden />
                                   </Button>
                                 </InputGroup>
                               </td>
-                              <td className="lich-hen-don-thuoc-del-cell text-end">
+                              <td className={`text-end ${styles.selectedCellDel}`}>
                                 <button
                                   type="button"
-                                  className="btn btn-sm lich-hen-remove-row-thuoc"
+                                  className={styles.lineRemoveBtn}
                                   disabled={lapBiChan}
                                   onClick={() => removeItem(i)}
                                   title="Xóa khỏi hóa đơn"
                                 >
-                                  <i className="bi bi-trash" aria-hidden />
+                                  <i className="bi bi-trash3" aria-hidden />
                                   <span>Xóa</span>
                                 </button>
                               </td>

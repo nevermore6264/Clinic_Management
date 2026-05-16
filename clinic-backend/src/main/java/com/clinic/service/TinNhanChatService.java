@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -137,7 +138,11 @@ public class TinNhanChatService {
         return nguoiDungRepository.findByHoatDongTrueOrderByHoTenAsc().stream()
                 .filter(u -> !u.getId().equals(boQuaMaNguoiDung))
                 .filter(this::laNguoiDungNoiBo)
-                .map(u -> new NguoiDungChatDto(u.getId(), u.getHoTen(), u.getTenDangNhap()))
+                .map(u -> new NguoiDungChatDto(
+                        u.getId(),
+                        u.getHoTen(),
+                        u.getTenDangNhap(),
+                        sapXepVaiTroNoiBo(u.getCacVaiTro())))
                 .collect(Collectors.toList());
     }
 
@@ -146,6 +151,19 @@ public class TinNhanChatService {
             return false;
         }
         return u.getCacVaiTro().stream().anyMatch(VAI_TRO_CHAT_NOI_BO::contains);
+    }
+
+    private static Set<String> sapXepVaiTroNoiBo(Set<VaiTro> vaiTros) {
+        if (vaiTros == null || vaiTros.isEmpty()) {
+            return new LinkedHashSet<>();
+        }
+        LinkedHashSet<String> ketQua = new LinkedHashSet<>();
+        for (VaiTro vt : VAI_TRO_CHAT_NOI_BO) {
+            if (vaiTros.contains(vt)) {
+                ketQua.add(vt.name());
+            }
+        }
+        return ketQua;
     }
 
     private void yeuCauChatNoiBo(Long maNguoiGui, Long maNguoiNhan) {

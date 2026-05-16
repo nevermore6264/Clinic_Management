@@ -7,6 +7,39 @@ export const VAI_TRO_NHAN_VIEN = [
   "THU_NGAN",
 ] as const;
 
+export const VAI_TRO_LABEL: Record<string, string> = {
+  QUAN_TRI: "Quản trị",
+  LE_TAN: "Lễ tân",
+  BAC_SI: "Bác sĩ",
+  THU_NGAN: "Thu ngân",
+  BENH_NHAN: "Bệnh nhân",
+};
+
+export const VAI_TRO_BADGE_CLASS: Record<string, string> = {
+  QUAN_TRI: "user-role-tag--admin",
+  LE_TAN: "user-role-tag--reception",
+  BAC_SI: "user-role-tag--doctor",
+  THU_NGAN: "user-role-tag--cashier",
+  BENH_NHAN: "user-role-tag--patient",
+};
+
+/** Vai trò nội bộ theo thứ tự ưu tiên hiển thị (chat, danh sách). */
+export function sapXepVaiTroNoiBo(cacVaiTro?: Iterable<string> | null): string[] {
+  if (!cacVaiTro) return [];
+  const co = new Set(cacVaiTro);
+  return VAI_TRO_NHAN_VIEN.filter((r) => co.has(r));
+}
+
+export function nhanVaiTro(vaiTro: string): string {
+  return VAI_TRO_LABEL[vaiTro] ?? vaiTro;
+}
+
+export function chuoiVaiTroNoiBo(cacVaiTro?: Iterable<string> | null): string {
+  return sapXepVaiTroNoiBo(cacVaiTro)
+    .map((r) => nhanVaiTro(r))
+    .join(", ");
+}
+
 export function laNhanVien(user: Pick<NguoiDung, "cacVaiTro"> | null): boolean {
   if (!user?.cacVaiTro?.length) return false;
   return user.cacVaiTro.some((r) =>

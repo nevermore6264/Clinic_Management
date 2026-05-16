@@ -19,7 +19,13 @@ import {
   type TroChuyenTaiLenResponse,
 } from "@/lib/api";
 import { LoadingState } from "@/components/LoadingState";
-import { laChiTaiKhoanBenhNhan } from "@/lib/roles";
+import {
+  laChiTaiKhoanBenhNhan,
+  nhanVaiTro,
+  sapXepVaiTroNoiBo,
+  VAI_TRO_BADGE_CLASS,
+  chuoiVaiTroNoiBo,
+} from "@/lib/roles";
 import { ChatGeneratedAvatar } from "@/components/ChatGeneratedAvatar";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
@@ -31,6 +37,31 @@ function wsOrigin(): string {
 
 function dmTopicKey(a: number, b: number): string {
   return `${Math.min(a, b)}-${Math.max(a, b)}`;
+}
+
+function ChatRoleBadges({
+  roles,
+  compact,
+}: {
+  roles?: Iterable<string> | null;
+  compact?: boolean;
+}) {
+  const sorted = sapXepVaiTroNoiBo(roles);
+  if (sorted.length === 0) return null;
+  return (
+    <span
+      className={`chat-dm-app__role-tags${compact ? " chat-dm-app__role-tags--compact" : ""}`}
+    >
+      {sorted.map((r) => (
+        <span
+          key={r}
+          className={`user-role-tag chat-dm-app__role-tag ${VAI_TRO_BADGE_CLASS[r] ?? ""}`}
+        >
+          {nhanVaiTro(r)}
+        </span>
+      ))}
+    </span>
+  );
 }
 
 const EMOJI_NHANH: string[] = [
@@ -425,18 +456,23 @@ export default function ChatPage() {
   const filteredContacts = useMemo(() => {
     const q = contactQuery.trim().toLowerCase();
     if (!q) return contacts;
-    return contacts.filter(
-      (c) =>
-        (c.hoTen ?? "").toLowerCase().includes(q) ||
-        (c.tenDangNhap ?? "").toLowerCase().includes(q),
-    );
+    return contacts.filter((c) => {
+      const hoTen = (c.hoTen ?? "").toLowerCase();
+      const dangNhap = (c.tenDangNhap ?? "").toLowerCase();
+      const vaiTro = chuoiVaiTroNoiBo(c.cacVaiTro).toLowerCase();
+      return hoTen.includes(q) || dangNhap.includes(q) || vaiTro.includes(q);
+    });
   }, [contacts, contactQuery]);
 
-  const peerLabel = useMemo(() => {
+  const peerContact = useMemo(() => {
     if (peerId == null) return null;
-    const c = contacts.find((x) => x.id === peerId);
-    return c?.hoTen?.trim() || c?.tenDangNhap || `Người dùng #${peerId}`;
+    return contacts.find((x) => x.id === peerId) ?? null;
   }, [contacts, peerId]);
+
+  const peerLabel = useMemo(() => {
+    if (!peerContact) return peerId != null ? `Người dùng #${peerId}` : null;
+    return peerContact.hoTen?.trim() || peerContact.tenDangNhap;
+  }, [peerContact, peerId]);
 
   const sendReaction = useCallback((maTinNhan: number, emoji: string) => {
     if (!clientRef.current?.connected) return;
@@ -550,7 +586,7 @@ export default function ChatPage() {
                 <Form.Control
                   className="chat-dm-app__search-input"
                   size="sm"
-                  placeholder="Tìm theo tên hoặc đăng nhập…"
+                  placeholder="Tìm tên, đăng nhập hoặc vai trò…"
                   value={contactQuery}
                   onChange={(e) => setContactQuery(e.target.value)}
                   aria-label="Tìm liên hệ"
@@ -610,6 +646,7 @@ export default function ChatPage() {
                       <span className="chat-dm-app__contact-sub">
                         @{c.tenDangNhap}
                       </span>
+                      <ChatRoleBadges roles={c.cacVaiTro} compact />
                     </span>
                   </button>
                 );
@@ -624,14 +661,13 @@ export default function ChatPage() {
               <>
                 <ChatGeneratedAvatar
                   userId={peerId}
-                  hoTen={contacts.find((x) => x.id === peerId)?.hoTen}
-                  tenDangNhap={
-                    contacts.find((x) => x.id === peerId)?.tenDangNhap
-                  }
+                  hoTen={peerContact?.hoTen}
+                  tenDangNhap={peerContact?.tenDangNhap}
                   className="chat-dm-app__avatar chat-dm-app__avatar--lg"
                 />
                 <div className="flex-grow-1 min-w-0">
                   <div className="fw-bold text-truncate">{peerLabel}</div>
+                  <ChatRoleBadges roles={peerContact?.cacVaiTro} />
                   <div className="small text-muted text-truncate">
                     Tin nhắn chỉ hiển thị trong cuộc trò chuyện này.
                   </div>

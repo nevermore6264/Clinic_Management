@@ -3898,6 +3898,29 @@ html.app-ready body {
   white-space: nowrap;
 }
 
+.chat-dm-app__role-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.2rem;
+}
+
+.chat-dm-app__role-tags--compact {
+  margin-top: 0.15rem;
+}
+
+.chat-dm-app__role-tag {
+  font-size: 0.62rem;
+  padding: 0.08rem 0.4rem;
+  line-height: 1.25;
+  border-radius: 999px;
+}
+
+.chat-dm-app__thread-head .chat-dm-app__role-tags {
+  margin-top: 0.15rem;
+  margin-bottom: 0.1rem;
+}
+
 .chat-dm-app__main {
   min-height: max(20rem, calc(100dvh - 12rem));
   max-height: max(20rem, calc(100dvh - 12rem));

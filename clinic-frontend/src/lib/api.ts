@@ -589,6 +589,7 @@ export interface NguoiDungChatEntry {
   id: number;
   hoTen?: string;
   tenDangNhap: string;
+  cacVaiTro?: string[];
 }
 
 export const troChuyenApi = {

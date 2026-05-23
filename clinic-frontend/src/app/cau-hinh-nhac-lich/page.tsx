@@ -199,7 +199,7 @@ export default function ReminderConfigPage() {
   const homNay = formatNgayDdMmYyyy(new Date().toISOString().slice(0, 10));
 
   return (
-    <div>
+    <div className="cau-hinh-nhac-lich-page lich-hen-page">
       <h2 className="mb-4">Nhắc lịch khám</h2>
 
       <Tabs
@@ -296,26 +296,27 @@ export default function ReminderConfigPage() {
           }
         >
           {loiThuCong ? <Alert variant="danger">{loiThuCong}</Alert> : null}
-          <Card className="border-0 shadow-sm">
-            <Card.Body>
+          <Card className="card--static border-0 shadow-sm overflow-hidden cau-hinh-nhac-lich-table-card">
+            <Card.Body className="pb-0">
               <p className="text-muted mb-3">
                 Danh sách lịch hẹn trong <strong>{SO_NGAY_MAC_DINH} ngày</strong> tới
                 (từ {homNay}). Chọn bệnh nhân có email để gửi thư nhắc thủ công — từng
                 người hoặc hàng loạt.
               </p>
-              <div className="d-flex flex-wrap gap-2 mb-3">
+              <div className="cau-hinh-nhac-lich-toolbar d-flex flex-wrap gap-2 mb-3">
                 <Button
                   variant="outline-secondary"
                   size="sm"
+                  className="btn-clinic-clear-filter d-inline-flex align-items-center gap-1"
                   disabled={dangTaiLich}
                   onClick={() => void napLichHenThuCong()}
                 >
-                  <i className="bi bi-arrow-clockwise me-1" aria-hidden />
+                  <i className="bi bi-arrow-clockwise" aria-hidden />
                   Tải lại
                 </Button>
                 <Button
-                  variant="primary"
                   size="sm"
+                  className="btn-action-edit d-inline-flex align-items-center gap-1"
                   disabled={dangGuiHangLoat || chonIds.size === 0}
                   onClick={() => void handleGuiHangLoat()}
                 >
@@ -414,38 +415,46 @@ export default function ReminderConfigPage() {
                             </span>
                           </td>
                           <td className="text-end text-nowrap">
-                            <Link
-                              href={`/lich-hen/${id}`}
-                              className="btn btn-sm btn-outline-secondary me-1"
-                            >
-                              Chi tiết
-                            </Link>
-                            <Button
-                              size="sm"
-                              variant="outline-primary"
-                              disabled={
-                                !guiDuoc ||
-                                guiDangXuLyId === id ||
-                                dangGuiHangLoat
-                              }
-                              title={
-                                !coEmail(a)
-                                  ? "Bệnh nhân chưa có email"
-                                  : !guiDuoc
-                                    ? "Không gửi cho lịch hủy/vắng"
-                                    : "Gửi email nhắc lịch"
-                              }
-                              onClick={() => void handleGuiMot(a)}
-                            >
-                              {guiDangXuLyId === id ? (
-                                <Spinner animation="border" size="sm" />
-                              ) : (
-                                <>
-                                  <i className="bi bi-envelope me-1" aria-hidden />
-                                  Gửi email
-                                </>
-                              )}
-                            </Button>
+                            <div className="cau-hinh-nhac-lich-actions d-inline-flex flex-wrap gap-2 justify-content-end align-items-center">
+                              <Link
+                                href={`/lich-hen/${id}`}
+                                className="btn btn-sm btn-outline-primary text-decoration-none d-inline-flex align-items-center gap-1"
+                              >
+                                <i className="bi bi-arrow-right-circle" aria-hidden />
+                                Chi tiết
+                              </Link>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline-primary"
+                                className="d-inline-flex align-items-center gap-1"
+                                disabled={
+                                  !guiDuoc ||
+                                  guiDangXuLyId === id ||
+                                  dangGuiHangLoat
+                                }
+                                title={
+                                  !coEmail(a)
+                                    ? "Bệnh nhân chưa có email"
+                                    : !guiDuoc
+                                      ? "Không gửi cho lịch hủy/vắng"
+                                      : "Gửi email nhắc lịch cho bệnh nhân"
+                                }
+                                onClick={() => void handleGuiMot(a)}
+                              >
+                                {guiDangXuLyId === id ? (
+                                  <Spinner
+                                    animation="border"
+                                    size="sm"
+                                    role="status"
+                                    aria-hidden
+                                  />
+                                ) : (
+                                  <i className="bi bi-envelope" aria-hidden />
+                                )}
+                                Email nhắc
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       );

@@ -223,7 +223,7 @@ public class PayOsService {
         soTienAp = Math.min(soTienAp, dh.getSoTienVnd());
 
         String maThamChieu = maThamChieuTuGiaoDichGet(data, dh.getOrderCode());
-        payOsWebhookService.ghiNhanTuDonHangNeuChuaXuLy(dh, soTienAp, maThamChieu);
+        payOsWebhookService.ghiNhanTuDonHangNeuChuaXuLy(dh.getId(), soTienAp, maThamChieu);
         return hoaDonService.layTheoMa(maHoaDon);
     }
 

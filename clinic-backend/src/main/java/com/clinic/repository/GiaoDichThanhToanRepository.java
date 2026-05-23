@@ -7,7 +7,9 @@ import java.time.Instant;
 import java.util.List;
 
 public interface GiaoDichThanhToanRepository extends JpaRepository<GiaoDichThanhToan, Long> {
-    
+
     List<GiaoDichThanhToan> findByHoaDon_LichHen_BenhNhan_IdOrderByLucThanhToanDesc(Long maBenhNhan);
     List<GiaoDichThanhToan> findByLucThanhToanBetween(Instant tuLuc, Instant denLuc);
+
+    boolean existsByHoaDon_IdAndMaThamChieu(Long maHoaDon, String maThamChieu);
 }

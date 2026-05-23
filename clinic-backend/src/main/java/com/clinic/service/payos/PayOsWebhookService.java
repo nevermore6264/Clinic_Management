@@ -6,6 +6,7 @@ import com.clinic.dto.HoaDonDto;
 import com.clinic.entity.GiaoDichThanhToan;
 import com.clinic.entity.HoaDon;
 import com.clinic.entity.PayOsDonHang;
+import com.clinic.repository.GiaoDichThanhToanRepository;
 import com.clinic.repository.HoaDonRepository;
 import com.clinic.repository.PayOsDonHangRepository;
 import com.clinic.service.HoaDonService;
@@ -27,6 +28,7 @@ public class PayOsWebhookService {
 
     private final PayOsProperties payOsProperties;
     private final PayOsDonHangRepository payOsDonHangRepository;
+    private final GiaoDichThanhToanRepository giaoDichThanhToanRepository;
     private final HoaDonService hoaDonService;
     private final HoaDonRepository hoaDonRepository;
     private final JavaMailSender javaMailSender;
@@ -65,9 +67,6 @@ public class PayOsWebhookService {
             log.warn("PayOS webhook: không tìm thấy orderCode {}", orderCode);
             return;
         }
-        if (dh.isDaXuLyWebhook()) {
-            return;
-        }
 
         int amountFromHook = data.path("amount").asInt(0);
         if (amountFromHook <= 0) {
@@ -81,11 +80,15 @@ public class PayOsWebhookService {
         if (maThamChieu == null || maThamChieu.isBlank()) {
             maThamChieu = "PAYOS-" + orderCode;
         }
-        ghiNhanTuDonHangNeuChuaXuLy(dh, amountFromHook, maThamChieu);
+        ghiNhanTuDonHangNeuChuaXuLy(dh.getId(), amountFromHook, maThamChieu);
     }
 
     @Transactional
-    public void ghiNhanTuDonHangNeuChuaXuLy(PayOsDonHang dh, int soTienTuPayOsVnd, String maThamChieuGoiY) {
+    public void ghiNhanTuDonHangNeuChuaXuLy(Long payOsDonHangId, int soTienTuPayOsVnd, String maThamChieuGoiY) {
+        PayOsDonHang dh = payOsDonHangRepository.findByIdForUpdate(payOsDonHangId).orElse(null);
+        if (dh == null) {
+            return;
+        }
         if (dh.isDaXuLyWebhook()) {
             return;
         }
@@ -96,23 +99,29 @@ public class PayOsWebhookService {
             log.warn("PayOS: số tiền {} khác số đã tạo link {}", soTienTuPayOsVnd, dh.getSoTienVnd());
         }
 
+        String maThamChieu = maThamChieuGoiY != null && !maThamChieuGoiY.isBlank()
+                ? maThamChieuGoiY.trim()
+                : "PAYOS-" + dh.getOrderCode();
+
+        if (giaoDichThanhToanRepository.existsByHoaDon_IdAndMaThamChieu(dh.getMaHoaDon(), maThamChieu)) {
+            log.info("PayOS: bỏ qua — đã có giao dịch maThamChieu={} cho hóa đơn {}", maThamChieu, dh.getMaHoaDon());
+            danhDauDonDaXuLy(dh);
+            return;
+        }
+
         HoaDonDto hd = hoaDonService.layTheoMaNoiBo(dh.getMaHoaDon());
         BigDecimal conLai = hd.getTongTien().subtract(hd.getSoTienDaTra());
         if (conLai.compareTo(BigDecimal.ZERO) <= 0) {
-            dh.setDaXuLyWebhook(true);
-            payOsDonHangRepository.save(dh);
+            danhDauDonDaXuLy(dh);
             return;
         }
 
         BigDecimal soTien = BigDecimal.valueOf(Math.min(soTienTuPayOsVnd, dh.getSoTienVnd()));
         soTien = soTien.min(conLai);
         if (soTien.compareTo(BigDecimal.ZERO) <= 0) {
+            danhDauDonDaXuLy(dh);
             return;
         }
-
-        String maThamChieu = maThamChieuGoiY != null && !maThamChieuGoiY.isBlank()
-                ? maThamChieuGoiY.trim()
-                : "PAYOS-" + dh.getOrderCode();
 
         GiaoDichThanhToanDto g = new GiaoDichThanhToanDto();
         g.setSoTien(soTien);
@@ -120,11 +129,14 @@ public class PayOsWebhookService {
         g.setMaThamChieu(maThamChieu);
 
         hoaDonService.themThanhToan(dh.getMaHoaDon(), g);
+        danhDauDonDaXuLy(dh);
+        guiEmailXacNhan(dh.getMaHoaDon());
+    }
 
+    private void danhDauDonDaXuLy(PayOsDonHang dh) {
         dh.setDaXuLyWebhook(true);
         payOsDonHangRepository.save(dh);
-
-        guiEmailXacNhan(dh.getMaHoaDon());
+        payOsDonHangRepository.danhDauDaXuLyTatCaDonChoHoaDon(dh.getMaHoaDon());
     }
 
     private void guiEmailXacNhan(Long maHoaDon) {

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, Table, Form, Alert, Pagination } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
+import { tinhStt } from "@/lib/phanTrangClient";
 import { auditLogsApi, type NhatKyHeThongEntry } from "@/lib/api";
 import { todayLocalYmd } from "@/lib/dateLocal";
 
@@ -82,6 +83,9 @@ export default function NhatKyHeThongsPage() {
         <Table responsive size="sm" className="mb-0">
           <thead>
             <tr>
+              <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                STT
+              </th>
               <th>Thời gian</th>
               <th>Người thao tác</th>
               <th>Đối tượng</th>
@@ -90,8 +94,11 @@ export default function NhatKyHeThongsPage() {
             </tr>
           </thead>
           <tbody>
-            {list.map((l) => (
+            {list.map((l, i) => (
               <tr key={l.id}>
+                <td className="text-center text-muted">
+                  {tinhStt(trang, KICH_THUOC, i)}
+                </td>
                 <td>
                   {l.taoLuc
                     ? new Date(l.taoLuc).toLocaleString("vi-VN")
@@ -114,7 +121,7 @@ export default function NhatKyHeThongsPage() {
             ))}
             {list.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center text-muted py-4">
+                <td colSpan={6} className="text-center text-muted py-4">
                   {tongPhanTu === 0
                     ? "Không có bản ghi."
                     : "Không có dòng trên trang này."}

@@ -16,7 +16,7 @@ import Link from "next/link";
 import { bacSiApi, chuyenKhoaApi, type BacSi, type ChuyenKhoa } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { notify } from "@/lib/notify";
-import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
+import { catTrang, tinhStt, tongSoTrangClient } from "@/lib/phanTrangClient";
 
 export default function ChuyenKhoaPage() {
   const { user, loading } = useAuth();
@@ -256,6 +256,9 @@ export default function ChuyenKhoaPage() {
         <Table responsive hover className="mb-0">
           <thead>
             <tr>
+              <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                STT
+              </th>
               <th>Tên chuyên khoa</th>
               <th className="text-center">Số bác sĩ</th>
               <th className="text-center text-nowrap">Bác sĩ</th>
@@ -263,8 +266,11 @@ export default function ChuyenKhoaPage() {
             </tr>
           </thead>
           <tbody>
-            {dongTrangCk.map((item) => (
+            {dongTrangCk.map((item, i) => (
               <tr key={item.id}>
+                <td className="text-center text-muted">
+                  {tinhStt(trang, KICH_THUOC_TRANG, i)}
+                </td>
                 <td>
                   {dangSuaId === item.id ? (
                     <>
@@ -356,7 +362,7 @@ export default function ChuyenKhoaPage() {
             ))}
             {list.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center text-muted py-4">
+                <td colSpan={5} className="text-center text-muted py-4">
                   Chưa có chuyên khoa nào.
                 </td>
               </tr>
@@ -412,6 +418,9 @@ export default function ChuyenKhoaPage() {
             <Table responsive hover size="sm" className="mb-0 align-middle">
               <thead className="table-light">
                 <tr>
+                  <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                    STT
+                  </th>
                   <th>Họ tên</th>
                   <th>Tên đăng nhập</th>
                   <th>Bằng cấp</th>
@@ -419,8 +428,9 @@ export default function ChuyenKhoaPage() {
                 </tr>
               </thead>
               <tbody>
-                {bacSiTrongChuyenKhoa.map((b) => (
+                {bacSiTrongChuyenKhoa.map((b, i) => (
                   <tr key={b.id}>
+                    <td className="text-center text-muted">{i + 1}</td>
                     <td className="fw-semibold">{b.hoTen ?? "—"}</td>
                     <td>
                       <code className="small">{b.tenDangNhap ?? "—"}</code>

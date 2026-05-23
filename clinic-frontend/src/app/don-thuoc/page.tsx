@@ -7,7 +7,7 @@ import { Alert, Card, Pagination, Table } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
 import { thuocApi, type DonThuocChiTietBangKe } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
-import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
+import { catTrang, tinhStt, tongSoTrangClient } from "@/lib/phanTrangClient";
 
 export default function DonThuocPage() {
   const { user, loading } = useAuth();
@@ -80,6 +80,9 @@ export default function DonThuocPage() {
             <Table responsive hover className="mb-0 align-middle small">
               <thead className="table-light">
                 <tr>
+                  <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                    STT
+                  </th>
                   <th>Ngày khám</th>
                   <th>Giờ</th>
                   <th>Bệnh nhân</th>
@@ -91,8 +94,11 @@ export default function DonThuocPage() {
                 </tr>
               </thead>
               <tbody>
-                {dongTrang.map((d) => (
+                {dongTrang.map((d, i) => (
                   <tr key={d.maChiTiet}>
+                    <td className="text-center text-muted">
+                      {tinhStt(trang, KICH_THUOC, i)}
+                    </td>
                     <td>{d.ngayHen ?? "—"}</td>
                     <td>{d.gioHen != null ? String(d.gioHen).slice(0, 5) : "—"}</td>
                     <td>{d.tenBenhNhan ?? "—"}</td>
@@ -116,7 +122,7 @@ export default function DonThuocPage() {
                 ))}
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center text-muted py-4">
+                    <td colSpan={9} className="text-center text-muted py-4">
                       Chưa có dòng đơn thuốc nào (ghi trong hồ sơ khám sau khi khám).
                     </td>
                   </tr>

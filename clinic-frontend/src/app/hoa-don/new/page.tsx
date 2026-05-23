@@ -474,6 +474,9 @@ function NewInvoicePageInner() {
                     >
                       <thead className="table-light">
                         <tr>
+                          <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                            STT
+                          </th>
                           <th>Dịch vụ</th>
                           <th>Loại dịch vụ</th>
                           <th className="text-end text-nowrap">Đơn giá</th>
@@ -486,6 +489,7 @@ function NewInvoicePageInner() {
                           const dv = services.find((x) => x.id === item.serviceId);
                           return (
                             <tr key={`${item.serviceId}-${i}`}>
+                              <td className="text-center text-muted">{i + 1}</td>
                               <td className={styles.selectedCellTen}>
                                 <div className="fw-medium text-break">
                                   {dv?.ten ?? `Mã #${item.serviceId}`}

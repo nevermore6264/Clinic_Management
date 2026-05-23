@@ -285,6 +285,9 @@ export default function AppointmentDetailPage() {
               <Table responsive hover className="mb-0 small">
                 <thead>
                   <tr>
+                    <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                      STT
+                    </th>
                     <th>Thời điểm</th>
                     <th>Từ</th>
                     <th>Đến</th>
@@ -292,8 +295,9 @@ export default function AppointmentDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {statusLog.map((l) => (
+                  {statusLog.map((l, i) => (
                     <tr key={l.id}>
+                      <td className="text-center text-muted">{i + 1}</td>
                       <td>
                         {l.taoLuc
                           ? new Date(l.taoLuc).toLocaleString("vi-VN")
@@ -348,6 +352,9 @@ export default function AppointmentDetailPage() {
               >
                 <thead>
                   <tr className="text-nowrap small">
+                    <th className="text-center" style={{ width: "3rem" }}>
+                      STT
+                    </th>
                     <th>Thuốc</th>
                     <th>Đơn vị</th>
                     <th>Hàm lượng</th>
@@ -377,6 +384,9 @@ export default function AppointmentDetailPage() {
                       .join(" · ");
                     return (
                       <tr key={idx}>
+                        <td className="text-center text-muted align-middle">
+                          {idx + 1}
+                        </td>
                         <td className="lich-hen-thuoc-chon-cell align-top">
                           <div className="lich-hen-thuoc-cell-block d-flex flex-column gap-2 align-items-start">
                             <div className="lich-hen-thuoc-cell__title text-break min-w-0">

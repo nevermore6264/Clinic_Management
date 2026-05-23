@@ -1,6 +1,8 @@
 package com.clinic.service;
 
 import com.clinic.dto.CauHinhNhacLichDto;
+import com.clinic.dto.KetQuaGuiNhacHangLoatDto;
+import com.clinic.dto.LichHenDto;
 import com.clinic.entity.CauHinhNhacLich;
 import com.clinic.entity.LichHen;
 import com.clinic.entity.NhatKyNhacLich;
@@ -17,7 +19,10 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
@@ -38,6 +43,7 @@ public class NhacLichHenService {
     private final NhatKyNhacLichRepository khoNhatKy;
     private final LichHenRepository khoLichHen;
     private final JavaMailSender mailSender;
+    private final PlatformTransactionManager transactionManager;
 
     @Value("${spring.mail.username:}")
     private String mailTu;
@@ -63,8 +69,47 @@ public class NhacLichHenService {
         return sangDto(cauHinh);
     }
 
+    @Transactional(readOnly = true)
+    public List<LichHenDto> danhSachLichHenNhacThuCong(int soNgay) {
+        int so = soNgay < 1 ? 3 : Math.min(soNgay, 14);
+        LocalDate tu = LocalDate.now();
+        LocalDate den = tu.plusDays(so - 1L);
+        return khoLichHen.findNhacThuCongTrongKhoang(tu, den).stream()
+                .map(this::sangDtoLichHen)
+                .toList();
+    }
+
     @Transactional
     public void guiNhacThuCong(Long maLichHen) {
+        thucHienGuiNhacThuCong(maLichHen);
+    }
+
+    public KetQuaGuiNhacHangLoatDto guiNhacThuCongHangLoat(List<Long> maLichHen) {
+        KetQuaGuiNhacHangLoatDto ketQua = new KetQuaGuiNhacHangLoatDto();
+        if (maLichHen == null || maLichHen.isEmpty()) {
+            return ketQua;
+        }
+        TransactionTemplate txMoi = new TransactionTemplate(transactionManager);
+        txMoi.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        for (Long id : maLichHen) {
+            if (id == null) {
+                continue;
+            }
+            try {
+                txMoi.executeWithoutResult(status -> thucHienGuiNhacThuCong(id));
+                ketQua.setThanhCong(ketQua.getThanhCong() + 1);
+            } catch (Exception e) {
+                ketQua.setThatBai(ketQua.getThatBai() + 1);
+                KetQuaGuiNhacHangLoatDto.LoiGuiNhacDto loi = new KetQuaGuiNhacHangLoatDto.LoiGuiNhacDto();
+                loi.setMaLichHen(id);
+                loi.setLyDo(e.getMessage() != null ? e.getMessage() : "Gửi thất bại");
+                ketQua.getLoi().add(loi);
+            }
+        }
+        return ketQua;
+    }
+
+    private void thucHienGuiNhacThuCong(Long maLichHen) {
         if (mailTu == null || mailTu.isBlank()) {
             throw new IllegalStateException("Chưa cấu hình gửi email (spring.mail.username).");
         }
@@ -90,6 +135,25 @@ public class NhacLichHenService {
                     .kenh(NhatKyNhacLich.KenhNhac.THU_DIEN_TU)
                     .build());
         }
+    }
+
+    private LichHenDto sangDtoLichHen(LichHen lh) {
+        LichHenDto dto = new LichHenDto();
+        dto.setId(lh.getId());
+        dto.setMaBenhNhan(lh.getBenhNhan().getId());
+        dto.setTenBenhNhan(lh.getBenhNhan().getHoTen());
+        dto.setMaBacSi(lh.getBacSi().getId());
+        dto.setTenBacSi(lh.getBacSi().getNguoiDung() != null
+                ? lh.getBacSi().getNguoiDung().getHoTen()
+                : lh.getBacSi().getHoTen());
+        dto.setMaDichVu(lh.getDichVu().getId());
+        dto.setTenDichVu(lh.getDichVu().getTen());
+        dto.setNgayHen(lh.getNgayHen());
+        dto.setGioHen(lh.getGioHen());
+        dto.setTrangThai(lh.getTrangThai());
+        dto.setGhiChu(lh.getGhiChu());
+        dto.setThuDienTuBenhNhan(lh.getBenhNhan().getThuDienTu());
+        return dto;
     }
 
     @Scheduled(cron = "0 */15 * * * *")

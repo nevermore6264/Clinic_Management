@@ -38,4 +38,18 @@ public interface LichHenRepository extends JpaRepository<LichHen, Long> {
 
     @Query("select count(distinct l.bacSi.id) from LichHen l where l.ngayHen = :ngay and l.trangThai not in ('HUY', 'VANG')")
     long demSoBacSiCoLichTrongNgay(@Param("ngay") LocalDate ngay);
+
+    @Query("""
+            SELECT lh FROM LichHen lh
+            JOIN FETCH lh.benhNhan
+            JOIN FETCH lh.bacSi bs
+            LEFT JOIN FETCH bs.nguoiDung
+            JOIN FETCH lh.dichVu
+            WHERE lh.ngayHen BETWEEN :tuNgay AND :denNgay
+              AND lh.trangThai NOT IN ('HUY', 'VANG')
+            ORDER BY lh.ngayHen ASC, lh.gioHen ASC
+            """)
+    List<LichHen> findNhacThuCongTrongKhoang(
+            @Param("tuNgay") LocalDate tuNgay,
+            @Param("denNgay") LocalDate denNgay);
 }

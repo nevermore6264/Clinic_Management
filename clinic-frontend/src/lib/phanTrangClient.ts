@@ -9,3 +9,13 @@ export function tongSoTrangClient(soPhanTu: number, kichThuoc: number): number {
   const k = Math.max(1, kichThuoc);
   return Math.max(1, Math.ceil(Math.max(0, soPhanTu) / k));
 }
+
+export function tinhStt(
+  trang: number,
+  kichThuoc: number,
+  chiSoTrongTrang: number,
+): number {
+  const k = Math.max(1, kichThuoc);
+  const t = Math.max(0, trang);
+  return t * k + chiSoTrongTrang + 1;
+}

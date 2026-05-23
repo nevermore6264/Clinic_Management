@@ -20,7 +20,7 @@ import {
   coLoiDichVuForm,
   type DichVuFormErrors,
 } from "@/lib/validateDichVuForm";
-import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
+import { catTrang, tinhStt, tongSoTrangClient } from "@/lib/phanTrangClient";
 
 function tomTatLoiSuaDichVu(loi: DichVuFormErrors): string {
   return [loi.maLoaiDichVu, loi.maChuyenKhoa, loi.ten, loi.gia]
@@ -407,6 +407,9 @@ export default function ServicesPage() {
         <Table responsive hover className="mb-0">
           <thead>
             <tr>
+              <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                STT
+              </th>
               <th>Loại dịch vụ</th>
               <th>Chuyên khoa</th>
               <th>Tên dịch vụ</th>
@@ -417,9 +420,12 @@ export default function ServicesPage() {
             </tr>
           </thead>
           <tbody>
-            {dongTrangDichVu.map((s) => (
+            {dongTrangDichVu.map((s, i) => (
               <Fragment key={s.id}>
                 <tr>
+                <td className="text-center text-muted">
+                  {tinhStt(trang, KICH_THUOC_TRANG, i)}
+                </td>
                 <td>
                   {dangSuaId === s.id ? (
                     <Form.Select
@@ -642,7 +648,7 @@ export default function ServicesPage() {
               </tr>
               {dangSuaId === s.id && coLoiDichVuForm(suaDichVuLoi) ? (
                 <tr className="service-edit-error-strip" aria-live="polite">
-                  <td colSpan={7}>
+                  <td colSpan={8}>
                     <div className="service-edit-inline-msg" role="alert">
                       <i
                         className="bi bi-exclamation-circle-fill flex-shrink-0"
@@ -657,7 +663,7 @@ export default function ServicesPage() {
             ))}
             {danhSachDichVuLoc.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center text-muted py-4">
+                <td colSpan={8} className="text-center text-muted py-4">
                   Không có dịch vụ phù hợp với bộ lọc hiện tại.
                 </td>
               </tr>

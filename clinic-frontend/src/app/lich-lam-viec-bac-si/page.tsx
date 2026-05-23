@@ -1380,6 +1380,9 @@ export default function LichLamViecBacSisPage() {
                 <Table hover className="mb-0 align-middle">
                   <thead className="table-light">
                     <tr className="small text-uppercase text-muted">
+                      <th className="border-0 text-center" style={{ width: "3rem" }}>
+                        STT
+                      </th>
                       <th className="border-0 ps-4">Giờ</th>
                       <th className="border-0">Bệnh nhân</th>
                       <th className="border-0 d-none d-md-table-cell">Dịch vụ</th>
@@ -1387,8 +1390,9 @@ export default function LichLamViecBacSisPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {appointments.map((a) => (
+                    {appointments.map((a, i) => (
                       <tr key={a.id}>
+                        <td className="text-center text-muted">{i + 1}</td>
                         <td className="ps-4 text-nowrap font-monospace">
                           {a.gioHen != null ? String(a.gioHen).slice(0, 5) : "—"}
                         </td>

@@ -981,7 +981,7 @@ function AppointmentsPageInner() {
   );
 
   const todayStr = isoDateLocal(new Date());
-  const bangColSpan = chiTaiKhoanBn ? 6 : coCotChoQuaGio ? 8 : 7;
+  const bangColSpan = (chiTaiKhoanBn ? 6 : coCotChoQuaGio ? 8 : 7) + 1;
 
   const handleDatLichSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1754,6 +1754,9 @@ function AppointmentsPageInner() {
             <Table responsive hover className="mb-0 align-middle">
               <thead>
                 <tr>
+                  <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                    STT
+                  </th>
                   <th>Ngày</th>
                   <th>Giờ</th>
                   {!chiTaiKhoanBn && <th>Bệnh nhân</th>}
@@ -1769,10 +1772,11 @@ function AppointmentsPageInner() {
                 </tr>
               </thead>
               <tbody>
-                {danhSachLoc.map((a) => {
+                {danhSachLoc.map((a, i) => {
                   const metaBang = metaTrangThaiLichHen(a.trangThai);
                   return (
                   <tr key={a.id}>
+                    <td className="text-center text-muted">{i + 1}</td>
                     <td>{formatNgayDdMmYyyy(a.ngayHen)}</td>
                     <td>{formatGioHen(a.gioHen)}</td>
                     {!chiTaiKhoanBn && <td>{a.tenBenhNhan}</td>}

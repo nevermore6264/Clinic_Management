@@ -11,7 +11,7 @@ import { LoadingState } from "@/components/LoadingState";
 import { HoaDonStatusTag } from "@/components/HoaDonStatusTag";
 import { daysAgoLocalYmd, todayLocalYmd } from "@/lib/dateLocal";
 import { laBacSiKhongXemHoaDon, laChiTaiKhoanBenhNhan } from "@/lib/roles";
-import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
+import { catTrang, tinhStt, tongSoTrangClient } from "@/lib/phanTrangClient";
 
 function formatTaoLucPatient(t?: string) {
   if (!t) return "";
@@ -327,6 +327,9 @@ function InvoicesPageInner() {
             <Table responsive hover className="mb-0 align-middle">
               <thead>
                 <tr>
+                  <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                    STT
+                  </th>
                   <th>Mã HĐ</th>
                   <th>Bệnh nhân</th>
                   <th>Tổng tiền</th>
@@ -338,7 +341,7 @@ function InvoicesPageInner() {
               <tbody>
                 {rowsHienThi.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-muted text-center py-4">
+                    <td colSpan={7} className="text-muted text-center py-4">
                       {tongPhanTu === 0
                         ? "Không có hóa đơn trong khoảng ngày đã chọn. Thử mở rộng Từ ngày / Đến ngày."
                         : maBenhNhanParam
@@ -347,8 +350,11 @@ function InvoicesPageInner() {
                     </td>
                   </tr>
                 ) : (
-                  rowsHienThi.map((inv) => (
+                  rowsHienThi.map((inv, i) => (
                     <tr key={inv.id}>
+                      <td className="text-center text-muted">
+                        {tinhStt(trang, KICH_THUOC, i)}
+                      </td>
                       <td>{inv.soHoaDon}</td>
                       <td>{inv.tenBenhNhan}</td>
                       <td>{inv.tongTien?.toLocaleString("vi-VN")}đ</td>

@@ -348,6 +348,9 @@ export default function InvoiceDetailPage() {
           <Table size="sm" className="mb-0">
             <thead>
               <tr>
+                <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                  STT
+                </th>
                 <th>Dịch vụ</th>
                 <th>Đơn giá</th>
                 <th>SL</th>
@@ -355,8 +358,9 @@ export default function InvoiceDetailPage() {
               </tr>
             </thead>
             <tbody>
-              {inv.chiTiet?.map((i) => (
+              {inv.chiTiet?.map((i, idx) => (
                 <tr key={i.id}>
+                  <td className="text-center text-muted">{idx + 1}</td>
                   <td>{i.tenDichVu}</td>
                   <td>{i.donGia?.toLocaleString("vi-VN")}đ</td>
                   <td>{i.soLuong}</td>
@@ -372,6 +376,9 @@ export default function InvoiceDetailPage() {
             <Table size="sm" className="mb-0">
               <thead>
                 <tr>
+                  <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                    STT
+                  </th>
                   <th>Số tiền</th>
                   <th>Hình thức</th>
                   <th>Mã GD</th>
@@ -379,8 +386,9 @@ export default function InvoiceDetailPage() {
                 </tr>
               </thead>
               <tbody>
-                {inv.giaoDichThanhToan.map((p) => (
+                {inv.giaoDichThanhToan.map((p, idx) => (
                   <tr key={p.id}>
+                    <td className="text-center text-muted">{idx + 1}</td>
                     <td>{p.soTien?.toLocaleString("vi-VN")}đ</td>
                     <td>
                       <PhuongThucThanhToanTag phuongThuc={p.phuongThuc} />

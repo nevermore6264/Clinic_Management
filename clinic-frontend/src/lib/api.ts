@@ -525,12 +525,25 @@ export interface CauHinhNhacLich {
   batThuDienTu: boolean;
 }
 
+export interface KetQuaGuiNhacHangLoat {
+  thanhCong: number;
+  thatBai: number;
+  loi: { maLichHen: number; lyDo: string }[];
+}
+
 export const cauHinhNhacLichApi = {
   lay: () => api<CauHinhNhacLich>("/cau-hinh-nhac-lich"),
   capNhat: (data: CauHinhNhacLich) =>
     api<CauHinhNhacLich>("/cau-hinh-nhac-lich", {
       method: "PUT",
       body: JSON.stringify(data),
+    }),
+  danhSachLichHenThuCong: (soNgay = 3) =>
+    api<LichHen[]>(`/cau-hinh-nhac-lich/lich-hen-thu-cong?soNgay=${soNgay}`),
+  guiEmailHangLoat: (maLichHen: number[]) =>
+    api<KetQuaGuiNhacHangLoat>("/cau-hinh-nhac-lich/gui-email-hang-loat", {
+      method: "POST",
+      body: JSON.stringify({ maLichHen }),
     }),
 };
 

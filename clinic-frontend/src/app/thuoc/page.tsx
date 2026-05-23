@@ -19,6 +19,7 @@ import { formatNgayDdMmYyyy } from "@/lib/formatInstantVi";
 import { thuocApi, type Thuoc, type ThuocTrangTraCuu } from "@/lib/api";
 import { formatVndInputMoneyUnit, parseVndInputMoney } from "@/lib/moneyVnd";
 import { LoadingState } from "@/components/LoadingState";
+import { tinhStt } from "@/lib/phanTrangClient";
 
 const BUOC_THUOC = [
   {
@@ -499,6 +500,9 @@ export default function ThuocPage() {
         <Table responsive hover className="mb-0">
           <thead>
             <tr>
+              <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                STT
+              </th>
               <th>Tên</th>
               <th>Hàm lượng</th>
               <th>Dạng bào chế</th>
@@ -515,19 +519,22 @@ export default function ThuocPage() {
           <tbody>
             {loadingList ? (
               <tr>
-                <td colSpan={11} className="text-center py-5">
+                <td colSpan={12} className="text-center py-5">
                   <LoadingState />
                 </td>
               </tr>
             ) : danhSachHienThi.length === 0 ? (
               <tr>
-                <td colSpan={11} className="text-center text-muted py-4">
+                <td colSpan={12} className="text-center text-muted py-4">
                   Không có thuốc phù hợp bộ lọc hiện tại.
                 </td>
               </tr>
             ) : (
-              danhSachHienThi.map((t) => (
+              danhSachHienThi.map((t, i) => (
                 <tr key={t.id}>
+                  <td className="text-center text-muted">
+                    {tinhStt(trang, KICH_THUOC_TRANG, i)}
+                  </td>
                   <td>{t.tenThuoc}</td>
                   <td>{t.hamLuong || "—"}</td>
                   <td>{t.dangBaoChe || "—"}</td>

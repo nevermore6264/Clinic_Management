@@ -27,7 +27,7 @@ import {
 } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { notify } from "@/lib/notify";
-import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
+import { catTrang, tinhStt, tongSoTrangClient } from "@/lib/phanTrangClient";
 import DOMPurify from "dompurify";
 import "react-quill/dist/quill.snow.css";
 
@@ -498,6 +498,9 @@ export default function QuanLyBacSiPage() {
         <Table responsive hover className="mb-0 align-middle">
           <thead>
             <tr>
+              <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                STT
+              </th>
               <th>Họ tên</th>
               <th>Tên đăng nhập</th>
               <th>Chuyên khoa</th>
@@ -510,8 +513,11 @@ export default function QuanLyBacSiPage() {
             </tr>
           </thead>
           <tbody>
-            {dongTrangBs.map((b) => (
+            {dongTrangBs.map((b, i) => (
               <tr key={b.id}>
+                <td className="text-center text-muted">
+                  {tinhStt(trang, KICH_THUOC_TRANG, i)}
+                </td>
                 <td>{b.hoTen ?? "—"}</td>
                 <td>
                   <code className="small">{b.tenDangNhap ?? "—"}</code>
@@ -579,7 +585,7 @@ export default function QuanLyBacSiPage() {
             ))}
             {list.length === 0 ? (
               <tr>
-                <td colSpan={9} className="text-center text-muted py-4">
+                <td colSpan={10} className="text-center text-muted py-4">
                   Chưa có hồ sơ bác sĩ nào.
                 </td>
               </tr>

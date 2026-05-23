@@ -23,6 +23,7 @@ import {
   type PhieuChiTongHop,
 } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
+import { tinhStt } from "@/lib/phanTrangClient";
 
 const LOAI_OPTIONS = [
   { value: "VAT_TU", label: "Vật tư", badge: "info" as const },
@@ -594,6 +595,9 @@ export default function PhieuChiPage() {
             <Table hover className="mb-0 phieu-chi-table align-middle">
               <thead className="phieu-chi-thead">
                 <tr>
+                  <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                    STT
+                  </th>
                   <th>Ngày</th>
                   <th className="phieu-chi-col-loai">Loại</th>
                   <th className="phieu-chi-th-chung-tu">Ảnh chứng từ</th>
@@ -604,10 +608,13 @@ export default function PhieuChiPage() {
                 </tr>
               </thead>
               <tbody>
-                {list.map((p) => {
+                {list.map((p, i) => {
                   const loaiMeta = LOAI_OPTIONS.find((o) => o.value === p.loai);
                   return (
                     <tr key={p.id}>
+                      <td className="text-center text-muted">
+                        {tinhStt(trang, KICH_THUOC_TRANG, i)}
+                      </td>
                       <td className="text-nowrap small fw-medium">{fmtNgayChi(p.ngayChi)}</td>
                       <td className="phieu-chi-col-loai">
                         <Badge
@@ -688,7 +695,7 @@ export default function PhieuChiPage() {
                 })}
                 {list.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center text-muted py-4">
+                    <td colSpan={8} className="text-center text-muted py-4">
                       Không có dòng trên trang này.
                     </td>
                   </tr>

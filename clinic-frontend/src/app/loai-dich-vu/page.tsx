@@ -20,7 +20,7 @@ import {
 } from "@/lib/api";
 import { useAuth } from "@/lib/useAuth";
 import { notify } from "@/lib/notify";
-import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
+import { catTrang, tinhStt, tongSoTrangClient } from "@/lib/phanTrangClient";
 
 export default function ServiceTypesPage() {
   const { user, loading } = useAuth();
@@ -298,14 +298,20 @@ export default function ServiceTypesPage() {
         <Table responsive hover className="mb-0">
           <thead>
             <tr>
+              <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                STT
+              </th>
               <th>Loại dịch vụ</th>
               <th className="text-center">Số dịch vụ</th>
               <th className="text-end">Thao tác</th>
             </tr>
           </thead>
           <tbody>
-            {dongTrangLoai.map((item) => (
+            {dongTrangLoai.map((item, i) => (
               <tr key={item.id}>
+                <td className="text-center text-muted">
+                  {tinhStt(trang, KICH_THUOC_TRANG, i)}
+                </td>
                 <td>
                   {dangSuaId === item.id ? (
                     <>
@@ -398,7 +404,7 @@ export default function ServiceTypesPage() {
             ))}
             {list.length === 0 ? (
               <tr>
-                <td colSpan={3} className="text-center text-muted py-4">
+                <td colSpan={4} className="text-center text-muted py-4">
                   Chưa có loại dịch vụ nào.
                 </td>
               </tr>
@@ -492,14 +498,18 @@ export default function ServiceTypesPage() {
             <Table responsive hover size="sm" className="mb-0">
               <thead>
                 <tr>
+                  <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                    STT
+                  </th>
                   <th>Tên dịch vụ</th>
                   <th className="text-end">Đơn giá</th>
                   <th className="service-col-status">Trạng thái</th>
                 </tr>
               </thead>
               <tbody>
-                {dichVuTheoLoaiXem.map((dv) => (
+                {dichVuTheoLoaiXem.map((dv, i) => (
                   <tr key={dv.id}>
+                    <td className="text-center text-muted">{i + 1}</td>
                     <td>{dv.ten}</td>
                     <td className="text-end">
                       {(dv.gia ?? 0).toLocaleString("vi-VN")}đ

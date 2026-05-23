@@ -23,7 +23,6 @@ export const VAI_TRO_BADGE_CLASS: Record<string, string> = {
   BENH_NHAN: "user-role-tag--patient",
 };
 
-/** Vai trò nội bộ theo thứ tự ưu tiên hiển thị (chat, danh sách). */
 export function sapXepVaiTroNoiBo(cacVaiTro?: Iterable<string> | null): string[] {
   if (!cacVaiTro) return [];
   const co = new Set(cacVaiTro);

@@ -12,7 +12,7 @@ import {
   type BacSi,
   type ThongTinNguoiDungDto,
 } from "@/lib/api";
-import { catTrang, tongSoTrangClient } from "@/lib/phanTrangClient";
+import { catTrang, tinhStt, tongSoTrangClient } from "@/lib/phanTrangClient";
 
 const ROLES = ["QUAN_TRI", "LE_TAN", "BAC_SI", "THU_NGAN", "BENH_NHAN"];
 
@@ -562,6 +562,9 @@ export default function UsersPage() {
         <Table responsive hover className="mb-0">
           <thead>
             <tr>
+              <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                STT
+              </th>
               <th>Tên đăng nhập</th>
               <th>Họ tên</th>
               <th>Vai trò</th>
@@ -570,8 +573,11 @@ export default function UsersPage() {
             </tr>
           </thead>
           <tbody>
-            {dongTrang.map((u) => (
+            {dongTrang.map((u, i) => (
               <tr key={u.id}>
+                <td className="text-center text-muted">
+                  {tinhStt(trang, KICH_THUOC_TRANG, i)}
+                </td>
                 <td>{u.tenDangNhap}</td>
                 <td>{u.hoTen || "—"}</td>
                 <td>
@@ -636,7 +642,7 @@ export default function UsersPage() {
             ))}
             {danhSachLoc.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center text-muted py-4">
+                <td colSpan={6} className="text-center text-muted py-4">
                   Không có tài khoản phù hợp bộ lọc hiện tại.
                 </td>
               </tr>
@@ -1088,14 +1094,16 @@ export default function UsersPage() {
                 <Table hover responsive size="sm" className="mb-0 align-middle">
                   <thead className="table-light" style={{ position: "sticky", top: 0, zIndex: 1 }}>
                     <tr>
-                      <th className="text-nowrap">#</th>
+                      <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                        STT
+                      </th>
                       <th>Họ tên</th>
                       <th>SĐT</th>
                       <th>Email</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {chonBnRows.map((bn) => (
+                    {chonBnRows.map((bn, i) => (
                       <tr
                         key={bn.id ?? bn.hoTen}
                         style={{ cursor: "pointer" }}
@@ -1103,7 +1111,9 @@ export default function UsersPage() {
                           if (bn.id != null) apChonBenhNhan(bn);
                         }}
                       >
-                        <td className="text-muted">{bn.id}</td>
+                        <td className="text-center text-muted">
+                          {tinhStt(chonBnTrang, CHON_MODAL_KICH_THUOC, i)}
+                        </td>
                         <td>{bn.hoTen}</td>
                         <td>{bn.soDienThoai ?? "—"}</td>
                         <td className="text-truncate" style={{ maxWidth: 220 }}>
@@ -1121,19 +1131,23 @@ export default function UsersPage() {
                 <Table hover responsive size="sm" className="mb-0 align-middle">
                   <thead className="table-light" style={{ position: "sticky", top: 0, zIndex: 1 }}>
                     <tr>
-                      <th className="text-nowrap">#</th>
+                      <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                        STT
+                      </th>
                       <th>Họ tên</th>
                       <th>Chuyên khoa</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {chonBsRows.map((bs) => (
+                    {chonBsRows.map((bs, i) => (
                       <tr
                         key={bs.id}
                         style={{ cursor: "pointer" }}
                         onClick={() => apChonBacSi(bs)}
                       >
-                        <td className="text-muted">{bs.id}</td>
+                        <td className="text-center text-muted">
+                          {tinhStt(chonBsTrang, CHON_MODAL_KICH_THUOC, i)}
+                        </td>
                         <td>{bs.hoTen ?? "—"}</td>
                         <td className="text-truncate" style={{ maxWidth: 280 }}>
                           {bs.tenChuyenKhoa ?? bs.chuyenMon ?? "—"}

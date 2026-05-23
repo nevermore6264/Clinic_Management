@@ -31,6 +31,7 @@ import {
 } from "@/components/PatientRecordFormFields";
 import { metaTrangThaiLichHen } from "@/lib/lichHenStatus";
 import { ChatGeneratedAvatar } from "@/components/ChatGeneratedAvatar";
+import { tinhStt } from "@/lib/phanTrangClient";
 
 function hienThiGioiTinh(ma?: string) {
   switch (ma) {
@@ -815,6 +816,9 @@ function BenhNhanPageInner() {
             <Table responsive hover className="mb-0 align-middle benh-nhan-table">
               <thead className="benh-nhan-thead">
                 <tr>
+                  <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                    STT
+                  </th>
                   <th>Họ tên</th>
                   <th>Ngày sinh</th>
                   <th>Giới tính</th>
@@ -828,8 +832,11 @@ function BenhNhanPageInner() {
                 </tr>
               </thead>
               <tbody>
-                {list.map((p) => (
+                {list.map((p, i) => (
                   <tr key={p.id}>
+                    <td className="text-center text-muted">
+                      {tinhStt(page, size, i)}
+                    </td>
                     <td className="fw-medium">{p.hoTen}</td>
                     <td className="text-nowrap">{p.ngaySinh || "—"}</td>
                     <td className="text-nowrap">
@@ -1076,6 +1083,9 @@ function BenhNhanPageInner() {
                       <Table responsive size="sm" className="mb-0 align-middle">
                         <thead className="table-light">
                           <tr>
+                            <th className="text-center text-nowrap" style={{ width: "3rem" }}>
+                              STT
+                            </th>
                             <th>Ngày</th>
                             <th>Giờ</th>
                             <th>Bác sĩ</th>
@@ -1085,10 +1095,11 @@ function BenhNhanPageInner() {
                           </tr>
                         </thead>
                         <tbody>
-                          {visitHistory.map((a) => {
+                          {visitHistory.map((a, i) => {
                             const meta = metaTrangThaiLichHen(a.trangThai);
                             return (
                               <tr key={a.id}>
+                                <td className="text-center text-muted">{i + 1}</td>
                                 <td className="text-nowrap">{a.ngayHen}</td>
                                 <td className="text-nowrap">{a.gioHen}</td>
                                 <td>{a.tenBacSi}</td>

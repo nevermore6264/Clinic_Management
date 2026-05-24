@@ -32,6 +32,7 @@ export default function InvoiceDetailPage() {
   const payOsDangHoiPollRef = useRef(false);
   const payOsPollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const payOsPollDeadlineRef = useRef(0);
+  const payOsSyncInFlightRef = useRef(false);
 
   const remainingOfHoaDon = useCallback((u: HoaDon) => {
     const tong = Number(u.tongTien);
@@ -51,6 +52,16 @@ export default function InvoiceDetailPage() {
     setPayOsNenPoll(false);
   }, []);
 
+  const syncPayOsMotLan = useCallback(async () => {
+    if (payOsSyncInFlightRef.current) return null;
+    payOsSyncInFlightRef.current = true;
+    try {
+      return await invoicesApi.syncPayOs(id);
+    } finally {
+      payOsSyncInFlightRef.current = false;
+    }
+  }, [id]);
+
   const startPayOsPoll = useCallback(() => {
     clearPayOsPoll();
     const deadline = Date.now() + 180_000;
@@ -63,7 +74,8 @@ export default function InvoiceDetailPage() {
         return;
       }
       try {
-        const u = await invoicesApi.syncPayOs(id);
+        const u = await syncPayOsMotLan();
+        if (!u) return;
         setInv(u);
         setError("");
         if (remainingOfHoaDon(u) <= 0.000001) {
@@ -74,8 +86,8 @@ export default function InvoiceDetailPage() {
       }
     };
     void tick();
-    payOsPollTimerRef.current = setInterval(() => void tick(), 1000);
-  }, [id, clearPayOsPoll, remainingOfHoaDon]);
+    payOsPollTimerRef.current = setInterval(() => void tick(), 2500);
+  }, [clearPayOsPoll, remainingOfHoaDon, syncPayOsMotLan]);
 
   useEffect(() => {
     return () => clearPayOsPoll();
@@ -123,9 +135,9 @@ export default function InvoiceDetailPage() {
     if (!user || !id || typeof document === "undefined") return;
     let lastAt = 0;
     const sync = () => {
-      void invoicesApi
-        .syncPayOs(id)
+      void syncPayOsMotLan()
         .then((u) => {
+          if (!u) return;
           setInv(u);
           setError("");
           if (remainingOfHoaDon(u) <= 0.000001) {
@@ -134,7 +146,7 @@ export default function InvoiceDetailPage() {
         })
         .catch(() => {});
     };
-    const gapMs = () => (payOsDangHoiPollRef.current ? 300 : 4000);
+    const gapMs = () => (payOsDangHoiPollRef.current ? 2000 : 4000);
     const maybeSync = () => {
       if (!daMoPayOsSession.current && !payOsDangHoiPollRef.current) return;
       const now = Date.now();
@@ -155,7 +167,7 @@ export default function InvoiceDetailPage() {
       document.removeEventListener("visibilitychange", onVis);
       window.removeEventListener("focus", onFocus);
     };
-  }, [user, id, remainingOfHoaDon, clearPayOsPoll]);
+  }, [user, id, remainingOfHoaDon, clearPayOsPoll, syncPayOsMotLan]);
 
   const submitPayment = async () => {
     const amount = parseVndInput(payAmount);

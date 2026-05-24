@@ -202,6 +202,12 @@ public class PayOsService {
             return hoaDonService.layTheoMa(maHoaDon);
         }
 
+        int orderCodeTuApi = data.path("orderCode").asInt(0);
+        if (orderCodeTuApi > 0) {
+            dh = payOsDonHangRepository.findByOrderCode(orderCodeTuApi).orElse(dh);
+            dongId = dh.getId();
+        }
+
         dh = payOsDonHangRepository.findById(dongId).orElse(dh);
         if (dh.isDaXuLyWebhook()) {
             return hoaDonService.layTheoMa(maHoaDon);
@@ -222,21 +228,7 @@ public class PayOsService {
         int soTienAp = amountPaid > 0 ? amountPaid : Math.max(orderAmount, dh.getSoTienVnd());
         soTienAp = Math.min(soTienAp, dh.getSoTienVnd());
 
-        String maThamChieu = maThamChieuTuGiaoDichGet(data, dh.getOrderCode());
-        payOsWebhookService.ghiNhanTuDonHangNeuChuaXuLy(dh.getId(), soTienAp, maThamChieu);
+        payOsWebhookService.ghiNhanTuDonHangNeuChuaXuLy(dh.getId(), soTienAp);
         return hoaDonService.layTheoMa(maHoaDon);
-    }
-
-    private static String maThamChieuTuGiaoDichGet(JsonNode data, int orderCode) {
-        JsonNode tx = data.get("transactions");
-        if (tx != null && tx.isArray()) {
-            for (int i = tx.size() - 1; i >= 0; i--) {
-                String ref = tx.get(i).path("reference").asText("");
-                if (ref != null && !ref.isBlank()) {
-                    return ref.trim();
-                }
-            }
-        }
-        return "PAYOS-" + orderCode;
     }
 }

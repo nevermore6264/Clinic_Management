@@ -51,6 +51,9 @@ public class HoaDon {
     @Column(name = "cap_nhat_luc")
     private Instant capNhatLuc;
 
+    @Column(name = "pay_os_email_xac_nhan_luc")
+    private Instant payOsEmailXacNhanLuc;
+
     @OneToMany(mappedBy = "hoaDon", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<ChiTietHoaDon> chiTiet = new ArrayList<>();

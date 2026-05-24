@@ -26,6 +26,8 @@ import java.math.BigDecimal;
 @Slf4j
 public class PayOsWebhookService {
 
+    public static final String MA_THAM_CHIEU_PREFIX = "PAYOS-OC-";
+
     private final PayOsProperties payOsProperties;
     private final PayOsDonHangRepository payOsDonHangRepository;
     private final GiaoDichThanhToanRepository giaoDichThanhToanRepository;
@@ -35,6 +37,10 @@ public class PayOsWebhookService {
 
     @Value("${spring.mail.username:}")
     private String mailUsername;
+
+    public static String maThamChieuCoDinh(int orderCode) {
+        return MA_THAM_CHIEU_PREFIX + orderCode;
+    }
 
     @Transactional
     public void xuLyWebhook(JsonNode root) {
@@ -76,15 +82,11 @@ public class PayOsWebhookService {
             log.warn("PayOS webhook: amount {} khác số đã tạo link {}", amountFromHook, dh.getSoTienVnd());
         }
 
-        String maThamChieu = data.path("reference").asText("");
-        if (maThamChieu == null || maThamChieu.isBlank()) {
-            maThamChieu = "PAYOS-" + orderCode;
-        }
-        ghiNhanTuDonHangNeuChuaXuLy(dh.getId(), amountFromHook, maThamChieu);
+        ghiNhanTuDonHangNeuChuaXuLy(dh.getId(), amountFromHook);
     }
 
     @Transactional
-    public void ghiNhanTuDonHangNeuChuaXuLy(Long payOsDonHangId, int soTienTuPayOsVnd, String maThamChieuGoiY) {
+    public void ghiNhanTuDonHangNeuChuaXuLy(Long payOsDonHangId, int soTienTuPayOsVnd) {
         PayOsDonHang dh = payOsDonHangRepository.findByIdForUpdate(payOsDonHangId).orElse(null);
         if (dh == null) {
             return;
@@ -99,18 +101,21 @@ public class PayOsWebhookService {
             log.warn("PayOS: số tiền {} khác số đã tạo link {}", soTienTuPayOsVnd, dh.getSoTienVnd());
         }
 
-        String maThamChieu = maThamChieuGoiY != null && !maThamChieuGoiY.isBlank()
-                ? maThamChieuGoiY.trim()
-                : "PAYOS-" + dh.getOrderCode();
+        String maThamChieu = maThamChieuCoDinh(dh.getOrderCode());
+        Long maHoaDon = dh.getMaHoaDon();
 
-        if (giaoDichThanhToanRepository.existsByHoaDon_IdAndMaThamChieu(dh.getMaHoaDon(), maThamChieu)) {
-            log.info("PayOS: bỏ qua — đã có giao dịch maThamChieu={} cho hóa đơn {}", maThamChieu, dh.getMaHoaDon());
+        if (daCoGiaoDichPayOs(maHoaDon, dh.getOrderCode())) {
+            log.info("PayOS: bỏ qua ghi nhận — đã có giao dịch {} cho hóa đơn {}", maThamChieu, maHoaDon);
             danhDauDonDaXuLy(dh);
             return;
         }
 
-        HoaDonDto hd = hoaDonService.layTheoMaNoiBo(dh.getMaHoaDon());
-        BigDecimal conLai = hd.getTongTien().subtract(hd.getSoTienDaTra());
+        HoaDon hdLock = hoaDonRepository.findByIdForUpdate(maHoaDon).orElse(null);
+        if (hdLock == null) {
+            return;
+        }
+
+        BigDecimal conLai = hdLock.getTongTien().subtract(hdLock.getSoTienDaTra());
         if (conLai.compareTo(BigDecimal.ZERO) <= 0) {
             danhDauDonDaXuLy(dh);
             return;
@@ -128,9 +133,14 @@ public class PayOsWebhookService {
         g.setPhuongThuc(GiaoDichThanhToan.PhuongThucThanhToan.TRUC_TUYEN);
         g.setMaThamChieu(maThamChieu);
 
-        hoaDonService.themThanhToan(dh.getMaHoaDon(), g);
+        hoaDonService.themThanhToan(maHoaDon, g);
         danhDauDonDaXuLy(dh);
-        guiEmailXacNhan(dh.getMaHoaDon());
+        guiEmailXacNhanMotLan(maHoaDon);
+    }
+
+    private boolean daCoGiaoDichPayOs(Long maHoaDon, int orderCode) {
+        return giaoDichThanhToanRepository.existsByHoaDon_IdAndMaThamChieu(
+                maHoaDon, maThamChieuCoDinh(orderCode));
     }
 
     private void danhDauDonDaXuLy(PayOsDonHang dh) {
@@ -139,8 +149,12 @@ public class PayOsWebhookService {
         payOsDonHangRepository.danhDauDaXuLyTatCaDonChoHoaDon(dh.getMaHoaDon());
     }
 
-    private void guiEmailXacNhan(Long maHoaDon) {
+    private void guiEmailXacNhanMotLan(Long maHoaDon) {
         if (mailUsername == null || mailUsername.isBlank()) {
+            return;
+        }
+        if (hoaDonRepository.claimPayOsEmailXacNhan(maHoaDon) == 0) {
+            log.debug("PayOS: bỏ qua email xác nhận — đã gửi cho hóa đơn {}", maHoaDon);
             return;
         }
         HoaDon hd = hoaDonRepository.findById(maHoaDon).orElse(null);

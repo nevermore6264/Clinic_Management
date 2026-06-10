@@ -37,8 +37,9 @@ public class HoSoKhamService {
     @Transactional(readOnly = true)
     public List<HoSoKhamDto> timTheoBenhNhan(Long maBenhNhan) {
         quyenTruyCapHoSoBenhNhan.yeuCauDuocTruyCapHoSo(maBenhNhan);
-        return hoSoKhamRepository.findByBenhNhanWithChiTiet(maBenhNhan).stream()
-                .map(this::sangDto).collect(Collectors.toList());
+        return hoSoKhamRepository.findByBenhNhanIdOrderByTaoLucDesc(maBenhNhan).stream()
+                .map(this::napChiTietVaSangDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -46,15 +47,15 @@ public class HoSoKhamService {
         LichHen lh = lichHenRepository.findById(maLichHen).orElse(null);
         if (lh == null) return null;
         quyenTruyCapHoSoBenhNhan.yeuCauDuocTruyCapHoSo(lh.getBenhNhan().getId());
-        return hoSoKhamRepository.findByLichHenIdWithChiTiet(maLichHen)
-                .map(this::sangDto)
+        return hoSoKhamRepository.findByLichHenId(maLichHen)
+                .map(this::napChiTietVaSangDto)
                 .orElse(null);
     }
 
     @Transactional
     public HoSoKhamDto luu(Long maLichHen, HoSoKhamDto dto) {
         LichHen lh = lichHenRepository.findById(maLichHen).orElseThrow(() -> new RuntimeException("Không tìm thấy lịch hẹn"));
-        HoSoKham hs = hoSoKhamRepository.findByLichHenIdWithChiTiet(maLichHen).orElse(new HoSoKham());
+        HoSoKham hs = hoSoKhamRepository.findByLichHenId(maLichHen).orElse(new HoSoKham());
         hs.setLichHen(lh);
         hs.setChanDoan(dto.getChanDoan());
         hs.setGhiChu(dto.getGhiChu());
@@ -124,7 +125,16 @@ public class HoSoKhamService {
             hs.getChiTietDichVuKham().add(ctDv);
         }
 
-        return sangDto(hoSoKhamRepository.save(hs));
+        HoSoKham saved = hoSoKhamRepository.save(hs);
+        return napChiTietVaSangDto(saved);
+    }
+
+    private HoSoKhamDto napChiTietVaSangDto(HoSoKham hs) {
+        if (hs.getId() != null) {
+            hoSoKhamRepository.fetchDonThuocChiTiet(hs.getId());
+            hoSoKhamRepository.fetchChiTietDichVu(hs.getId());
+        }
+        return sangDto(hs);
     }
 
     private HoSoKhamDto sangDto(HoSoKham hs) {

@@ -288,42 +288,46 @@ export default function ServiceTypesPage() {
       <Card className="mb-4">
         <Card.Body>
           <Form onSubmit={handleSubmit} noValidate>
-            <div className="d-flex align-items-start gap-2">
-              <div className="flex-grow-1">
-                <Form.Control
-                  aria-label="Tên loại dịch vụ mới"
-                  placeholder="Ví dụ: Khám tổng quát, Cận lâm sàng..."
-                  value={tenLoaiDichVu}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setTenLoaiDichVu(value);
-                    if (tenLoaiDichVuError) {
-                      setTenLoaiDichVuError(validateTenLoaiDichVu(value));
-                    }
-                  }}
-                  isInvalid={Boolean(tenLoaiDichVuError)}
-                />
-                <Form.Control.Feedback type="invalid">
-                  {tenLoaiDichVuError}
-                </Form.Control.Feedback>
+            <div className="loai-dv-add-form">
+              <div className="d-flex flex-wrap align-items-center gap-2 gap-md-3">
+                <div className="flex-grow-1 min-w-0 loai-dv-add-form__field">
+                  <Form.Control
+                    aria-label="Tên loại dịch vụ mới"
+                    placeholder="Ví dụ: Khám tổng quát, Cận lâm sàng..."
+                    value={tenLoaiDichVu}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setTenLoaiDichVu(value);
+                      if (tenLoaiDichVuError) {
+                        setTenLoaiDichVuError(validateTenLoaiDichVu(value));
+                      }
+                    }}
+                    isInvalid={Boolean(tenLoaiDichVuError)}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {tenLoaiDichVuError}
+                  </Form.Control.Feedback>
+                </div>
+                <div className="d-flex align-items-center gap-2 flex-shrink-0">
+                  <Form.Check
+                    type="switch"
+                    id="loai-dv-benh-nhan-tu-dat"
+                    className="loai-dv-add-form__switch text-nowrap small fw-semibold mb-0"
+                    label="Bệnh nhân tự đặt lịch"
+                    checked={benhNhanTuDatMoi}
+                    onChange={(e) => setBenhNhanTuDatMoi(e.target.checked)}
+                  />
+                  <Button type="submit" className="text-nowrap">
+                    <i className="bi bi-plus-circle me-2" aria-hidden />
+                    Thêm loại
+                  </Button>
+                </div>
               </div>
-              <Form.Check
-                type="switch"
-                id="loai-dv-benh-nhan-tu-dat"
-                className="text-nowrap small fw-semibold"
-                label="Bệnh nhân tự đặt lịch"
-                checked={benhNhanTuDatMoi}
-                onChange={(e) => setBenhNhanTuDatMoi(e.target.checked)}
-              />
-              <Button type="submit" className="text-nowrap">
-                <i className="bi bi-plus-circle me-2" aria-hidden />
-                Thêm loại
-              </Button>
+              <Form.Text className="text-muted d-block mt-2 mb-0">
+                Bật: khám tổng quát / khám chung — hiện khi đặt lịch. Tắt: chuyên sâu —
+                chỉ tham khảo bảng giá; bác sĩ / thu ngân thêm khi khám.
+              </Form.Text>
             </div>
-            <Form.Text className="text-muted d-block mt-2">
-              Bật: khám tổng quát / khám chung — hiện khi đặt lịch. Tắt: chuyên sâu —
-              chỉ tham khảo bảng giá; bác sĩ / thu ngân thêm khi khám.
-            </Form.Text>
           </Form>
         </Card.Body>
       </Card>

@@ -654,11 +654,11 @@ export default function LichLamViecBacSisPage() {
 
       <Card className="mb-4 card--static border-0 shadow-sm">
         <Card.Body className="p-4">
-          <Row className="g-3 align-items-end">
+          <Row className="g-3 align-items-start">
             {!chiBsChiMinh ? (
               <Col md={6} lg={4}>
                 <Form.Label
-                  className="fw-semibold small text-uppercase text-muted"
+                  className="fw-semibold small text-uppercase text-muted mb-2"
                   id="label-loc-ck-lich-bs"
                 >
                   Chuyên khoa
@@ -679,7 +679,7 @@ export default function LichLamViecBacSisPage() {
                     </option>
                   ))}
                 </Form.Select>
-                <Form.Text className="text-muted">
+                <Form.Text className="text-muted d-block mt-1">
                   {locChuyenKhoaId
                     ? `${doctorsLoc.length} bác sĩ trong chuyên khoa này`
                     : "Lọc danh sách bác sĩ theo chuyên khoa"}
@@ -687,7 +687,7 @@ export default function LichLamViecBacSisPage() {
               </Col>
             ) : null}
             <Col md={chiBsChiMinh ? 12 : 6} lg={chiBsChiMinh ? 6 : 4}>
-              <Form.Label className="fw-semibold small text-uppercase text-muted">
+              <Form.Label className="fw-semibold small text-uppercase text-muted mb-2">
                 Bác sĩ
               </Form.Label>
               {chiBsChiMinh ? (
@@ -719,7 +719,11 @@ export default function LichLamViecBacSisPage() {
               )}
             </Col>
             {doctorId ? (
-              <Col md={12} lg={4} className="text-lg-end">
+              <Col
+                md={12}
+                lg={4}
+                className="text-lg-end align-self-lg-center mt-3 mt-lg-0"
+              >
                 <div className="small text-muted">Bác sĩ đang chọn</div>
                 <div className="fw-semibold">{tenBacSiChon ?? "—"}</div>
                 {bacSiChon?.tenChuyenKhoa ? (

@@ -483,6 +483,26 @@ html.app-ready body {
   line-height: 1.25;
 }
 
+.service-type-page .loai-dv-add-form__field {
+  min-width: min(100%, 16rem);
+}
+.service-type-page .loai-dv-add-form__switch.form-check.form-switch {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+  padding-left: 2.75rem;
+  min-height: calc(1.5em + 0.75rem + 2px);
+}
+.service-type-page .loai-dv-add-form__switch .form-check-input {
+  margin-top: 0;
+  cursor: pointer;
+}
+.service-type-page .loai-dv-add-form__switch .form-check-label {
+  padding-top: 0;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
 .bac-si-page .bac-si-toolbar {
   flex: 1 1 auto;
   min-width: 0;
@@ -1769,6 +1789,11 @@ html.app-ready body {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   min-height: 100vh;
+}
+
+.page-main--landing {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .login-viewport {
@@ -4962,7 +4987,7 @@ html.app-ready body {
 }
 
 .landing-bg.landing-hospital {
-  overflow-x: hidden;
+  overflow-x: clip;
   overflow-y: visible;
 }
 

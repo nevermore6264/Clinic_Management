@@ -89,16 +89,20 @@ export function AppShell({ children }: { children: ReactNode }) {
       {!hideChrome && <NavBar />}
       <main
         className={
-          hideChrome
-            ? "flex-grow-1 page-main page-main--auth d-flex flex-column"
-            : "flex-grow-1 page-main"
+          isLandingScreen
+            ? "page-main page-main--landing"
+            : hideChrome
+              ? "flex-grow-1 page-main page-main--auth d-flex flex-column"
+              : "flex-grow-1 page-main"
         }
       >
         <div
           className={
-            hideChrome
-              ? "login-viewport flex-grow-1 d-flex flex-column w-100"
-              : "page-shell animate-fade-in-up"
+            isLandingScreen
+              ? "w-100"
+              : hideChrome
+                ? "login-viewport flex-grow-1 d-flex flex-column w-100"
+                : "page-shell animate-fade-in-up"
           }
         >
           {children}

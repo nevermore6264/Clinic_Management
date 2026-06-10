@@ -13,7 +13,6 @@ public interface HoSoKhamRepository extends JpaRepository<HoSoKham, Long> {
     @Query("SELECT h FROM HoSoKham h WHERE h.lichHen.id = :maLichHen")
     Optional<HoSoKham> findByLichHenId(@Param("maLichHen") Long maLichHen);
 
-    /** Tránh fetch đồng thời nhiều collection (Hibernate multiple-bag). */
     @Query("SELECT DISTINCT h FROM HoSoKham h "
             + "LEFT JOIN FETCH h.donThuoc d "
             + "LEFT JOIN FETCH d.chiTietDonThuoc ct "

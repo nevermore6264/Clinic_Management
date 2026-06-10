@@ -146,11 +146,11 @@ public class TinNhanChatService {
     }
 
     private NguoiDungChatDto sangNguoiDungChatDto(NguoiDung u) {
-        NguoiDungChatDto dto = new NguoiDungChatDto(
-                u.getId(),
-                u.getHoTen(),
-                u.getTenDangNhap(),
-                sapXepVaiTroNoiBo(u.getCacVaiTro()));
+        NguoiDungChatDto dto = new NguoiDungChatDto();
+        dto.setId(u.getId());
+        dto.setHoTen(u.getHoTen());
+        dto.setTenDangNhap(u.getTenDangNhap());
+        dto.setCacVaiTro(sapXepVaiTroNoiBo(u.getCacVaiTro()));
         bacSiRepository.findByNguoiDung_Id(u.getId()).ifPresent(bs -> ganChuyenKhoaChat(dto, bs));
         return dto;
     }

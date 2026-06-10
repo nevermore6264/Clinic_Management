@@ -28,6 +28,7 @@ export default function ServiceTypesPage() {
   const [list, setList] = useState<LoaiDichVu[]>([]);
   const [danhSachDichVu, setDanhSachDichVu] = useState<DichVu[]>([]);
   const [tenLoaiDichVu, setTenLoaiDichVu] = useState("");
+  const [benhNhanTuDatMoi, setBenhNhanTuDatMoi] = useState(true);
   const [dangSuaId, setDangSuaId] = useState<number | null>(null);
   const [tenDangSua, setTenDangSua] = useState("");
   const [error, setError] = useState("");
@@ -90,6 +91,7 @@ export default function ServiceTypesPage() {
 
   const resetForm = () => {
     setTenLoaiDichVu("");
+    setBenhNhanTuDatMoi(true);
     setTenLoaiDichVuError("");
   };
 
@@ -120,7 +122,10 @@ export default function ServiceTypesPage() {
     if (loiTen) return;
     const ten = tenLoaiDichVu.trim();
     try {
-      await serviceTypesApi.create({ tenLoaiDichVu: ten });
+      await serviceTypesApi.create({
+        tenLoaiDichVu: ten,
+        benhNhanTuDat: benhNhanTuDatMoi,
+      });
       resetForm();
       await napDuLieu();
     } catch (e: unknown) {
@@ -140,7 +145,11 @@ export default function ServiceTypesPage() {
     setTenDangSuaError(loiTen);
     if (loiTen) return;
     try {
-      await serviceTypesApi.update(id, { tenLoaiDichVu: tenDangSua.trim() });
+      const goc = list.find((x) => x.id === id);
+      await serviceTypesApi.update(id, {
+        tenLoaiDichVu: tenDangSua.trim(),
+        benhNhanTuDat: goc?.benhNhanTuDat !== false,
+      });
       resetInlineEdit();
       await napDuLieu();
     } catch (e: unknown) {
@@ -162,6 +171,21 @@ export default function ServiceTypesPage() {
       return;
     }
     setMucCanXoa(item);
+  };
+
+  const toggleBenhNhanTuDat = async (item: LoaiDichVu, value: boolean) => {
+    setError("");
+    try {
+      await serviceTypesApi.update(item.id, {
+        tenLoaiDichVu: item.tenLoaiDichVu,
+        benhNhanTuDat: value,
+      });
+      await napDuLieu();
+    } catch (e: unknown) {
+      setError(
+        e instanceof Error ? e.message : "Không cập nhật được quyền đặt lịch",
+      );
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -283,11 +307,23 @@ export default function ServiceTypesPage() {
                   {tenLoaiDichVuError}
                 </Form.Control.Feedback>
               </div>
+              <Form.Check
+                type="switch"
+                id="loai-dv-benh-nhan-tu-dat"
+                className="text-nowrap small fw-semibold"
+                label="Bệnh nhân tự đặt lịch"
+                checked={benhNhanTuDatMoi}
+                onChange={(e) => setBenhNhanTuDatMoi(e.target.checked)}
+              />
               <Button type="submit" className="text-nowrap">
                 <i className="bi bi-plus-circle me-2" aria-hidden />
                 Thêm loại
               </Button>
             </div>
+            <Form.Text className="text-muted d-block mt-2">
+              Bật: khám tổng quát / khám chung — hiện khi đặt lịch. Tắt: chuyên sâu —
+              chỉ tham khảo bảng giá; bác sĩ / thu ngân thêm khi khám.
+            </Form.Text>
           </Form>
         </Card.Body>
       </Card>
@@ -302,6 +338,7 @@ export default function ServiceTypesPage() {
                 STT
               </th>
               <th>Loại dịch vụ</th>
+              <th className="text-center text-nowrap">Đặt lịch</th>
               <th className="text-center">Số dịch vụ</th>
               <th className="text-end">Thao tác</th>
             </tr>
@@ -335,6 +372,31 @@ export default function ServiceTypesPage() {
                   ) : (
                     item.tenLoaiDichVu
                   )}
+                </td>
+                <td className="text-center align-middle">
+                  <Form.Check
+                    type="switch"
+                    id={`tu-dat-${item.id}`}
+                    className="d-inline-flex justify-content-center"
+                    checked={item.benhNhanTuDat !== false}
+                    disabled={dangSuaId === item.id}
+                    onChange={(e) =>
+                      void toggleBenhNhanTuDat(item, e.target.checked)
+                    }
+                    title={
+                      item.benhNhanTuDat !== false
+                        ? "Bệnh nhân tự chọn khi đặt lịch"
+                        : "Chuyên sâu — chỉ chỉ định khi khám"
+                    }
+                    aria-label={
+                      item.benhNhanTuDat !== false
+                        ? "Bệnh nhân tự đặt lịch"
+                        : "Chuyên sâu"
+                    }
+                  />
+                  <div className="small text-muted mt-1">
+                    {item.benhNhanTuDat !== false ? "Tự đặt" : "Chuyên sâu"}
+                  </div>
                 </td>
                 <td className="text-center">
                   {demDichVuTheoLoai.get(item.id) ?? 0}
@@ -404,7 +466,7 @@ export default function ServiceTypesPage() {
             ))}
             {list.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center text-muted py-4">
+                <td colSpan={5} className="text-center text-muted py-4">
                   Chưa có loại dịch vụ nào.
                 </td>
               </tr>

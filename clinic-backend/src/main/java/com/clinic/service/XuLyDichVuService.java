@@ -101,6 +101,8 @@ public class XuLyDichVuService {
         dto.setMoTa(dv.getMoTa());
         dto.setGia(dv.getGia());
         dto.setHoatDong(dv.isHoatDong());
+        dto.setBenhNhanTuDat(
+                dv.getLoaiDichVu() == null || dv.getLoaiDichVu().isBenhNhanTuDat());
         return dto;
     }
 }

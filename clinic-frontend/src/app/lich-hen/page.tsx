@@ -65,6 +65,7 @@ import {
   formatGioHen,
 } from "@/lib/formatInstantVi";
 import { chuoiTimKiemVi } from "@/lib/chuoiTimKiemVi";
+import { dichVuChoDatLich } from "@/lib/dichVuDatLich";
 
 function DichVuChonTomTat({
   s,
@@ -784,7 +785,7 @@ function AppointmentsPageInner() {
         ? Number(bacSiDaChon.maChuyenKhoa)
         : undefined;
 
-    let base = services;
+    let base = services.filter((s) => dichVuChoDatLich(s));
     if (
       maTuChuyenKhoa != null &&
       maTuBacSi != null &&
@@ -794,7 +795,7 @@ function AppointmentsPageInner() {
     } else {
       const maCkBatBuoc = maTuBacSi ?? maTuChuyenKhoa;
       if (maCkBatBuoc != null && !Number.isNaN(maCkBatBuoc)) {
-        base = services.filter(
+        base = base.filter(
           (s) =>
             s.maChuyenKhoa != null &&
             !Number.isNaN(Number(s.maChuyenKhoa)) &&
@@ -826,6 +827,12 @@ function AppointmentsPageInner() {
     if (!d || d.maChuyenKhoa == null) return false;
     return Number(locChuyenKhoaId) !== Number(d.maChuyenKhoa);
   }, [locChuyenKhoaId, doctorId, doctors]);
+
+  useEffect(() => {
+    if (!serviceId) return;
+    const s = services.find((x) => String(x.id) === serviceId);
+    if (s && !dichVuChoDatLich(s)) setServiceId("");
+  }, [serviceId, services]);
 
   const chonBenhNhanLabel = useMemo(() => {
     if (!patientId) return "— Chọn bệnh nhân —";
@@ -2048,9 +2055,11 @@ function AppointmentsPageInner() {
                           ? "Chưa có dịch vụ trong hệ thống."
                           : xungDotChuyenKhoaBacSi
                             ? "Chuyên khoa đang chọn và bác sĩ đã chọn không cùng chuyên khoa — hãy điều chỉnh lại."
-                            : locChuyenKhoaId || doctorId
-                              ? "Không có dịch vụ phù hợp chuyên khoa / bác sĩ đã chọn (hoặc không khớp tìm kiếm). Kiểm tra dịch vụ đã gán chuyên khoa trong danh mục."
-                              : "Không có kết quả khớp bộ lọc."}
+                            : services.every((s) => !dichVuChoDatLich(s))
+                              ? "Chưa có dịch vụ khám tổng quát cho đặt lịch. Quản trị cần gắn loại « bệnh nhân tự đặt » cho dịch vụ khám chung."
+                              : locChuyenKhoaId || doctorId
+                                ? "Không có dịch vụ đặt lịch phù hợp chuyên khoa / bác sĩ (chỉ hiện khám tổng quát; dịch vụ chuyên sâu do bác sĩ chỉ định khi khám)."
+                                : "Không có dịch vụ đặt lịch khớp bộ lọc."}
                       </div>
                     ) : (
                       dichVuSauLoc.map((s) => (
@@ -2078,6 +2087,11 @@ function AppointmentsPageInner() {
                   </div>
                 </Dropdown.Menu>
               </Dropdown>
+              <Form.Text className="text-muted">
+                Chỉ hiển thị dịch vụ loại <strong>khám tổng quát / khám chung</strong>.
+                Xét nghiệm và thủ thuật chuyên sâu xem ở bảng giá trang chủ; bác sĩ chỉ
+                định trong quá trình khám.
+              </Form.Text>
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label className="required" id="label-dat-bs">

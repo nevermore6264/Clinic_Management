@@ -71,16 +71,12 @@ export function metaTrangThaiLichHen(code: string | undefined) {
   );
 }
 
-const TRANG_THAI_KHONG_LAP_HOA_DON = new Set([
-  "HUY",
-  "VANG",
-  "CHO_THANH_TOAN",
-  "DA_THANH_TOAN",
-]);
-
 export function lichHenChoPhepLapHoaDon(trangThai?: string): boolean {
-  if (!trangThai) return false;
-  return !TRANG_THAI_KHONG_LAP_HOA_DON.has(trangThai);
+  return trangThai === "CHO_THANH_TOAN";
+}
+
+export function lichHenHienNutHoaDon(trangThai?: string): boolean {
+  return trangThai === "CHO_THANH_TOAN" || trangThai === "DA_THANH_TOAN";
 }
 
 export function lichHenKhoaDoiTrangThai(trangThai?: string): boolean {

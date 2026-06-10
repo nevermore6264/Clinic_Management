@@ -102,10 +102,13 @@ public class LichHenService {
         if (!slotHopLeVaChuaDay(dto.getMaBacSi(), dto.getNgayHen(), dto.getGioHen(), null)) {
             throw new RuntimeException("Khung giờ không hợp lệ hoặc đã đầy.");
         }
+        DichVu dichVuDat = dichVuRepository.findById(dto.getMaDichVu())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy dịch vụ: " + dto.getMaDichVu()));
+        xacThucDichVuDuocDatLich(dichVuDat);
         LichHen lh = new LichHen();
         lh.setBenhNhan(benhNhanRepository.findById(dto.getMaBenhNhan()).orElseThrow());
         lh.setBacSi(bacSiRepository.findById(dto.getMaBacSi()).orElseThrow());
-        lh.setDichVu(dichVuRepository.findById(dto.getMaDichVu()).orElseThrow());
+        lh.setDichVu(dichVuDat);
         lh.setNgayHen(dto.getNgayHen());
         lh.setGioHen(dto.getGioHen());
         lh.setGhiChu(dto.getGhiChu());
@@ -122,14 +125,50 @@ public class LichHenService {
         if (cu == trangThai) {
             return sangDto(lh);
         }
-        if (cu == LichHen.TrangThaiLichHen.DA_THANH_TOAN) {
-            throw new RuntimeException(
-                    "Lịch đã thanh toán — không thể đổi trạng thái. Xem hóa đơn nếu cần tra cứu.");
+        Set<String> vaiTro = layVaiTroNguoiDungHienTai();
+        LichHenQuyTrinh.xacThucChuyenTrangThai(cu, trangThai, vaiTro);
+        return luuTrangThaiMoi(lh, cu, trangThai);
+    }
+
+    @Transactional
+    public LichHenDto capNhatTrangThaiTuHeThong(Long ma, LichHen.TrangThaiLichHen trangThai) {
+        LichHen lh = lichHenRepository.findById(ma).orElseThrow(() -> new RuntimeException("Không tìm thấy lịch hẹn: " + ma));
+        LichHen.TrangThaiLichHen cu = lh.getTrangThai();
+        if (cu == trangThai) {
+            return sangDto(lh);
         }
-        lh.setTrangThai(trangThai);
+        if (cu == LichHen.TrangThaiLichHen.DA_THANH_TOAN) {
+            return sangDto(lh);
+        }
+        return luuTrangThaiMoi(lh, cu, trangThai);
+    }
+
+    private LichHenDto luuTrangThaiMoi(LichHen lh, LichHen.TrangThaiLichHen cu, LichHen.TrangThaiLichHen moi) {
+        lh.setTrangThai(moi);
         LichHen daLuu = lichHenRepository.save(lh);
-        ghiLichSuTrangThai(daLuu, cu, trangThai);
+        ghiLichSuTrangThai(daLuu, cu, moi);
         return sangDto(daLuu);
+    }
+
+    private void xacThucDichVuDuocDatLich(DichVu dichVu) {
+        if (dichVu.getLoaiDichVu() == null || dichVu.getLoaiDichVu().isBenhNhanTuDat()) {
+            return;
+        }
+        if (layVaiTroNguoiDungHienTai().contains(VaiTro.QUAN_TRI.name())) {
+            return;
+        }
+        throw new RuntimeException(
+                "Dịch vụ chuyên sâu không đặt trực tiếp khi đặt lịch. "
+                        + "Vui lòng chọn dịch vụ khám tổng quát hoặc khám chung; "
+                        + "xét nghiệm / thủ thuật chuyên môn sẽ do bác sĩ chỉ định trong quá trình khám.");
+    }
+
+    private Set<String> layVaiTroNguoiDungHienTai() {
+        Authentication xacThuc = SecurityContextHolder.getContext().getAuthentication();
+        if (xacThuc != null && xacThuc.getPrincipal() instanceof NguoiDungChinhThuc p) {
+            return p.layCacTenVaiTro();
+        }
+        return Set.of();
     }
 
     private void ghiLichSuTrangThai(LichHen lichHen, LichHen.TrangThaiLichHen cu, LichHen.TrangThaiLichHen moi) {

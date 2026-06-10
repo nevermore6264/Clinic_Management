@@ -19,4 +19,8 @@ public class LoaiDichVu {
 
     @Column(name = "ten_loai_dich_vu", nullable = false)
     private String tenLoaiDichVu;
+
+    @Column(name = "benh_nhan_tu_dat", nullable = false)
+    @Builder.Default
+    private boolean benhNhanTuDat = true;
 }

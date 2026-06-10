@@ -14,6 +14,8 @@ public interface HoSoKhamRepository extends JpaRepository<HoSoKham, Long> {
             + "LEFT JOIN FETCH h.donThuoc d "
             + "LEFT JOIN FETCH d.chiTietDonThuoc ct "
             + "LEFT JOIN FETCH ct.thuoc "
+            + "LEFT JOIN FETCH h.chiTietDichVuKham dv "
+            + "LEFT JOIN FETCH dv.dichVu "
             + "WHERE h.lichHen.id = :maLichHen")
     Optional<HoSoKham> findByLichHenIdWithChiTiet(@Param("maLichHen") Long maLichHen);
 
@@ -21,6 +23,8 @@ public interface HoSoKhamRepository extends JpaRepository<HoSoKham, Long> {
             + "LEFT JOIN FETCH h.donThuoc d "
             + "LEFT JOIN FETCH d.chiTietDonThuoc ct "
             + "LEFT JOIN FETCH ct.thuoc "
+            + "LEFT JOIN FETCH h.chiTietDichVuKham dv "
+            + "LEFT JOIN FETCH dv.dichVu "
             + "WHERE h.lichHen.benhNhan.id = :maBenhNhan ORDER BY h.taoLuc DESC")
     List<HoSoKham> findByBenhNhanWithChiTiet(@Param("maBenhNhan") Long maBenhNhan);
 }

@@ -32,6 +32,7 @@ public class LoaiDichVuService {
     public LoaiDichVuDto tao(LoaiDichVuDto dto) {
         LoaiDichVu loai = new LoaiDichVu();
         loai.setTenLoaiDichVu(dto.getTenLoaiDichVu().trim());
+        loai.setBenhNhanTuDat(dto.isBenhNhanTuDat());
         LoaiDichVu daLuu = loaiDichVuRepository.save(loai);
         nhatKyHeThongService.ghi("loai_dich_vu", daLuu.getId(), "TAO", null, tomTat(daLuu));
         return sangDto(daLuu);
@@ -42,6 +43,7 @@ public class LoaiDichVuService {
         LoaiDichVu loai = timTheoMa(id);
         String giaTriCu = tomTat(loai);
         loai.setTenLoaiDichVu(dto.getTenLoaiDichVu().trim());
+        loai.setBenhNhanTuDat(dto.isBenhNhanTuDat());
         LoaiDichVu daLuu = loaiDichVuRepository.save(loai);
         nhatKyHeThongService.ghi("loai_dich_vu", daLuu.getId(), "CAP_NHAT", giaTriCu, tomTat(daLuu));
         return sangDto(daLuu);
@@ -60,7 +62,8 @@ public class LoaiDichVuService {
     }
 
     private String tomTat(LoaiDichVu loai) {
-        return "tenLoaiDichVu=" + loai.getTenLoaiDichVu();
+        return "tenLoaiDichVu=" + loai.getTenLoaiDichVu()
+                + ";benhNhanTuDat=" + loai.isBenhNhanTuDat();
     }
 
     private LoaiDichVu timTheoMa(Long id) {
@@ -72,6 +75,7 @@ public class LoaiDichVuService {
         LoaiDichVuDto dto = new LoaiDichVuDto();
         dto.setId(loai.getId());
         dto.setTenLoaiDichVu(loai.getTenLoaiDichVu());
+        dto.setBenhNhanTuDat(loai.isBenhNhanTuDat());
         return dto;
     }
 }

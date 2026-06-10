@@ -17,4 +17,5 @@ public class DichVuDto {
     private String moTa;
     private BigDecimal gia;
     private boolean hoatDong;
+    private boolean benhNhanTuDat = true;
 }

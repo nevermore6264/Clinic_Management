@@ -23,6 +23,7 @@ import {
   laChiTaiKhoanBenhNhan,
   nhanVaiTro,
   sapXepVaiTroNoiBo,
+  VAI_TRO_NHAN_VIEN,
   VAI_TRO_BADGE_CLASS,
   chuoiVaiTroNoiBo,
 } from "@/lib/roles";
@@ -38,6 +39,11 @@ function wsOrigin(): string {
 function dmTopicKey(a: number, b: number): string {
   return `${Math.min(a, b)}-${Math.max(a, b)}`;
 }
+
+type LocDanhBaChat =
+  | { kind: "all" }
+  | { kind: "role"; value: string }
+  | { kind: "khoa"; maChuyenKhoa: number };
 
 function ChatRoleBadges({
   roles,
@@ -275,6 +281,7 @@ export default function ChatPage() {
   const router = useRouter();
   const [contacts, setContacts] = useState<NguoiDungChatEntry[]>([]);
   const [contactQuery, setContactQuery] = useState("");
+  const [locDanhBa, setLocDanhBa] = useState<LocDanhBaChat>({ kind: "all" });
   const [peerId, setPeerId] = useState<number | null>(null);
   const [messages, setMessages] = useState<TinNhanChatDto[]>([]);
   const [loadingThread, setLoadingThread] = useState(false);
@@ -453,16 +460,52 @@ export default function ChatPage() {
     });
   }, [peerId]);
 
+  const danhSachChuyenKhoa = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const c of contacts) {
+      if (c.maChuyenKhoa != null && c.tenChuyenKhoa?.trim()) {
+        map.set(c.maChuyenKhoa, c.tenChuyenKhoa.trim());
+      }
+    }
+    return Array.from(map.entries()).sort((a, b) =>
+      a[1].localeCompare(b[1], "vi"),
+    );
+  }, [contacts]);
+
+  const vaiTroCoTrongDanhBa = useMemo(() => {
+    const co = new Set<string>();
+    for (const c of contacts) {
+      for (const r of c.cacVaiTro ?? []) {
+        if ((VAI_TRO_NHAN_VIEN as readonly string[]).includes(r)) {
+          co.add(r);
+        }
+      }
+    }
+    return VAI_TRO_NHAN_VIEN.filter((r) => co.has(r));
+  }, [contacts]);
+
   const filteredContacts = useMemo(() => {
+    let list = contacts;
+    if (locDanhBa.kind === "role") {
+      list = list.filter((c) => c.cacVaiTro?.includes(locDanhBa.value));
+    } else if (locDanhBa.kind === "khoa") {
+      list = list.filter((c) => c.maChuyenKhoa === locDanhBa.maChuyenKhoa);
+    }
     const q = contactQuery.trim().toLowerCase();
-    if (!q) return contacts;
-    return contacts.filter((c) => {
+    if (!q) return list;
+    return list.filter((c) => {
       const hoTen = (c.hoTen ?? "").toLowerCase();
       const dangNhap = (c.tenDangNhap ?? "").toLowerCase();
       const vaiTro = chuoiVaiTroNoiBo(c.cacVaiTro).toLowerCase();
-      return hoTen.includes(q) || dangNhap.includes(q) || vaiTro.includes(q);
+      const khoa = (c.tenChuyenKhoa ?? "").toLowerCase();
+      return (
+        hoTen.includes(q) ||
+        dangNhap.includes(q) ||
+        vaiTro.includes(q) ||
+        khoa.includes(q)
+      );
     });
-  }, [contacts, contactQuery]);
+  }, [contacts, contactQuery, locDanhBa]);
 
   const peerContact = useMemo(() => {
     if (peerId == null) return null;
@@ -586,7 +629,7 @@ export default function ChatPage() {
                 <Form.Control
                   className="chat-dm-app__search-input"
                   size="sm"
-                  placeholder="Tìm tên, đăng nhập hoặc vai trò…"
+                  placeholder="Tìm tên, khoa, vai trò…"
                   value={contactQuery}
                   onChange={(e) => setContactQuery(e.target.value)}
                   aria-label="Tìm liên hệ"
@@ -601,13 +644,69 @@ export default function ChatPage() {
                 {connected ? "Trực tiếp" : "Đang nối…"}
               </span>
             </div>
+            <div
+              className="chat-dm-app__filter-tags mt-2"
+              role="group"
+              aria-label="Lọc theo vai trò"
+            >
+              <button
+                type="button"
+                className={`chat-dm-app__filter-chip${
+                  locDanhBa.kind === "all" ? " chat-dm-app__filter-chip--active" : ""
+                }`}
+                onClick={() => setLocDanhBa({ kind: "all" })}
+              >
+                Tất cả
+              </button>
+              {vaiTroCoTrongDanhBa.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  className={`chat-dm-app__filter-chip chat-dm-app__filter-chip--role ${
+                    VAI_TRO_BADGE_CLASS[r] ?? ""
+                  }${
+                    locDanhBa.kind === "role" && locDanhBa.value === r
+                      ? " chat-dm-app__filter-chip--active"
+                      : ""
+                  }`}
+                  onClick={() => setLocDanhBa({ kind: "role", value: r })}
+                >
+                  {nhanVaiTro(r)}
+                </button>
+              ))}
+            </div>
+            {danhSachChuyenKhoa.length > 0 ? (
+              <div
+                className="chat-dm-app__filter-tags chat-dm-app__filter-tags--khoa mt-2"
+                role="group"
+                aria-label="Lọc theo chuyên khoa"
+              >
+                {danhSachChuyenKhoa.map(([ma, ten]) => (
+                  <button
+                    key={ma}
+                    type="button"
+                    className={`chat-dm-app__filter-chip chat-dm-app__filter-chip--khoa${
+                      locDanhBa.kind === "khoa" && locDanhBa.maChuyenKhoa === ma
+                        ? " chat-dm-app__filter-chip--active"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      setLocDanhBa({ kind: "khoa", maChuyenKhoa: ma })
+                    }
+                  >
+                    <i className="bi bi-hospital" aria-hidden />
+                    {ten}
+                  </button>
+                ))}
+              </div>
+            ) : null}
           </div>
           <div className="chat-dm-app__contact-list">
             {filteredContacts.length === 0 ? (
               <div className="p-4 text-muted small text-center">
                 {contacts.length === 0
                   ? "Chưa có danh sách người dùng."
-                  : "Không khớp tìm kiếm."}
+                  : "Không khớp bộ lọc hoặc tìm kiếm."}
               </div>
             ) : (
               filteredContacts.map((c) => {
@@ -646,7 +745,15 @@ export default function ChatPage() {
                       <span className="chat-dm-app__contact-sub">
                         @{c.tenDangNhap}
                       </span>
-                      <ChatRoleBadges roles={c.cacVaiTro} compact />
+                      <span className="chat-dm-app__contact-tags">
+                        <ChatRoleBadges roles={c.cacVaiTro} compact />
+                        {c.tenChuyenKhoa ? (
+                          <span className="chat-dm-app__dept-tag">
+                            <i className="bi bi-hospital" aria-hidden />
+                            {c.tenChuyenKhoa}
+                          </span>
+                        ) : null}
+                      </span>
                     </span>
                   </button>
                 );
@@ -667,7 +774,15 @@ export default function ChatPage() {
                 />
                 <div className="flex-grow-1 min-w-0">
                   <div className="fw-bold text-truncate">{peerLabel}</div>
-                  <ChatRoleBadges roles={peerContact?.cacVaiTro} />
+                  <div className="d-flex flex-wrap align-items-center gap-2">
+                    <ChatRoleBadges roles={peerContact?.cacVaiTro} />
+                    {peerContact?.tenChuyenKhoa ? (
+                      <span className="chat-dm-app__dept-tag chat-dm-app__dept-tag--thread">
+                        <i className="bi bi-hospital" aria-hidden />
+                        {peerContact.tenChuyenKhoa}
+                      </span>
+                    ) : null}
+                  </div>
                   <div className="small text-muted text-truncate">
                     Tin nhắn chỉ hiển thị trong cuộc trò chuyện này.
                   </div>

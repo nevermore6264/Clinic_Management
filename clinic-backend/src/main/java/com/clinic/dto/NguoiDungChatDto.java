@@ -15,4 +15,6 @@ public class NguoiDungChatDto {
     private String hoTen;
     private String tenDangNhap;
     private Set<String> cacVaiTro = new LinkedHashSet<>();
+    private Long maChuyenKhoa;
+    private String tenChuyenKhoa;
 }

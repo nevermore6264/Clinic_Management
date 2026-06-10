@@ -50,6 +50,14 @@ public class HoaDonService {
         return sangDto(hd);
     }
 
+    @Transactional(readOnly = true)
+    public HoaDonDto layTheoMaLichHen(Long maLichHen) {
+        HoaDon hd = hoaDonRepository.findByLichHen_Id(maLichHen)
+                .orElseThrow(() -> new RuntimeException("Lịch này chưa có hóa đơn."));
+        quyenTruyCapHoSoBenhNhan.yeuCauDuocTruyCapHoSo(hd.getBenhNhan().getId());
+        return sangDto(hd);
+    }
+
     @Transactional
     public HoaDonDto tao(Long maLichHen, List<ChiTietHoaDonDto> chiTiet) {
         LichHen lh = lichHenRepository.findById(maLichHen)
@@ -61,11 +69,11 @@ public class HoaDonService {
                 || lh.getTrangThai() == LichHen.TrangThaiLichHen.VANG) {
             throw new RuntimeException("Không thể lập hóa đơn cho lịch đã hủy hoặc bệnh nhân không đến.");
         }
-        if (lh.getTrangThai() == LichHen.TrangThaiLichHen.CHO_THANH_TOAN) {
-            throw new RuntimeException("Lịch này đã có hóa đơn chờ thanh toán. Xem trong danh sách hoặc chi tiết hóa đơn.");
-        }
         if (lh.getTrangThai() == LichHen.TrangThaiLichHen.DA_THANH_TOAN) {
             throw new RuntimeException("Lịch đã ở trạng thái đã thanh toán; không lập thêm hóa đơn mới cho cùng lịch.");
+        }
+        if (lh.getTrangThai() != LichHen.TrangThaiLichHen.CHO_THANH_TOAN) {
+            throw new RuntimeException("Chỉ lập hóa đơn khi lịch ở trạng thái chờ thanh toán. Cập nhật trạng thái lịch trước.");
         }
         HoaDon hd = new HoaDon();
         hd.setLichHen(lh);
@@ -91,7 +99,7 @@ public class HoaDonService {
         }
         hd.setTongTien(tong);
         HoaDon daLuu = hoaDonRepository.save(hd);
-        lichHenService.capNhatTrangThai(maLichHen, LichHen.TrangThaiLichHen.CHO_THANH_TOAN);
+        lichHenService.capNhatTrangThaiTuHeThong(maLichHen, LichHen.TrangThaiLichHen.CHO_THANH_TOAN);
         return sangDto(daLuu);
     }
 
@@ -118,7 +126,7 @@ public class HoaDonService {
                 : HoaDon.TrangThaiHoaDon.MOT_PHAN);
         hoaDonRepository.save(hd);
         if (hd.getTrangThai() == HoaDon.TrangThaiHoaDon.DA_THANH_TOAN && hd.getLichHen() != null) {
-            lichHenService.capNhatTrangThai(
+            lichHenService.capNhatTrangThaiTuHeThong(
                     hd.getLichHen().getId(), LichHen.TrangThaiLichHen.DA_THANH_TOAN);
         }
         return sangGiaoDichDto(gd);

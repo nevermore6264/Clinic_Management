@@ -2,9 +2,11 @@ package com.clinic.service;
 
 import com.clinic.dto.NguoiDungChatDto;
 import com.clinic.dto.TinNhanChatDto;
+import com.clinic.entity.BacSi;
 import com.clinic.entity.NguoiDung;
 import com.clinic.entity.TinNhanChat;
 import com.clinic.entity.VaiTro;
+import com.clinic.repository.BacSiRepository;
 import com.clinic.repository.NguoiDungRepository;
 import com.clinic.repository.TinNhanChatRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -32,6 +34,7 @@ public class TinNhanChatService {
 
     private final TinNhanChatRepository khoTinNhan;
     private final NguoiDungRepository nguoiDungRepository;
+    private final BacSiRepository bacSiRepository;
     private final ObjectMapper objectMapper;
 
     private static final Long PHONG_MAC_DINH = 1L;
@@ -138,12 +141,26 @@ public class TinNhanChatService {
         return nguoiDungRepository.findByHoatDongTrueOrderByHoTenAsc().stream()
                 .filter(u -> !u.getId().equals(boQuaMaNguoiDung))
                 .filter(this::laNguoiDungNoiBo)
-                .map(u -> new NguoiDungChatDto(
-                        u.getId(),
-                        u.getHoTen(),
-                        u.getTenDangNhap(),
-                        sapXepVaiTroNoiBo(u.getCacVaiTro())))
+                .map(this::sangNguoiDungChatDto)
                 .collect(Collectors.toList());
+    }
+
+    private NguoiDungChatDto sangNguoiDungChatDto(NguoiDung u) {
+        NguoiDungChatDto dto = new NguoiDungChatDto(
+                u.getId(),
+                u.getHoTen(),
+                u.getTenDangNhap(),
+                sapXepVaiTroNoiBo(u.getCacVaiTro()));
+        bacSiRepository.findByNguoiDung_Id(u.getId()).ifPresent(bs -> ganChuyenKhoaChat(dto, bs));
+        return dto;
+    }
+
+    private void ganChuyenKhoaChat(NguoiDungChatDto dto, BacSi bs) {
+        if (bs.getChuyenKhoa() == null) {
+            return;
+        }
+        dto.setMaChuyenKhoa(bs.getChuyenKhoa().getId());
+        dto.setTenChuyenKhoa(bs.getChuyenKhoa().getTenChuyenKhoa());
     }
 
     private boolean laNguoiDungNoiBo(NguoiDung u) {

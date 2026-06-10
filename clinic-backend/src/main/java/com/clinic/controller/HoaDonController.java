@@ -44,6 +44,12 @@ public class HoaDonController {
         return ResponseEntity.ok(hoaDonService.timTheoBenhNhan(maBenhNhan));
     }
 
+    @GetMapping("/lich-hen/{maLichHen}")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','THU_NGAN')")
+    public ResponseEntity<HoaDonDto> layTheoMaLichHen(@PathVariable Long maLichHen) {
+        return ResponseEntity.ok(hoaDonService.layTheoMaLichHen(maLichHen));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','THU_NGAN') or hasRole('BENH_NHAN')")
     public ResponseEntity<HoaDonDto> layTheoMa(@PathVariable Long id) {

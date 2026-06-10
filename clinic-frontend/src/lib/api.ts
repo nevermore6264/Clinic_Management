@@ -440,6 +440,8 @@ export const hoaDonApi = {
     ),
   theoBenhNhan: (maBenhNhan: number) =>
     api<HoaDon[]>(`/hoa-don/benh-nhan/${maBenhNhan}`),
+  theoLichHen: (maLichHen: number) =>
+    api<HoaDon>(`/hoa-don/lich-hen/${maLichHen}`),
   layTheoMa: (id: number) => api<HoaDon>(`/hoa-don/${id}`),
   tao: (maLichHen: number, chiTiet: { maDichVu: number; soLuong?: number }[]) =>
     api<HoaDon>(`/hoa-don?maLichHen=${maLichHen}`, {
@@ -603,6 +605,8 @@ export interface NguoiDungChatEntry {
   hoTen?: string;
   tenDangNhap: string;
   cacVaiTro?: string[];
+  maChuyenKhoa?: number | null;
+  tenChuyenKhoa?: string | null;
 }
 
 export const troChuyenApi = {
@@ -834,19 +838,31 @@ export const visitRecordsApi = {
       donThuoc?: string;
       ghiChu?: string;
       chiTietDonThuoc?: ChiTietDonThuoc[];
-    },
+      chiTietDichVu?: ChiTietDichVuKham[];
+    } & SinhHieuBanDau,
   ) =>
     hoSoKhamApi.luu(maLichHen, {
       chanDoan: data.chanDoan ?? data.diagnosis,
       donThuoc: data.donThuoc ?? data.prescription,
       ghiChu: data.ghiChu ?? data.notes,
       chiTietDonThuoc: data.chiTietDonThuoc,
+      chiTietDichVu: data.chiTietDichVu,
+      nhietDo: data.nhietDo,
+      huyetApTamThu: data.huyetApTamThu,
+      huyetApTamTruong: data.huyetApTamTruong,
+      nhipTim: data.nhipTim,
+      nhipTho: data.nhipTho,
+      chieuCaoCm: data.chieuCaoCm,
+      canNangKg: data.canNangKg,
+      spo2: data.spo2,
+      ghiChuSinhHieu: data.ghiChuSinhHieu,
     }),
 };
 export const invoicesApi = {
   ...hoaDonApi,
   list: hoaDonApi.danhSach,
   byPatient: hoaDonApi.theoBenhNhan,
+  byAppointment: hoaDonApi.theoLichHen,
   get: hoaDonApi.layTheoMa,
   create: (
     maLichHen: number,
@@ -955,11 +971,13 @@ export interface DichVu {
   moTa?: string;
   gia: number;
   hoatDong?: boolean;
+  benhNhanTuDat?: boolean;
 }
 
 export interface LoaiDichVu {
   id: number;
   tenLoaiDichVu: string;
+  benhNhanTuDat?: boolean;
 }
 
 export type TrangThaiLichHen = string;
@@ -1003,13 +1021,35 @@ export interface ChiTietDonThuoc {
   lieuDung?: string;
 }
 
-export interface HoSoKham {
+export interface ChiTietDichVuKham {
+  id?: number;
+  maDichVu: number;
+  tenDichVu?: string;
+  tenLoaiDichVu?: string;
+  soLuong?: number;
+  donGia?: number;
+}
+
+export interface SinhHieuBanDau {
+  nhietDo?: number | null;
+  huyetApTamThu?: number | null;
+  huyetApTamTruong?: number | null;
+  nhipTim?: number | null;
+  nhipTho?: number | null;
+  chieuCaoCm?: number | null;
+  canNangKg?: number | null;
+  spo2?: number | null;
+  ghiChuSinhHieu?: string | null;
+}
+
+export interface HoSoKham extends SinhHieuBanDau {
   id?: number;
   maLichHen?: number;
   chanDoan?: string;
   donThuoc?: string;
   ghiChu?: string;
   chiTietDonThuoc?: ChiTietDonThuoc[];
+  chiTietDichVu?: ChiTietDichVuKham[];
 }
 
 export interface LichSuTrangThaiLichHen {

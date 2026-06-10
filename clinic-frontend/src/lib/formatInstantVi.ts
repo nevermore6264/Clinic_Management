@@ -62,3 +62,25 @@ export function formatGioHen(gioHen?: string): string {
   if (!gioHen) return "—";
   return gioHen.length >= 5 ? gioHen.slice(0, 5) : gioHen;
 }
+
+export function formatNgayGioRoRiPatient(iso?: string | null): {
+  ngay: string;
+  gio: string;
+} {
+  if (!iso) return { ngay: "—", gio: "—" };
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return { ngay: iso, gio: "—" };
+  return {
+    ngay: d.toLocaleDateString("vi-VN", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }),
+    gio: d.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }),
+  };
+}

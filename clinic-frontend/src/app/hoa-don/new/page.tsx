@@ -19,6 +19,7 @@ import {
   invoicesApi,
   lichHenApi,
   servicesApi,
+  visitRecordsApi,
   type DichVu,
   type LichHen,
 } from "@/lib/api";
@@ -65,12 +66,12 @@ function lyDoKhongLapHoaDon(trangThai?: string): string {
       return "Lịch đã hủy — không lập được hóa đơn.";
     case "VANG":
       return "Đánh dấu không đến — không lập được hóa đơn.";
-    case "CHO_THANH_TOAN":
-      return "Lịch đã có hóa đơn chờ thanh toán; một lịch chỉ một hóa đơn. Mở chi tiết hóa đơn để ghi nhận thanh toán.";
     case "DA_THANH_TOAN":
       return "Lịch đã hoàn tất thanh toán; một lịch chỉ gắn một hóa đơn. Mở danh sách / chi tiết hóa đơn để xem hoặc in.";
+    case "CHO_THANH_TOAN":
+      return "Lịch này đã có hóa đơn. Mở chi tiết hóa đơn để ghi nhận thanh toán.";
     default:
-      return "Trạng thái lịch không cho phép lập hóa đơn mới.";
+      return "Chỉ lập hóa đơn khi lịch ở trạng thái chờ thanh toán. Vào chi tiết lịch, cập nhật trạng thái trước.";
   }
 }
 
@@ -131,16 +132,52 @@ function NewInvoicePageInner() {
   useEffect(() => {
     if (
       daGoiYDichVuTuLich.current ||
-      !lichHen?.maDichVu ||
+      !maLichHenParam ||
       services.length === 0 ||
       items.length > 0
-    )
+    ) {
       return;
-    const coTrongDanhSach = services.some((s) => s.id === lichHen.maDichVu);
-    if (!coTrongDanhSach) return;
-    daGoiYDichVuTuLich.current = true;
-    setItems([{ serviceId: lichHen.maDichVu, quantity: 1 }]);
-  }, [lichHen, services, items.length]);
+    }
+    const maLichHen = Number(maLichHenParam);
+    if (Number.isNaN(maLichHen) || maLichHen <= 0) return;
+
+    let huy = false;
+    const goiYDichVuMacDinh = () => {
+      if (huy || daGoiYDichVuTuLich.current) return;
+      if (
+        lichHen?.maDichVu &&
+        services.some((s) => s.id === lichHen.maDichVu)
+      ) {
+        daGoiYDichVuTuLich.current = true;
+        setItems([{ serviceId: lichHen.maDichVu, quantity: 1 }]);
+      }
+    };
+
+    void visitRecordsApi
+      .byAppointment(maLichHen)
+      .then((hoSo) => {
+        if (huy || daGoiYDichVuTuLich.current) return;
+        const tuHoSo = hoSo?.chiTietDichVu?.filter((c) => c.maDichVu > 0) ?? [];
+        if (tuHoSo.length > 0) {
+          daGoiYDichVuTuLich.current = true;
+          setItems(
+            tuHoSo.map((c) => ({
+              serviceId: c.maDichVu,
+              quantity: c.soLuong ?? 1,
+            })),
+          );
+          return;
+        }
+        goiYDichVuMacDinh();
+      })
+      .catch(() => {
+        goiYDichVuMacDinh();
+      });
+
+    return () => {
+      huy = true;
+    };
+  }, [lichHen, services, items.length, maLichHenParam]);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -349,9 +386,9 @@ function NewInvoicePageInner() {
           <Form onSubmit={handleSubmit}>
             <div className="fw-semibold mb-2">Dịch vụ trên hóa đơn</div>
             <p className="small text-muted mb-3">
-              Tìm bên trái, bấm <strong>Thêm</strong> để đưa vào hóa đơn; dịch vụ
-              đã có trên hóa đơn sẽ không còn trong danh sách trái. Chỉnh số
-              lượng hoặc <strong>Xóa</strong> dòng ở bảng bên phải.
+              Dịch vụ đã ghi trong lúc khám được gợi ý tự động. Tìm bên trái, bấm{" "}
+              <strong>Thêm</strong> nếu cần bổ sung; chỉnh số lượng hoặc{" "}
+              <strong>Xóa</strong> dòng ở bảng bên phải.
             </p>
             <Row className="g-3 mb-3">
               <Col xs={12} lg={5}>

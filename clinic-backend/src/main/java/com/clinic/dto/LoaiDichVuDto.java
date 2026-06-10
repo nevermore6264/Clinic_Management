@@ -9,4 +9,6 @@ public class LoaiDichVuDto {
 
     @NotBlank(message = "Tên loại dịch vụ không được để trống")
     private String tenLoaiDichVu;
+
+    private boolean benhNhanTuDat = true;
 }

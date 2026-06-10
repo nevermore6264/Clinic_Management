@@ -11,6 +11,7 @@ import {
   getLandingPublic,
 } from "@/lib/landingPublicContent";
 import { LANDING_BOOKING_DRAFT_KEY } from "@/lib/landingBookingDraft";
+import { LandingBangGiaDichVu } from "@/components/LandingBangGiaDichVu";
 
 export default function HomePage() {
   const { user, loading } = useAuth();
@@ -43,6 +44,10 @@ export default function HomePage() {
 
   const goLogin = () => router.push("/dang-nhap");
   const goRegister = () => router.push("/dang-ky");
+  const goDatLich = () => router.push("/dang-ky?next=/lich-hen");
+  const scrollToBangGia = () => {
+    document.getElementById("bang-gia")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const submitLandingBooking = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -136,6 +141,7 @@ export default function HomePage() {
           <nav className="landing-site-header__nav" aria-label="Menu chính">
             <a href="#thong-bao">Thông báo</a>
             <a href="#chuyen-khoa-landing">Chuyên khoa</a>
+            <a href="#bang-gia">Bảng giá</a>
             <a href="#dich-vu">Dịch vụ</a>
             <a href="#cam-ket">Cam kết</a>
             <a href="#quy-trinh">Quy trình</a>
@@ -345,14 +351,14 @@ export default function HomePage() {
             <button
               type="button"
               className="landing-quick-tile"
-              onClick={goLogin}
+              onClick={scrollToBangGia}
             >
               <span className="landing-quick-tile__icon">
                 <i className="bi bi-journal-medical" aria-hidden />
               </span>
               <span className="landing-quick-tile__text">
                 <strong>Bảng giá tham khảo</strong>
-                <small>Dịch vụ &amp; gói khám</small>
+                <small>Xem ngay — không cần đăng nhập</small>
               </span>
             </button>
             <button
@@ -438,7 +444,7 @@ export default function HomePage() {
                 type="button"
                 className="landing-specialty-chip"
                 role="listitem"
-                onClick={goLogin}
+                onClick={scrollToBangGia}
               >
                 <span className="landing-specialty-chip__icon">
                   <i className={`bi ${item.icon}`} aria-hidden />
@@ -450,9 +456,27 @@ export default function HomePage() {
             ))}
           </div>
           <p className="text-center small text-muted mt-3 mb-0 fw-semibold">
-            Đặt lịch theo chuyên khoa sau khi đăng nhập — hoặc gọi hotline để
-            được tư vấn chọn bác sĩ phù hợp.
+            Nhấn chuyên khoa để xem bảng giá tham khảo — đặt lịch khi đã chọn
+            dịch vụ phù hợp.
           </p>
+        </div>
+      </section>
+
+      <section
+        id="bang-gia"
+        className="landing-section landing-section--muted landing-bang-gia-section"
+      >
+        <div className="landing-hospital-shell">
+          <div className="landing-section__head landing-section__head--center">
+            <p className="landing-section__eyebrow">Bảng giá công khai</p>
+            <h2 className="landing-section__title">Bảng giá dịch vụ tham khảo</h2>
+            <p className="landing-section__desc">
+              Tra cứu trực quan tên dịch vụ, loại, chuyên khoa và mức giá từ
+              danh mục phòng khám — không cần đăng nhập. Lọc theo chuyên khoa
+              hoặc loại dịch vụ để so sánh nhanh.
+            </p>
+          </div>
+          <LandingBangGiaDichVu onDatLich={goDatLich} onDangKy={goRegister} />
         </div>
       </section>
 

@@ -5,12 +5,23 @@ import { useRouter, useParams } from "next/navigation";
 import { Card, Table, Button, Form, Alert, Modal } from "react-bootstrap";
 import Link from "next/link";
 import { useAuth } from "@/lib/useAuth";
-import { invoicesApi, type HoaDon, type PayOsTaoLinkPhanHoi } from "@/lib/api";
+import {
+  invoicesApi,
+  lichHenApi,
+  type HoaDon,
+  type LichHen,
+  type PayOsTaoLinkPhanHoi,
+} from "@/lib/api";
 import { HoaDonStatusTag } from "@/components/HoaDonStatusTag";
 import { PhuongThucThanhToanTag } from "@/components/PhuongThucThanhToanTag";
 import { formatVndInput, parseVndInput } from "@/lib/moneyVnd";
-import { formatInstantVi } from "@/lib/formatInstantVi";
-import { laBacSiKhongXemHoaDon } from "@/lib/roles";
+import {
+  formatGioHen,
+  formatInstantVi,
+  formatNgayGioRoRiPatient,
+  formatNgayHenDayVi,
+} from "@/lib/formatInstantVi";
+import { laBacSiKhongXemHoaDon, laChiTaiKhoanBenhNhan } from "@/lib/roles";
 import { LoadingState } from "@/components/LoadingState";
 
 export default function InvoiceDetailPage() {
@@ -19,6 +30,8 @@ export default function InvoiceDetailPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [inv, setInv] = useState<HoaDon | null>(null);
+  const [lichHen, setLichHen] = useState<LichHen | null>(null);
+  const [lichHenLoading, setLichHenLoading] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [payAmount, setPayAmount] = useState("");
   const [payMethod, setPayMethod] = useState("TIEN_MAT");
@@ -117,6 +130,20 @@ export default function InvoiceDetailPage() {
       .then(setInv)
       .catch((e) => setError(e.message));
   }, [user, id]);
+
+  useEffect(() => {
+    if (!inv?.maLichHen) {
+      setLichHen(null);
+      setLichHenLoading(false);
+      return;
+    }
+    setLichHenLoading(true);
+    lichHenApi
+      .layTheoMa(inv.maLichHen)
+      .then(setLichHen)
+      .catch(() => setLichHen(null))
+      .finally(() => setLichHenLoading(false));
+  }, [inv?.maLichHen, inv?.id]);
 
   useEffect(() => {
     if (!user || !id || typeof window === "undefined") return;
@@ -229,9 +256,15 @@ export default function InvoiceDetailPage() {
   const conNo = remaining > 0.000001;
 
   const hienGhiNhanThuCong = conNo && coTheGhiNhanThuCong;
+  const chiTaiKhoanBn = laChiTaiKhoanBenhNhan(user);
+  const thoiDiemLap = formatNgayGioRoRiPatient(inv.taoLuc);
 
   return (
-    <div className="hoa-don-detail-page">
+    <div
+      className={`hoa-don-detail-page${
+        chiTaiKhoanBn ? " patient-portal-hoadon-detail" : ""
+      }`}
+    >
       <div className="hoa-don-printable">
         <h2 className="mb-4">Hóa đơn {inv.soHoaDon}</h2>
         {error && (
@@ -244,11 +277,95 @@ export default function InvoiceDetailPage() {
             {error}
           </Alert>
         )}
-        <Card className="mb-3">
+        <Card
+          className={`mb-3${
+            chiTaiKhoanBn ? " patient-portal-hoadon-detail__summary" : ""
+          }`}
+        >
           <Card.Body>
+            {chiTaiKhoanBn ? (
+              <div className="patient-portal-hoadon-detail__times mb-3 pb-3 border-bottom">
+                <div className="patient-portal-hoadon-detail__times-title small text-uppercase fw-semibold text-muted mb-2">
+                  <i className="bi bi-clock-history me-1" aria-hidden />
+                  Thời gian
+                </div>
+                <dl className="row g-2 mb-0 small patient-portal-hoadon-detail__dl">
+                  <dt className="col-sm-4 col-md-3 text-muted mb-0">
+                    Ngày lập hóa đơn
+                  </dt>
+                  <dd className="col-sm-8 col-md-9 mb-0 fw-medium">
+                    {thoiDiemLap.ngay}
+                  </dd>
+                  <dt className="col-sm-4 col-md-3 text-muted mb-0">
+                    Giờ lập hóa đơn
+                  </dt>
+                  <dd className="col-sm-8 col-md-9 mb-0">
+                    <span className="patient-portal-hoadon-detail__time-badge">
+                      {thoiDiemLap.gio}
+                    </span>
+                  </dd>
+                  {inv.maLichHen ? (
+                    <>
+                      <dt className="col-sm-4 col-md-3 text-muted mb-0 pt-1">
+                        Ngày khám
+                      </dt>
+                      <dd className="col-sm-8 col-md-9 mb-0 pt-1 fw-medium">
+                        {lichHenLoading
+                          ? "Đang tải…"
+                          : lichHen
+                            ? formatNgayHenDayVi(lichHen.ngayHen)
+                            : "—"}
+                      </dd>
+                      <dt className="col-sm-4 col-md-3 text-muted mb-0">
+                        Giờ khám
+                      </dt>
+                      <dd className="col-sm-8 col-md-9 mb-0">
+                        {lichHenLoading ? (
+                          "Đang tải…"
+                        ) : lichHen ? (
+                          <span className="patient-portal-hoadon-detail__time-badge">
+                            {formatGioHen(lichHen.gioHen)}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
+                      </dd>
+                    </>
+                  ) : null}
+                </dl>
+              </div>
+            ) : (
+              <p className="small text-muted mb-3">
+                <i className="bi bi-clock me-1" aria-hidden />
+                Lập lúc:{" "}
+                <strong className="text-body">
+                  {inv.taoLuc ? formatInstantVi(inv.taoLuc) : "—"}
+                </strong>
+                {inv.maLichHen && lichHen ? (
+                  <>
+                    {" "}
+                    · Lịch khám:{" "}
+                    <strong className="text-body">
+                      {formatNgayHenDayVi(lichHen.ngayHen)}{" "}
+                      {formatGioHen(lichHen.gioHen)}
+                    </strong>
+                  </>
+                ) : null}
+              </p>
+            )}
             <p>
               <strong>Bệnh nhân:</strong> {inv.tenBenhNhan}
             </p>
+            {chiTaiKhoanBn && lichHen ? (
+              <>
+                <p className="mb-2">
+                  <strong>Bác sĩ khám:</strong> {lichHen.tenBacSi ?? "—"}
+                </p>
+                <p className="mb-3">
+                  <strong>Dịch vụ đặt lịch:</strong> {lichHen.tenDichVu ?? "—"}
+                </p>
+              </>
+            ) : null}
             <p>
               <strong>Tổng tiền:</strong>{" "}
               {inv.tongTien?.toLocaleString("vi-VN")}đ

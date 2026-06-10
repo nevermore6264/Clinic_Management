@@ -1114,3 +1114,8 @@
   background: linear-gradient(180deg, #34d399 0%, #059669 55%, #047857 100%) !important;
   box-shadow: 0 6px 14px rgba(5, 150, 105, 0.28);
 }
+
+.bao-cao-export-group .btn-light {
+  font-weight: 600;
+  font-size: 0.8rem;
+}

@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -18,7 +24,10 @@ import {
   Modal,
 } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
-import { laBacSiChiXemLichLamViecCuaBanThan, laChiTaiKhoanBenhNhan } from "@/lib/roles";
+import {
+  laBacSiChiXemLichLamViecCuaBanThan,
+  laChiTaiKhoanBenhNhan,
+} from "@/lib/roles";
 import { PageHeader } from "@/components/PageHeader";
 import { LICH_HEN_STATUS_LABEL } from "@/lib/lichHenStatus";
 import {
@@ -26,11 +35,14 @@ import {
   doctorSchedulesApi,
   lichLamViecCoDinhApi,
   appointmentsApi,
+  chuyenKhoaApi,
   type BacSi,
+  type ChuyenKhoa,
   type LichLamViecBacSi,
   type LichCoDinh,
   type LichHen,
 } from "@/lib/api";
+import { ModalLichHenNgoaiLe } from "@/components/ModalLichHenNgoaiLe";
 
 const TEN_THU: Record<number, string> = {
   1: "Thứ 2",
@@ -116,7 +128,9 @@ function NhanNguonLich({ s }: { s: LichLamViecBacSi }) {
     );
   }
   return (
-    <span className="badge rounded-pill bg-light text-muted border fw-normal">—</span>
+    <span className="badge rounded-pill bg-light text-muted border fw-normal">
+      —
+    </span>
   );
 }
 
@@ -169,6 +183,8 @@ export default function LichLamViecBacSisPage() {
   const router = useRouter();
   const chiBsChiMinh = !!user && laBacSiChiXemLichLamViecCuaBanThan(user);
   const [doctors, setDoctors] = useState<BacSi[]>([]);
+  const [chuyenKhoa, setChuyenKhoa] = useState<ChuyenKhoa[]>([]);
+  const [locChuyenKhoaId, setLocChuyenKhoaId] = useState("");
   const [doctorId, setDoctorId] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [tab, setTab] = useState<"co-dinh" | "ngoai-le" | "lich-dat">(
@@ -194,6 +210,23 @@ export default function LichLamViecBacSisPage() {
     khungGioKetThuc: "11:30",
   });
   const [loiNgoaiLe, setLoiNgoaiLe] = useState("");
+  const [lichAnhHuong, setLichAnhHuong] = useState<LichHen[]>([]);
+  const [showModalAnhHuong, setShowModalAnhHuong] = useState(false);
+  const [ngayAnhHuong, setNgayAnhHuong] = useState("");
+
+  const kiemTraVaMoThongBaoAnhHuong = useCallback(
+    async (maBs: number, ngay: string) => {
+      try {
+        const list = await appointmentsApi.biAnhHuongNgoaiLe(maBs, ngay);
+        if (list.length > 0) {
+          setLichAnhHuong(list);
+          setNgayAnhHuong(ngay);
+          setShowModalAnhHuong(true);
+        }
+      } catch {}
+    },
+    [],
+  );
 
   type XacNhanState = {
     tieuDe: string;
@@ -248,7 +281,30 @@ export default function LichLamViecBacSisPage() {
       .list()
       .then(setDoctors)
       .catch(() => {});
+    chuyenKhoaApi
+      .danhSach()
+      .then((data) => setChuyenKhoa(Array.isArray(data) ? data : []))
+      .catch(() => {});
   }, [user]);
+
+  const doctorsLoc = useMemo(() => {
+    if (!locChuyenKhoaId || Number.isNaN(Number(locChuyenKhoaId))) {
+      return doctors;
+    }
+    const maCk = Number(locChuyenKhoaId);
+    return doctors.filter(
+      (d) =>
+        d.maChuyenKhoa != null &&
+        !Number.isNaN(Number(d.maChuyenKhoa)) &&
+        Number(d.maChuyenKhoa) === maCk,
+    );
+  }, [doctors, locChuyenKhoaId]);
+
+  useEffect(() => {
+    if (!doctorId || chiBsChiMinh) return;
+    const conTrongLoc = doctorsLoc.some((d) => String(d.id) === doctorId);
+    if (!conTrongLoc) setDoctorId("");
+  }, [doctorId, doctorsLoc, chiBsChiMinh]);
 
   const taiCoDinh = useCallback(async (maBacSi: number) => {
     setCoDinhTai(true);
@@ -256,9 +312,7 @@ export default function LichLamViecBacSisPage() {
       const data = await lichLamViecCoDinhApi.theoBacSi(maBacSi);
       setCoDinhList(Array.isArray(data) ? data : []);
     } catch (e: unknown) {
-      setError(
-        e instanceof Error ? e.message : "Không tải được lịch cố định",
-      );
+      setError(e instanceof Error ? e.message : "Không tải được lịch cố định");
       setCoDinhList([]);
     } finally {
       setCoDinhTai(false);
@@ -296,7 +350,9 @@ export default function LichLamViecBacSisPage() {
         const sun = congNgayIso(mon, 6);
         const [sc, ap] = await Promise.all([
           doctorSchedulesApi.byDoctorDateRange(Number(doctorId), mon, sun),
-          appointmentsApi.byDoctor(Number(doctorId), date).catch(() => [] as LichHen[]),
+          appointmentsApi
+            .byDoctor(Number(doctorId), date)
+            .catch(() => [] as LichHen[]),
         ]);
         if (cancelled) return;
         setSchedules(Array.isArray(sc) ? sc : []);
@@ -344,6 +400,7 @@ export default function LichLamViecBacSisPage() {
       });
       await taiLichTuan(Number(doctorId), date);
       setShowAdd(false);
+      await kiemTraVaMoThongBaoAnhHuong(Number(doctorId), date);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Lỗi");
     }
@@ -355,9 +412,10 @@ export default function LichLamViecBacSisPage() {
     const noiDungXoa =
       s.nguonBanGhi === "CO_DINH" ? (
         <>
-          Bạn sắp xóa <strong>một ca trong lịch cố định theo tuần</strong> (dòng có
-          tag Tuần). Hệ thống sẽ gỡ khỏi mẫu tuần — <strong>tất cả các ngày</strong>{" "}
-          cùng thứ trong tuần sẽ không còn ca đó, không chỉ riêng{" "}
+          Bạn sắp xóa <strong>một ca trong lịch cố định theo tuần</strong> (dòng
+          có tag Tuần). Hệ thống sẽ gỡ khỏi mẫu tuần —{" "}
+          <strong>tất cả các ngày</strong> cùng thứ trong tuần sẽ không còn ca
+          đó, không chỉ riêng{" "}
           <span className="text-muted">{formatNgay(ngayDong)}</span>. Thao tác{" "}
           <strong>không thể hoàn tác</strong>.
         </>
@@ -365,8 +423,8 @@ export default function LichLamViecBacSisPage() {
         <>
           Bạn sắp xóa <strong>ca ngoại lệ</strong> chỉ áp dụng cho{" "}
           <span className="text-muted">{formatNgay(ngayDong)}</span>.{" "}
-          <strong>Không</strong> thay đổi ca cố định theo tuần. Thao tác không thể
-          hoàn tác.
+          <strong>Không</strong> thay đổi ca cố định theo tuần. Thao tác không
+          thể hoàn tác.
         </>
       ) : (
         <>
@@ -403,8 +461,8 @@ export default function LichLamViecBacSisPage() {
       noiDung: (
         <>
           Bạn có chắc muốn đánh dấu <strong>nghỉ cả ngày</strong>{" "}
-          <span className="text-muted">({formatNgay(ngayLich)})</span>? Bệnh nhân sẽ
-          không đặt được lịch trong ngày này.
+          <span className="text-muted">({formatNgay(ngayLich)})</span>? Bệnh
+          nhân đã đặt lịch trong ngày sẽ được liệt kê để gửi thông báo đổi lịch.
         </>
       ),
       icon: "bi-moon",
@@ -421,6 +479,7 @@ export default function LichLamViecBacSisPage() {
           });
           await taiLichTuan(Number(doctorId), ngayLich);
           setShowAdd(false);
+          await kiemTraVaMoThongBaoAnhHuong(Number(doctorId), ngayLich);
         } catch (e: unknown) {
           setError(e instanceof Error ? e.message : "Lỗi");
         }
@@ -527,7 +586,8 @@ export default function LichLamViecBacSisPage() {
   const canEditSchedules =
     user?.cacVaiTro.includes("QUAN_TRI") || user?.cacVaiTro.includes("BAC_SI");
 
-  const tenBacSiChon = doctors.find((d) => String(d.id) === doctorId)?.hoTen;
+  const bacSiChon = doctors.find((d) => String(d.id) === doctorId);
+  const tenBacSiChon = bacSiChon?.hoTen;
 
   const coDinhTheoThu = useMemo(() => {
     const map: Record<number, LichCoDinh[]> = {};
@@ -566,18 +626,28 @@ export default function LichLamViecBacSisPage() {
 
       {chiBsChiMinh && (user?.maBacSi == null || user.maBacSi < 1) && (
         <Alert variant="warning" className="shadow-sm">
-          Tài khoản chưa gắn với hồ sơ bác sĩ trong hệ thống — không thể tải lịch làm việc. Vui lòng
-          liên hệ quản trị.
+          Tài khoản chưa gắn với hồ sơ bác sĩ trong hệ thống — không thể tải
+          lịch làm việc. Vui lòng liên hệ quản trị.
         </Alert>
       )}
 
       {error && (
-        <Alert variant="danger" dismissible onClose={() => setError("")} className="shadow-sm">
+        <Alert
+          variant="danger"
+          dismissible
+          onClose={() => setError("")}
+          className="shadow-sm"
+        >
           {error}
         </Alert>
       )}
       {thongBao && (
-        <Alert variant="success" dismissible onClose={() => setThongBao("")} className="shadow-sm">
+        <Alert
+          variant="success"
+          dismissible
+          onClose={() => setThongBao("")}
+          className="shadow-sm"
+        >
           {thongBao}
         </Alert>
       )}
@@ -585,33 +655,82 @@ export default function LichLamViecBacSisPage() {
       <Card className="mb-4 card--static border-0 shadow-sm">
         <Card.Body className="p-4">
           <Row className="g-3 align-items-end">
-            <Col md={8} lg={6}>
+            {!chiBsChiMinh ? (
+              <Col md={6} lg={4}>
+                <Form.Label
+                  className="fw-semibold small text-uppercase text-muted"
+                  id="label-loc-ck-lich-bs"
+                >
+                  Chuyên khoa
+                </Form.Label>
+                <Form.Select
+                  aria-labelledby="label-loc-ck-lich-bs"
+                  value={locChuyenKhoaId}
+                  onChange={(e) => {
+                    setLocChuyenKhoaId(e.target.value);
+                    setDoctorId("");
+                  }}
+                  className="border-secondary-subtle"
+                >
+                  <option value="">Tất cả chuyên khoa</option>
+                  {chuyenKhoa.map((ck) => (
+                    <option key={ck.id} value={String(ck.id)}>
+                      {ck.tenChuyenKhoa}
+                    </option>
+                  ))}
+                </Form.Select>
+                <Form.Text className="text-muted">
+                  {locChuyenKhoaId
+                    ? `${doctorsLoc.length} bác sĩ trong chuyên khoa này`
+                    : "Lọc danh sách bác sĩ theo chuyên khoa"}
+                </Form.Text>
+              </Col>
+            ) : null}
+            <Col md={chiBsChiMinh ? 12 : 6} lg={chiBsChiMinh ? 6 : 4}>
               <Form.Label className="fw-semibold small text-uppercase text-muted">
                 Bác sĩ
               </Form.Label>
               {chiBsChiMinh ? (
                 <div className="form-control border-secondary-subtle bg-light text-body py-2">
-                  {tenBacSiChon ?? (user?.maBacSi ? `Mã #${user.maBacSi}` : "—")}
+                  {tenBacSiChon ??
+                    (user?.maBacSi ? `Mã #${user.maBacSi}` : "—")}
                 </div>
               ) : (
                 <Form.Select
                   value={doctorId}
                   onChange={(e) => setDoctorId(e.target.value)}
                   className="border-secondary-subtle"
+                  disabled={locChuyenKhoaId !== "" && doctorsLoc.length === 0}
                 >
-                  <option value="">Chọn bác sĩ…</option>
-                  {doctors.map((d) => (
+                  <option value="">
+                    {locChuyenKhoaId && doctorsLoc.length === 0
+                      ? "Không có bác sĩ trong chuyên khoa này"
+                      : "Chọn bác sĩ…"}
+                  </option>
+                  {doctorsLoc.map((d) => (
                     <option key={d.id} value={d.id}>
                       {d.hoTen}
+                      {d.tenChuyenKhoa && !locChuyenKhoaId
+                        ? ` — ${d.tenChuyenKhoa}`
+                        : ""}
                     </option>
                   ))}
                 </Form.Select>
               )}
             </Col>
             {doctorId ? (
-              <Col md={4} lg={6} className="text-md-end">
+              <Col md={12} lg={4} className="text-lg-end">
                 <div className="small text-muted">Bác sĩ đang chọn</div>
                 <div className="fw-semibold">{tenBacSiChon ?? "—"}</div>
+                {bacSiChon?.tenChuyenKhoa ? (
+                  <Badge
+                    bg="primary-subtle"
+                    text="primary"
+                    className="mt-1 fw-normal border border-primary-subtle"
+                  >
+                    {bacSiChon.tenChuyenKhoa}
+                  </Badge>
+                ) : null}
               </Col>
             ) : null}
           </Row>
@@ -628,8 +747,12 @@ export default function LichLamViecBacSisPage() {
               <i className="bi bi-calendar3-week fs-2" aria-hidden />
             </div>
             <h5 className="fw-semibold mb-2">Chưa chọn bác sĩ</h5>
-            <p className="text-muted mb-0 mx-auto" style={{ maxWidth: "28rem" }}>
-              Chọn bác sĩ ở trên để xem ca cố định theo tuần và các ca trong ngày.
+            <p
+              className="text-muted mb-0 mx-auto"
+              style={{ maxWidth: "28rem" }}
+            >
+              Chọn bác sĩ ở trên để xem ca cố định theo tuần và các ca trong
+              ngày.
             </p>
           </Card.Body>
         </Card>
@@ -685,7 +808,9 @@ export default function LichLamViecBacSisPage() {
                         <i className="bi bi-plus-lg" aria-hidden />
                       </span>
                       <div className="flex-grow-1 min-w-0">
-                        <div className="fw-semibold text-body">Thêm ca cố định</div>
+                        <div className="fw-semibold text-body">
+                          Thêm ca cố định
+                        </div>
                         <div className="small text-muted">
                           Chọn thứ và khung giờ. Ca sẽ lặp lại mỗi tuần.
                         </div>
@@ -756,7 +881,11 @@ export default function LichLamViecBacSisPage() {
                         />
                       </Col>
                       <Col sm="auto" className="ms-lg-auto">
-                        <Button variant="primary" className="px-4" onClick={handleAddCoDinh}>
+                        <Button
+                          variant="primary"
+                          className="px-4"
+                          onClick={handleAddCoDinh}
+                        >
                           <i className="bi bi-check2 me-2" aria-hidden />
                           Lưu ca
                         </Button>
@@ -768,15 +897,24 @@ export default function LichLamViecBacSisPage() {
 
               {coDinhTai ? (
                 <Card.Body className="text-center py-5 border-top">
-                  <Spinner animation="border" className="text-primary" role="status" />
-                  <div className="small text-muted mt-2">Đang tải lịch cố định…</div>
+                  <Spinner
+                    animation="border"
+                    className="text-primary"
+                    role="status"
+                  />
+                  <div className="small text-muted mt-2">
+                    Đang tải lịch cố định…
+                  </div>
                 </Card.Body>
               ) : coDinhList.length === 0 ? (
                 <Card.Body className="text-center text-muted py-5 border-top">
-                  <i className="bi bi-calendar-x display-6 d-block mb-2 opacity-25" aria-hidden />
+                  <i
+                    className="bi bi-calendar-x display-6 d-block mb-2 opacity-25"
+                    aria-hidden
+                  />
                   <p className="mb-0 mx-auto" style={{ maxWidth: "26rem" }}>
-                    Bác sĩ này chưa có ca cố định nào. Khởi tạo nhanh theo giờ hành chính hoặc thêm
-                    từng ca thủ công.
+                    Bác sĩ này chưa có ca cố định nào. Khởi tạo nhanh theo giờ
+                    hành chính hoặc thêm từng ca thủ công.
                   </p>
                   {canEditSchedules ? (
                     <div className="d-flex flex-wrap justify-content-center gap-2 mt-4">
@@ -822,7 +960,9 @@ export default function LichLamViecBacSisPage() {
                         <Col key={thu} xs={12} md={6} xxl={4}>
                           <div
                             className={`lich-tuan-fd-day rounded-3 bg-white shadow-sm h-100 overflow-hidden border ${
-                              dauTuan ? "border-secondary-subtle" : "border-warning-subtle border-2"
+                              dauTuan
+                                ? "border-secondary-subtle"
+                                : "border-warning-subtle border-2"
                             }`}
                           >
                             <div
@@ -861,15 +1001,23 @@ export default function LichLamViecBacSisPage() {
                                   }}
                                   title={`Thêm ca ${TEN_THU[thu]}`}
                                 >
-                                  <i className="bi bi-plus-lg me-sm-1" aria-hidden />
-                                  <span className="d-none d-sm-inline">Thêm ca</span>
+                                  <i
+                                    className="bi bi-plus-lg me-sm-1"
+                                    aria-hidden
+                                  />
+                                  <span className="d-none d-sm-inline">
+                                    Thêm ca
+                                  </span>
                                 </Button>
                               ) : null}
                             </div>
                             <div className="p-3">
                               {dsCa.length === 0 ? (
                                 <div className="text-center text-muted small py-4 rounded-3 border border-2 border-dashed bg-body-secondary bg-opacity-50">
-                                  <i className="bi bi-moon d-block fs-4 mb-2 opacity-50" aria-hidden />
+                                  <i
+                                    className="bi bi-moon d-block fs-4 mb-2 opacity-50"
+                                    aria-hidden
+                                  />
                                   Nghỉ
                                 </div>
                               ) : (
@@ -891,7 +1039,8 @@ export default function LichLamViecBacSisPage() {
                                               value={chuanGio(c.khungGioBatDau)}
                                               onChange={(e) =>
                                                 handleCapNhatCoDinh(c, {
-                                                  khungGioBatDau: e.target.value,
+                                                  khungGioBatDau:
+                                                    e.target.value,
                                                 })
                                               }
                                               className="border-secondary-subtle font-monospace"
@@ -904,30 +1053,43 @@ export default function LichLamViecBacSisPage() {
                                             <Form.Control
                                               size="sm"
                                               type="time"
-                                              value={chuanGio(c.khungGioKetThuc)}
+                                              value={chuanGio(
+                                                c.khungGioKetThuc,
+                                              )}
                                               onChange={(e) =>
                                                 handleCapNhatCoDinh(c, {
-                                                  khungGioKetThuc: e.target.value,
+                                                  khungGioKetThuc:
+                                                    e.target.value,
                                                 })
                                               }
                                               className="border-secondary-subtle font-monospace"
                                             />
                                           </Col>
-                                          <Col xs={12} sm="auto" className="ms-sm-auto d-flex justify-content-end">
+                                          <Col
+                                            xs={12}
+                                            sm="auto"
+                                            className="ms-sm-auto d-flex justify-content-end"
+                                          >
                                             <Button
                                               size="sm"
                                               className="btn-action-delete mt-1 mt-sm-0"
-                                              onClick={() => handleDeleteCoDinh(c.id)}
+                                              onClick={() =>
+                                                handleDeleteCoDinh(c.id)
+                                              }
                                               title="Xóa ca"
                                             >
-                                              <i className="bi bi-trash me-1" aria-hidden />
+                                              <i
+                                                className="bi bi-trash me-1"
+                                                aria-hidden
+                                              />
                                               Xóa
                                             </Button>
                                           </Col>
                                         </Row>
                                       ) : (
                                         <div className="font-monospace fs-6 fw-semibold text-body">
-                                          {chuanGio(c.khungGioBatDau)} – {chuanGio(c.khungGioKetThuc)}
+                                          {chuanGio(c.khungGioBatDau)} –{" "}
+                                          {chuanGio(c.khungGioKetThuc)}
                                         </div>
                                       )}
                                     </div>
@@ -960,8 +1122,9 @@ export default function LichLamViecBacSisPage() {
                 title="Ca ngoại lệ"
                 subtitle={
                   <>
-                    Mỗi ngày: nếu có ngoại lệ đổi giờ thì chỉ áp dụng các khung đó (thay cho ca cố định cùng thứ);
-                    không có ngoại lệ thì dùng ca cố định.{" "}
+                    Mỗi ngày: nếu có ngoại lệ đổi giờ thì chỉ áp dụng các khung
+                    đó (thay cho ca cố định cùng thứ); không có ngoại lệ thì
+                    dùng ca cố định.{" "}
                     <Button
                       type="button"
                       variant="link"
@@ -977,11 +1140,14 @@ export default function LichLamViecBacSisPage() {
               <div className="lich-tuan-fd border-top px-3 px-lg-4 py-4 bg-body-secondary bg-opacity-35">
                 <div className="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-3">
                   <div>
-                    <div className="fw-semibold text-body">Theo tuần (T2–CN)</div>
+                    <div className="fw-semibold text-body">
+                      Theo tuần (T2–CN)
+                    </div>
                     <div className="small text-muted">
                       {tenBacSiChon ? `${tenBacSiChon} · ` : ""}
-                      {formatNgay(tuanBatDauTuNgay)} – {formatNgay(tuanChuNhatIso)} · chỉ ngoại lệ theo
-                      từng ngày.
+                      {formatNgay(tuanBatDauTuNgay)} –{" "}
+                      {formatNgay(tuanChuNhatIso)} · chỉ ngoại lệ theo từng
+                      ngày.
                     </div>
                   </div>
                   <div className="d-flex flex-wrap gap-2 align-items-end">
@@ -1043,7 +1209,8 @@ export default function LichLamViecBacSisPage() {
                       const dangMoFormChoNgayNay = showAdd && date === dayIso;
                       const gioHanhChinhThu = coDinhList
                         .filter(
-                          (c) => (c.thuTrongTuan === 0 ? 7 : c.thuTrongTuan) === thu,
+                          (c) =>
+                            (c.thuTrongTuan === 0 ? 7 : c.thuTrongTuan) === thu,
                         )
                         .map((c) => ({
                           batDau: chuanGio(c.khungGioBatDau),
@@ -1072,7 +1239,9 @@ export default function LichLamViecBacSisPage() {
                                 <div className="d-flex align-items-center gap-2 min-w-0">
                                   <span
                                     className={`rounded-pill small fw-semibold px-2 py-0 flex-shrink-0 ${
-                                      dauTuan ? "bg-primary text-white" : "bg-warning text-dark"
+                                      dauTuan
+                                        ? "bg-primary text-white"
+                                        : "bg-warning text-dark"
                                     }`}
                                   >
                                     {thu <= 6 ? `T${thu + 1}` : "CN"}
@@ -1088,7 +1257,11 @@ export default function LichLamViecBacSisPage() {
                               {canEditSchedules ? (
                                 <div className="d-flex flex-column flex-sm-row gap-1 flex-shrink-0 align-items-stretch align-items-sm-center">
                                   <Button
-                                    variant={dangMoFormChoNgayNay ? "outline-secondary" : "primary"}
+                                    variant={
+                                      dangMoFormChoNgayNay
+                                        ? "outline-secondary"
+                                        : "primary"
+                                    }
                                     size="sm"
                                     className="rounded-pill px-2 px-sm-3 lich-bs-btn-ngoai-le-them"
                                     onClick={() => {
@@ -1111,9 +1284,13 @@ export default function LichLamViecBacSisPage() {
                                       aria-hidden
                                     />
                                     <span className="d-none d-sm-inline">
-                                      {dangMoFormChoNgayNay ? "Đóng form" : "Thêm ca"}
+                                      {dangMoFormChoNgayNay
+                                        ? "Đóng form"
+                                        : "Thêm ca"}
                                     </span>
-                                    <span className="d-sm-none">{dangMoFormChoNgayNay ? "Đóng" : "Thêm"}</span>
+                                    <span className="d-sm-none">
+                                      {dangMoFormChoNgayNay ? "Đóng" : "Thêm"}
+                                    </span>
                                   </Button>
                                   <Button
                                     variant="outline-warning"
@@ -1122,8 +1299,13 @@ export default function LichLamViecBacSisPage() {
                                     onClick={() => handleNghiCaNgay(dayIso)}
                                     title={`Nghỉ cả ngày ${formatNgay(dayIso)}`}
                                   >
-                                    <i className="bi bi-moon me-sm-1" aria-hidden />
-                                    <span className="d-none d-sm-inline">Nghỉ cả ngày</span>
+                                    <i
+                                      className="bi bi-moon me-sm-1"
+                                      aria-hidden
+                                    />
+                                    <span className="d-none d-sm-inline">
+                                      Nghỉ cả ngày
+                                    </span>
                                     <span className="d-sm-none">Nghỉ</span>
                                   </Button>
                                 </div>
@@ -1134,18 +1316,31 @@ export default function LichLamViecBacSisPage() {
                                 <div className="mb-3 rounded-3 border border-primary-subtle bg-white p-3 shadow-sm">
                                   <div className="d-flex align-items-start gap-2 pb-2 mb-2 border-bottom">
                                     <span className="rounded-2 bg-primary text-white p-2 d-inline-flex flex-shrink-0">
-                                      <i className="bi bi-plus-lg" aria-hidden />
+                                      <i
+                                        className="bi bi-plus-lg"
+                                        aria-hidden
+                                      />
                                     </span>
                                     <div className="flex-grow-1 min-w-0">
-                                      <div className="fw-semibold text-body">Thêm ca ngoại lệ</div>
-                                      <div className="small text-muted">{formatNgay(dayIso)}</div>
+                                      <div className="fw-semibold text-body">
+                                        Thêm ca ngoại lệ
+                                      </div>
+                                      <div className="small text-muted">
+                                        {formatNgay(dayIso)}
+                                      </div>
                                       <div className="small text-muted mt-1">
-                                        Ca cố định {TEN_THU[thu] ?? "—"} (tham khảo):{" "}
+                                        Ca cố định {TEN_THU[thu] ?? "—"} (tham
+                                        khảo):{" "}
                                         {gioHanhChinhThu.length === 0 ? (
-                                          <em>không có — ngày đó mặc định không mở theo tuần</em>
+                                          <em>
+                                            không có — ngày đó mặc định không mở
+                                            theo tuần
+                                          </em>
                                         ) : (
                                           gioHanhChinhThu.map((g, i) => (
-                                            <span key={`${g.batDau}-${g.ketThuc}`}>
+                                            <span
+                                              key={`${g.batDau}-${g.ketThuc}`}
+                                            >
                                               {i > 0 ? ", " : ""}
                                               <span className="font-monospace">
                                                 {g.batDau}–{g.ketThuc}
@@ -1154,8 +1349,11 @@ export default function LichLamViecBacSisPage() {
                                           ))
                                         )}
                                         . Nếu bạn thêm ngoại lệ cho{" "}
-                                        <span className="font-monospace">{formatNgay(dayIso)}</span>,{" "}
-                                        ngày đó chỉ nhận đặt lịch trong khung ngoại lệ (không dùng thêm ca cố định).
+                                        <span className="font-monospace">
+                                          {formatNgay(dayIso)}
+                                        </span>
+                                        , ngày đó chỉ nhận đặt lịch trong khung
+                                        ngoại lệ (không dùng thêm ca cố định).
                                       </div>
                                     </div>
                                   </div>
@@ -1208,21 +1406,29 @@ export default function LichLamViecBacSisPage() {
                                         className="border-secondary-subtle font-monospace"
                                       />
                                     </Col>
-                                    <Col xs={12} sm="auto" className="ms-sm-auto">
+                                    <Col
+                                      xs={12}
+                                      sm="auto"
+                                      className="ms-sm-auto"
+                                    >
                                       <Button
                                         variant="primary"
                                         size="sm"
                                         className="px-3"
                                         onClick={handleAddSlot}
                                       >
-                                        <i className="bi bi-check2 me-1" aria-hidden />
+                                        <i
+                                          className="bi bi-check2 me-1"
+                                          aria-hidden
+                                        />
                                         Lưu ca
                                       </Button>
                                     </Col>
                                   </Row>
                                 </div>
                               ) : null}
-                              {dsNgoaiLe.length === 0 && !dangMoFormChoNgayNay ? (
+                              {dsNgoaiLe.length === 0 &&
+                              !dangMoFormChoNgayNay ? (
                                 <div className="text-center text-muted small py-4 rounded-3 border border-2 border-dashed bg-body-secondary bg-opacity-50">
                                   <i
                                     className="bi bi-calendar-check d-block fs-4 mb-2 opacity-50"
@@ -1241,7 +1447,10 @@ export default function LichLamViecBacSisPage() {
                                           setShowAdd(true);
                                         }}
                                       >
-                                        <i className="bi bi-plus-lg me-1" aria-hidden />
+                                        <i
+                                          className="bi bi-plus-lg me-1"
+                                          aria-hidden
+                                        />
                                         Thêm ca
                                       </Button>
                                     </div>
@@ -1259,7 +1468,10 @@ export default function LichLamViecBacSisPage() {
                                           <NhanNguonLich s={s} />
                                           {s.nghiCaNgay ? (
                                             <span className="text-warning-emphasis small">
-                                              <i className="bi bi-slash-circle me-1" aria-hidden />
+                                              <i
+                                                className="bi bi-slash-circle me-1"
+                                                aria-hidden
+                                              />
                                               Không trực cả ngày
                                             </span>
                                           ) : (
@@ -1276,7 +1488,10 @@ export default function LichLamViecBacSisPage() {
                                             onClick={() => handleDelete(s)}
                                             title="Xóa dòng này"
                                           >
-                                            <i className="bi bi-trash me-1" aria-hidden />
+                                            <i
+                                              className="bi bi-trash me-1"
+                                              aria-hidden
+                                            />
                                             Xóa
                                           </Button>
                                         ) : null}
@@ -1373,65 +1588,80 @@ export default function LichLamViecBacSisPage() {
                     </span>
                   </div>
                   {bangTai ? (
-                    <Spinner animation="border" size="sm" className="text-primary" />
+                    <Spinner
+                      animation="border"
+                      size="sm"
+                      className="text-primary"
+                    />
                   ) : null}
                 </div>
-              <div className="table-responsive">
-                <Table hover className="mb-0 align-middle">
-                  <thead className="table-light">
-                    <tr className="small text-uppercase text-muted">
-                      <th className="border-0 text-center" style={{ width: "3rem" }}>
-                        STT
-                      </th>
-                      <th className="border-0 ps-4">Giờ</th>
-                      <th className="border-0">Bệnh nhân</th>
-                      <th className="border-0 d-none d-md-table-cell">Dịch vụ</th>
-                      <th className="border-0 pe-4">Trạng thái</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {appointments.map((a, i) => (
-                      <tr key={a.id}>
-                        <td className="text-center text-muted">{i + 1}</td>
-                        <td className="ps-4 text-nowrap font-monospace">
-                          {a.gioHen != null ? String(a.gioHen).slice(0, 5) : "—"}
-                        </td>
-                        <td>
-                          <span className="fw-medium">{a.tenBenhNhan ?? "—"}</span>
-                          <div className="d-md-none text-muted mt-1 small">
-                            {a.tenDichVu ?? "—"}
-                          </div>
-                        </td>
-                        <td className="d-none d-md-table-cell text-muted">
-                          {a.tenDichVu ?? "—"}
-                        </td>
-                        <td className="pe-4 text-nowrap">
-                          <Badge bg="secondary" className="fw-normal">
-                            {LICH_HEN_STATUS_LABEL[a.trangThai ?? ""] ?? a.trangThai ?? "—"}
-                          </Badge>
-                          {a.id != null ? (
-                            <Link
-                              href={`/lich-hen/${a.id}`}
-                              className="btn btn-link btn-sm p-0 ms-2 align-baseline"
-                            >
-                              Chi tiết
-                            </Link>
-                          ) : null}
-                        </td>
+                <div className="table-responsive">
+                  <Table hover className="mb-0 align-middle">
+                    <thead className="table-light">
+                      <tr className="small text-uppercase text-muted">
+                        <th
+                          className="border-0 text-center"
+                          style={{ width: "3rem" }}
+                        >
+                          STT
+                        </th>
+                        <th className="border-0 ps-4">Giờ</th>
+                        <th className="border-0">Bệnh nhân</th>
+                        <th className="border-0 d-none d-md-table-cell">
+                          Dịch vụ
+                        </th>
+                        <th className="border-0 pe-4">Trạng thái</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-              {appointments.length === 0 ? (
-                <Card.Body className="text-center text-muted py-5 border-top">
-                  <i
-                    className="bi bi-calendar-x display-6 d-block mb-2 opacity-25"
-                    aria-hidden
-                  />
-                  Chưa có lịch đặt cho ngày này.
-                </Card.Body>
-              ) : null}
+                    </thead>
+                    <tbody>
+                      {appointments.map((a, i) => (
+                        <tr key={a.id}>
+                          <td className="text-center text-muted">{i + 1}</td>
+                          <td className="ps-4 text-nowrap font-monospace">
+                            {a.gioHen != null
+                              ? String(a.gioHen).slice(0, 5)
+                              : "—"}
+                          </td>
+                          <td>
+                            <span className="fw-medium">
+                              {a.tenBenhNhan ?? "—"}
+                            </span>
+                            <div className="d-md-none text-muted mt-1 small">
+                              {a.tenDichVu ?? "—"}
+                            </div>
+                          </td>
+                          <td className="d-none d-md-table-cell text-muted">
+                            {a.tenDichVu ?? "—"}
+                          </td>
+                          <td className="pe-4 text-nowrap">
+                            <Badge bg="secondary" className="fw-normal">
+                              {LICH_HEN_STATUS_LABEL[a.trangThai ?? ""] ??
+                                a.trangThai ??
+                                "—"}
+                            </Badge>
+                            {a.id != null ? (
+                              <Link
+                                href={`/lich-hen/${a.id}`}
+                                className="btn btn-link btn-sm p-0 ms-2 align-baseline"
+                              >
+                                Chi tiết
+                              </Link>
+                            ) : null}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </div>
+                {appointments.length === 0 ? (
+                  <Card.Body className="text-center text-muted py-5 border-top">
+                    <i
+                      className="bi bi-calendar-x display-6 d-block mb-2 opacity-25"
+                      aria-hidden
+                    />
+                    Chưa có lịch đặt cho ngày này.
+                  </Card.Body>
+                ) : null}
               </div>
             </Card>
           </Tab>
@@ -1489,8 +1719,8 @@ export default function LichLamViecBacSisPage() {
                     xacNhan?.bienTheXacNhan === "danger"
                       ? "bi-trash3"
                       : xacNhan?.bienTheXacNhan === "warning"
-                      ? "bi-moon"
-                      : "bi-check2"
+                        ? "bi-moon"
+                        : "bi-check2"
                   } me-2`}
                   aria-hidden
                 />
@@ -1500,6 +1730,14 @@ export default function LichLamViecBacSisPage() {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <ModalLichHenNgoaiLe
+        show={showModalAnhHuong}
+        onHide={() => setShowModalAnhHuong(false)}
+        ngay={ngayAnhHuong}
+        tenBacSi={tenBacSiChon ?? undefined}
+        danhSach={lichAnhHuong}
+      />
     </div>
   );
 }

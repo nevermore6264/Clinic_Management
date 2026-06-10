@@ -50,6 +50,14 @@ public class LichHenController {
         return ResponseEntity.ok(lichHenService.timTheoBacSiVaNgay(maBacSi, ngay));
     }
 
+    @GetMapping("/bi-anh-huong-ngoai-le")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','BAC_SI','THU_NGAN')")
+    public ResponseEntity<List<LichHenDto>> biAnhHuongNgoaiLe(
+            @RequestParam Long maBacSi,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngay) {
+        return ResponseEntity.ok(lichHenService.timBiAnhHuongNgoaiLe(maBacSi, ngay));
+    }
+
     @GetMapping("/slot-kha-dung")
     public ResponseEntity<List<BacSiSlotKhaDungDto>> slotKhaDungTheoNgay(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate ngay,
@@ -88,6 +96,13 @@ public class LichHenController {
     @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','THU_NGAN')")
     public ResponseEntity<Void> guiEmailNhacThuCong(@PathVariable Long id) {
         nhacLichHenService.guiNhacThuCong(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/gui-email-ngoai-le")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','BAC_SI','THU_NGAN')")
+    public ResponseEntity<Void> guiEmailNgoaiLe(@PathVariable Long id) {
+        nhacLichHenService.guiThongBaoNgoaiLe(id);
         return ResponseEntity.ok().build();
     }
 }

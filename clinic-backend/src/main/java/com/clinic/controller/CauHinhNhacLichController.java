@@ -47,4 +47,14 @@ public class CauHinhNhacLichController {
                 : List.of();
         return ResponseEntity.ok(nhacLichHenService.guiNhacThuCongHangLoat(ids));
     }
+
+    @PostMapping("/gui-email-ngoai-le-hang-loat")
+    @PreAuthorize("hasAnyRole('QUAN_TRI','LE_TAN','BAC_SI','THU_NGAN')")
+    public ResponseEntity<KetQuaGuiNhacHangLoatDto> guiEmailNgoaiLeHangLoat(
+            @RequestBody GuiNhacHangLoatYeuCau yeuCau) {
+        List<Long> ids = yeuCau != null && yeuCau.getMaLichHen() != null
+                ? yeuCau.getMaLichHen()
+                : List.of();
+        return ResponseEntity.ok(nhacLichHenService.guiThongBaoNgoaiLeHangLoat(ids));
+    }
 }

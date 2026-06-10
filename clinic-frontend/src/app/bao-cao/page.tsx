@@ -1,11 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Card, Form, Alert, Button } from "react-bootstrap";
+import { Card, Form, Alert, Button, Spinner } from "react-bootstrap";
 import { useAuth } from "@/lib/useAuth";
 import { reportsApi, type RevenueReport } from "@/lib/api";
 import { LoadingState } from "@/components/LoadingState";
+import {
+  taiBlobThanhTep,
+  xuatBaoCaoWord,
+} from "@/lib/xuatBaoCaoDoanhThu";
+import { notify } from "@/lib/notify";
 
 function money(n: number) {
   return `${Math.round(n).toLocaleString("vi-VN")} đ`;
@@ -158,6 +164,7 @@ export default function ReportsPage() {
   const [from, setFrom] = useState(() => isoDaysAgo(29));
   const [to, setTo] = useState(() => isoToday());
   const { list, error, setError } = useRevenueSeries(from, to, user);
+  const [dangXuatExcel, setDangXuatExcel] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/dang-nhap");
@@ -196,6 +203,30 @@ export default function ReportsPage() {
     setTo(isoToday());
   };
 
+  const xuatExcel = async () => {
+    setDangXuatExcel(true);
+    try {
+      const blob = await reportsApi.exportExcel(from, to);
+      taiBlobThanhTep(blob, `bao-cao-doanh-thu-${from}-${to}.xlsx`);
+      notify.success("Đã tải file Excel.");
+    } catch (e: unknown) {
+      notify.error(e instanceof Error ? e.message : "Xuất Excel thất bại");
+    } finally {
+      setDangXuatExcel(false);
+    }
+  };
+
+  const xuatWord = () => {
+    if (sortedRows.length === 0) {
+      notify.warning("Không có dữ liệu trong kỳ để xuất Word.");
+      return;
+    }
+    xuatBaoCaoWord(sortedRows, from, to, totalRevenue, totalTx);
+    notify.success("Đã tải file Word (.doc).");
+  };
+
+  const printQuery = `tuNgay=${encodeURIComponent(from)}&denNgay=${encodeURIComponent(to)}`;
+
   return (
     <div className="bao-cao-page bao-cao-page--charts-only">
       {error && (
@@ -229,34 +260,71 @@ export default function ReportsPage() {
               className="bao-cao-date-input"
             />
           </div>
-          <div className="d-flex flex-wrap gap-1">
-            <Button
-              type="button"
-              size="sm"
-              variant="outline-light"
-              className="rounded-pill px-3"
-              onClick={() => preset(7)}
-            >
-              7 ngày
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline-light"
-              className="rounded-pill px-3"
-              onClick={() => preset(30)}
-            >
-              30 ngày
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline-light"
-              className="rounded-pill px-3"
-              onClick={() => preset(90)}
-            >
-              90 ngày
-            </Button>
+          <div className="d-flex flex-wrap align-items-center gap-2">
+            <div className="d-flex flex-wrap gap-1">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline-light"
+                className="rounded-pill px-3"
+                onClick={() => preset(7)}
+              >
+                7 ngày
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline-light"
+                className="rounded-pill px-3"
+                onClick={() => preset(30)}
+              >
+                30 ngày
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline-light"
+                className="rounded-pill px-3"
+                onClick={() => preset(90)}
+              >
+                90 ngày
+              </Button>
+            </div>
+            <span className="text-white-50 d-none d-md-inline">|</span>
+            <div className="d-flex flex-wrap gap-1 bao-cao-export-group">
+              <Button
+                type="button"
+                size="sm"
+                variant="light"
+                className="rounded-pill px-3 d-inline-flex align-items-center gap-1"
+                disabled={dangXuatExcel}
+                onClick={() => void xuatExcel()}
+              >
+                {dangXuatExcel ? (
+                  <Spinner animation="border" size="sm" />
+                ) : (
+                  <i className="bi bi-file-earmark-spreadsheet text-success" aria-hidden />
+                )}
+                Excel
+              </Button>
+              <Link
+                href={`/bao-cao/print?${printQuery}`}
+                className="btn btn-sm btn-light rounded-pill px-3 d-inline-flex align-items-center gap-1"
+              >
+                <i className="bi bi-file-earmark-pdf text-danger" aria-hidden />
+                PDF / In
+              </Link>
+              <Button
+                type="button"
+                size="sm"
+                variant="light"
+                className="rounded-pill px-3 d-inline-flex align-items-center gap-1"
+                onClick={xuatWord}
+              >
+                <i className="bi bi-file-earmark-word text-primary" aria-hidden />
+                Word
+              </Button>
+            </div>
           </div>
         </div>
         <div className="d-flex flex-wrap gap-4 mt-2 small text-white-50">

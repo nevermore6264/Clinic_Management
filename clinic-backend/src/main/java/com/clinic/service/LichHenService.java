@@ -334,6 +334,72 @@ public class LichHenService {
         return gio;
     }
 
+    @Transactional(readOnly = true)
+    public List<LichHenDto> timBiAnhHuongNgoaiLe(Long maBacSi, LocalDate ngay) {
+        if (maBacSi == null || ngay == null) {
+            return List.of();
+        }
+        return lichHenRepository.findByBacSiIdAndNgayHenAndTrangThaiNotIn(
+                        maBacSi, ngay, TRANG_THAI_KHONG_TINH_SLOT).stream()
+                .map(this::sangDto)
+                .filter(dto -> Boolean.TRUE.equals(dto.getBiAnhHuongNgoaiLe()))
+                .collect(Collectors.toList());
+    }
+
+    private void ganCanhBaoNgoaiLe(LichHen lh, LichHenDto dto) {
+        String lyDo = lyDoAnhHuongNgoaiLe(lh).orElse(null);
+        dto.setBiAnhHuongNgoaiLe(lyDo != null);
+        dto.setLyDoAnhHuongNgoaiLe(lyDo);
+    }
+
+    private java.util.Optional<String> lyDoAnhHuongNgoaiLe(LichHen lh) {
+        if (lh == null || lh.getTrangThai() == null) {
+            return java.util.Optional.empty();
+        }
+        if (TRANG_THAI_KHONG_TINH_SLOT.contains(lh.getTrangThai())) {
+            return java.util.Optional.empty();
+        }
+        if (lh.getNgayHen() == null || lh.getGioHen() == null || lh.getBacSi() == null) {
+            return java.util.Optional.empty();
+        }
+        if (lh.getNgayHen().isBefore(LocalDate.now())) {
+            return java.util.Optional.empty();
+        }
+        List<LichNgoaiLe> ngoaiLe = lichNgoaiLeRepository.findByBacSiIdAndNgayNgoaiLe(
+                lh.getBacSi().getId(), lh.getNgayHen());
+        if (ngoaiLe.isEmpty()) {
+            return java.util.Optional.empty();
+        }
+        boolean nghiCaNgay = ngoaiLe.stream()
+                .anyMatch(x -> x.getLoaiNgoaiLe() == LichNgoaiLe.LoaiNgoaiLe.NGHI);
+        if (nghiCaNgay) {
+            return java.util.Optional.of(
+                    "Bác sĩ nghỉ cả ngày theo lịch điều chỉnh — vui lòng liên hệ phòng khám để đổi lịch.");
+        }
+        Set<LocalTime> hopLe = layGioHopLeTheoLich(lh.getBacSi().getId(), lh.getNgayHen());
+        if (!gioHenTrongSlot(lh.getGioHen(), hopLe)) {
+            return java.util.Optional.of(
+                    "Khung giờ hẹn không còn trong lịch làm việc điều chỉnh của bác sĩ — cần đổi giờ hoặc liên hệ lễ tân.");
+        }
+        return java.util.Optional.empty();
+    }
+
+    private boolean gioHenTrongSlot(LocalTime gioHen, Set<LocalTime> hopLe) {
+        if (gioHen == null || hopLe == null || hopLe.isEmpty()) {
+            return false;
+        }
+        LocalTime chuan = gioHen.withSecond(0).withNano(0);
+        if (hopLe.contains(chuan)) {
+            return true;
+        }
+        for (LocalTime slot : hopLe) {
+            if (slot != null && slot.equals(chuan)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private LichHenDto sangDto(LichHen lh) {
         LichHenDto dto = new LichHenDto();
         dto.setId(lh.getId());
@@ -350,6 +416,7 @@ public class LichHenService {
         dto.setTrangThai(lh.getTrangThai());
         dto.setGhiChu(lh.getGhiChu());
         dto.setThuDienTuBenhNhan(lh.getBenhNhan().getThuDienTu());
+        ganCanhBaoNgoaiLe(lh, dto);
         return dto;
     }
 }

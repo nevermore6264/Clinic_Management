@@ -1724,6 +1724,13 @@ function AppointmentsPageInner() {
                     />
                     {a.tenDichVu ?? "—"}
                   </div>
+                  {a.biAnhHuongNgoaiLe ? (
+                    <Alert variant="warning" className="small py-2 mb-0 mt-2">
+                      <i className="bi bi-exclamation-triangle me-1" aria-hidden />
+                      <strong>Cần xác nhận lại</strong> — bác sĩ đổi lịch ngày
+                      khám. Liên hệ phòng khám để đổi giờ.
+                    </Alert>
+                  ) : null}
                   <div className="patient-portal-appt-card__actions">
                     <Link
                       href={`/lich-hen/${a.id}`}

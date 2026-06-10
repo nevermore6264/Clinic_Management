@@ -20,4 +20,7 @@ public class LichHenDto {
     private LichHen.TrangThaiLichHen trangThai;
     private String ghiChu;
     private String thuDienTuBenhNhan;
+
+    private Boolean biAnhHuongNgoaiLe;
+    private String lyDoAnhHuongNgoaiLe;
 }

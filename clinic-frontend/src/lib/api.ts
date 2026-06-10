@@ -283,6 +283,16 @@ export const lichHenApi = {
       method: "POST",
       notifySuccessMessage: "Đã gửi email nhắc lịch cho bệnh nhân.",
     }),
+  biAnhHuongNgoaiLe: (maBacSi: number, ngay: string) =>
+    api<LichHen[]>(
+      `/lich-hen/bi-anh-huong-ngoai-le?maBacSi=${maBacSi}&ngay=${encodeURIComponent(ngay)}`,
+      { notifyError: false, notifySuccess: false },
+    ),
+  guiEmailNgoaiLe: (id: number) =>
+    api<void>(`/lich-hen/${id}/gui-email-ngoai-le`, {
+      method: "POST",
+      notifySuccessMessage: "Đã gửi email thông báo thay đổi lịch cho bệnh nhân.",
+    }),
 };
 
 export const hoSoKhamApi = {
@@ -547,6 +557,15 @@ export const cauHinhNhacLichApi = {
       method: "POST",
       body: JSON.stringify({ maLichHen }),
     }),
+  guiEmailNgoaiLeHangLoat: (maLichHen: number[]) =>
+    api<KetQuaGuiNhacHangLoat>(
+      "/cau-hinh-nhac-lich/gui-email-ngoai-le-hang-loat",
+      {
+        method: "POST",
+        body: JSON.stringify({ maLichHen }),
+        notifySuccessMessage: "Đã gửi thông báo thay đổi lịch cho bệnh nhân.",
+      },
+    ),
 };
 
 export const nhatKyHeThongApi = {
@@ -995,6 +1014,8 @@ export interface LichHen {
   gioHen: string;
   trangThai?: TrangThaiLichHen;
   ghiChu?: string;
+  biAnhHuongNgoaiLe?: boolean;
+  lyDoAnhHuongNgoaiLe?: string | null;
 }
 
 export interface SlotKhaDung {

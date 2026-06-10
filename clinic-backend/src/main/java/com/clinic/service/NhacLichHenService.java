@@ -109,6 +109,119 @@ public class NhacLichHenService {
         return ketQua;
     }
 
+    @Transactional
+    public void guiThongBaoNgoaiLe(Long maLichHen) {
+        thucHienGuiThongBaoNgoaiLe(maLichHen);
+    }
+
+    public KetQuaGuiNhacHangLoatDto guiThongBaoNgoaiLeHangLoat(List<Long> maLichHen) {
+        KetQuaGuiNhacHangLoatDto ketQua = new KetQuaGuiNhacHangLoatDto();
+        if (maLichHen == null || maLichHen.isEmpty()) {
+            return ketQua;
+        }
+        TransactionTemplate txMoi = new TransactionTemplate(transactionManager);
+        txMoi.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        for (Long id : maLichHen) {
+            if (id == null) {
+                continue;
+            }
+            try {
+                txMoi.executeWithoutResult(status -> thucHienGuiThongBaoNgoaiLe(id));
+                ketQua.setThanhCong(ketQua.getThanhCong() + 1);
+            } catch (Exception e) {
+                ketQua.setThatBai(ketQua.getThatBai() + 1);
+                KetQuaGuiNhacHangLoatDto.LoiGuiNhacDto loi = new KetQuaGuiNhacHangLoatDto.LoiGuiNhacDto();
+                loi.setMaLichHen(id);
+                loi.setLyDo(e.getMessage() != null ? e.getMessage() : "Gửi thất bại");
+                ketQua.getLoi().add(loi);
+            }
+        }
+        return ketQua;
+    }
+
+    private void thucHienGuiThongBaoNgoaiLe(Long maLichHen) {
+        if (mailTu == null || mailTu.isBlank()) {
+            throw new IllegalStateException("Chưa cấu hình gửi email (spring.mail.username).");
+        }
+        LichHen lh = khoLichHen.findById(maLichHen)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch hẹn."));
+        if (lh.getTrangThai() == LichHen.TrangThaiLichHen.HUY
+                || lh.getTrangThai() == LichHen.TrangThaiLichHen.VANG) {
+            throw new IllegalArgumentException("Không gửi thông báo cho lịch đã hủy hoặc vắng.");
+        }
+        String thu = lh.getBenhNhan().getThuDienTu();
+        if (thu == null || thu.isBlank()) {
+            throw new IllegalArgumentException("Bệnh nhân chưa có email trên hồ sơ.");
+        }
+        try {
+            guiThuNgoaiLeHtml(lh);
+        } catch (Exception e) {
+            log.warn("Gửi email thông báo ngoại lệ thất bại: {}", e.getMessage());
+            throw new IllegalStateException("Gửi email thất bại: " + e.getMessage());
+        }
+    }
+
+    private void guiThuNgoaiLeHtml(LichHen lh) throws MessagingException, UnsupportedEncodingException {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        if (mailTu != null && !mailTu.isBlank()) {
+            helper.setFrom(mailTu, TEN_PHONG_KHAM);
+        }
+        helper.setTo(lh.getBenhNhan().getThuDienTu());
+        helper.setSubject(tieuDeNgoaiLe(lh));
+        helper.setText(noiDungNgoaiLeThuong(lh), noiDungNgoaiLeHtml(lh));
+        mailSender.send(message);
+    }
+
+    private String tieuDeNgoaiLe(LichHen lh) {
+        String ngay = lh.getNgayHen().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        return "Thông báo thay đổi lịch bác sĩ — " + TEN_PHONG_KHAM + " | " + ngay;
+    }
+
+    private String noiDungNgoaiLeThuong(LichHen lh) {
+        StringBuilder b = new StringBuilder();
+        b.append("══════════════════════════════════════\n");
+        b.append("  THÔNG BÁO THAY ĐỔI LỊCH — ").append(TEN_PHONG_KHAM).append("\n");
+        b.append("══════════════════════════════════════\n\n");
+        b.append("Kính gửi Quý khách ").append(lh.getBenhNhan().getHoTen()).append(",\n\n");
+        b.append(TEN_PHONG_KHAM).append(" thông báo: lịch làm việc của bác sĩ có điều chỉnh (nghỉ / đổi giờ) ")
+                .append("ảnh hưởng đến lịch hẹn của Quý khách.\n\n");
+        b.append("— Lịch hẹn hiện tại: ").append(dongThoiGianHen(lh)).append("\n");
+        b.append("— Bác sĩ: ").append(tenBacSiHienThi(lh)).append("\n");
+        b.append("— Dịch vụ: ").append(tenDichVuHienThi(lh)).append("\n\n");
+        b.append("Quý khách vui lòng liên hệ hotline hoặc quầy lễ tân để được sắp xếp lại lịch khám.\n");
+        b.append("Khi đăng nhập cổng bệnh nhân, lịch hẹn sẽ hiển thị cảnh báo « cần xác nhận lại ».\n\n");
+        b.append("Xem chi tiết: ").append(linkChiTietLich(lh)).append("\n\n");
+        b.append("Kính trọng báo tin,\n").append(TEN_PHONG_KHAM).append("\n");
+        return b.toString();
+    }
+
+    private String noiDungNgoaiLeHtml(LichHen lh) {
+        String tenBn = esc(lh.getBenhNhan().getHoTen());
+        String bs = esc(tenBacSiHienThi(lh));
+        String dv = esc(tenDichVuHienThi(lh));
+        String khi = esc(dongThoiGianHen(lh));
+        String linkEsc = esc(linkChiTietLich(lh));
+        return """
+                <!DOCTYPE html>
+                <html lang="vi"><head><meta charset="UTF-8"></head>
+                <body style="margin:0;padding:24px 12px;background:#f8fafc;font-family:Segoe UI,Arial,sans-serif;">
+                <table role="presentation" width="100%%" style="max-width:600px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:8px;">
+                <tr><td style="height:4px;background:linear-gradient(90deg,#d97706,#f59e0b);"></td></tr>
+                <tr><td style="padding:28px 32px;">
+                <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#b45309;">Thông báo quan trọng</p>
+                <h1 style="margin:0 0 16px;font-size:22px;color:#0f172a;">Thay đổi lịch bác sĩ</h1>
+                <p style="margin:0 0 16px;line-height:1.6;color:#334155;">Kính gửi <strong>%s</strong>, %s thông báo lịch làm việc của bác sĩ có điều chỉnh (nghỉ / đổi giờ) ảnh hưởng đến lịch hẹn của Quý khách.</p>
+                <table role="presentation" width="100%%" style="margin:16px 0;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;">
+                <tr><td style="padding:14px 16px;font-size:14px;color:#92400e;line-height:1.55;">
+                <strong>Lịch hẹn:</strong> %s<br><strong>Bác sĩ:</strong> %s<br><strong>Dịch vụ:</strong> %s
+                </td></tr></table>
+                <p style="margin:0 0 16px;line-height:1.6;color:#334155;">Vui lòng liên hệ hotline hoặc lễ tân để đổi lịch. Trên cổng bệnh nhân, lịch sẽ hiển thị cảnh báo cần xác nhận lại.</p>
+                <p style="margin:0;"><a href="%s" style="color:#1d4ed8;font-weight:600;">Xem chi tiết lịch hẹn</a></p>
+                </td></tr></table></body></html>
+                """.formatted(tenBn, esc(TEN_PHONG_KHAM), khi, bs, dv, linkEsc);
+    }
+
     private void thucHienGuiNhacThuCong(Long maLichHen) {
         if (mailTu == null || mailTu.isBlank()) {
             throw new IllegalStateException("Chưa cấu hình gửi email (spring.mail.username).");

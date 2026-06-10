@@ -370,6 +370,25 @@ export default function AppointmentDetailPage() {
           {error}
         </Alert>
       )}
+      {app.biAnhHuongNgoaiLe ? (
+        <Alert variant="warning" className="mb-3">
+          <div className="d-flex gap-2 align-items-start">
+            <i className="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0" aria-hidden />
+            <div>
+              <strong>Lịch hẹn cần xác nhận lại</strong>
+              <p className="mb-0 mt-1 small">
+                {app.lyDoAnhHuongNgoaiLe ??
+                  "Bác sĩ có thay đổi lịch làm việc ngày khám. Vui lòng liên hệ phòng khám để đổi giờ hoặc hẹn lại."}
+              </p>
+              {user && laChiTaiKhoanBenhNhan(user) ? (
+                <p className="mb-0 mt-2 small text-muted">
+                  Gọi hotline hoặc nhắn qua mục trò chuyện / liên hệ trên trang chủ.
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </Alert>
+      ) : null}
       <Card className="mb-3">
         <Card.Header className="d-flex justify-content-between align-items-center flex-wrap gap-2">
           <span>

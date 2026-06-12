@@ -56,6 +56,11 @@ public class XacThucService {
         String sdt = chuoiRongNeuChiLaKhoangTrang(yeuCau.getSoDienThoai());
         String email = chuoiRongNeuChiLaKhoangTrang(yeuCau.getThuDienTu());
 
+        if (sdt != null && benhNhanRepository.existsBySoDienThoai(sdt)) {
+            throw new IllegalArgumentException(
+                    "Số điện thoại đã được sử dụng cho hồ sơ bệnh nhân khác. Vui lòng dùng số khác hoặc liên hệ phòng khám.");
+        }
+
         NguoiDung nd = new NguoiDung();
         nd.setTenDangNhap(tenDn);
         nd.setMatKhauBam(maHoaMatKhau.encode(mk));

@@ -10,5 +10,7 @@ public interface NguoiDungRepository extends JpaRepository<NguoiDung, Long> {
     Optional<NguoiDung> findByTenDangNhap(String tenDangNhap);
     boolean existsByTenDangNhap(String tenDangNhap);
 
+    List<NguoiDung> findByThuDienTuIgnoreCase(String thuDienTu);
+
     List<NguoiDung> findByHoatDongTrueOrderByHoTenAsc();
 }

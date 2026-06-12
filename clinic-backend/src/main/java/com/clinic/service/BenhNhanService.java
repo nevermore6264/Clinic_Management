@@ -49,6 +49,7 @@ public class BenhNhanService {
 
     @Transactional
     public BenhNhanDto tao(BenhNhanDto dto) {
+        chuanHoaVaKiemTraTrung(dto, null);
         BenhNhan bn = new BenhNhan();
         mapTuDto(dto, bn);
         bn = benhNhanRepository.save(bn);
@@ -66,6 +67,7 @@ public class BenhNhanService {
         if (!quyenTruyCapHoSoBenhNhan.laNhanVien()) {
             dto.setHoatDong(bn.isHoatDong());
         }
+        chuanHoaVaKiemTraTrung(dto, ma);
         String cu = "hoTen=" + bn.getHoTen() + ";soDienThoai=" + bn.getSoDienThoai();
         mapTuDto(dto, bn);
         benhNhanRepository.save(bn);
@@ -83,6 +85,32 @@ public class BenhNhanService {
         nhatKyHeThongService.ghi("benh_nhan", ma, "VO_HIEU", "hoatDong=true", "hoatDong=false");
         bn.setHoatDong(false);
         benhNhanRepository.save(bn);
+    }
+
+    private void chuanHoaVaKiemTraTrung(BenhNhanDto dto, Long idHienTai) {
+        String sdt = dto.getSoDienThoai() == null ? null : dto.getSoDienThoai().trim();
+        dto.setSoDienThoai(sdt == null || sdt.isEmpty() ? null : sdt);
+        String cccd = dto.getSoCccd() == null ? null : dto.getSoCccd().trim();
+        dto.setSoCccd(cccd == null || cccd.isEmpty() ? null : cccd);
+
+        if (dto.getSoDienThoai() != null) {
+            boolean trung = idHienTai == null
+                    ? benhNhanRepository.existsBySoDienThoai(dto.getSoDienThoai())
+                    : benhNhanRepository.existsBySoDienThoaiAndIdNot(dto.getSoDienThoai(), idHienTai);
+            if (trung) {
+                throw new RuntimeException("Số điện thoại « " + dto.getSoDienThoai()
+                        + " » đã tồn tại trên hồ sơ bệnh nhân khác.");
+            }
+        }
+        if (dto.getSoCccd() != null) {
+            boolean trung = idHienTai == null
+                    ? benhNhanRepository.existsBySoCccd(dto.getSoCccd())
+                    : benhNhanRepository.existsBySoCccdAndIdNot(dto.getSoCccd(), idHienTai);
+            if (trung) {
+                throw new RuntimeException("Số CCCD « " + dto.getSoCccd()
+                        + " » đã tồn tại trên hồ sơ bệnh nhân khác.");
+            }
+        }
     }
 
     private void mapTuDto(BenhNhanDto dto, BenhNhan bn) {

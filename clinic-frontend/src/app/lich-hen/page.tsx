@@ -166,6 +166,14 @@ function noiDungCotChoQuaGioHen(a: LichHen, dongHo: number) {
   if (a.trangThai !== "DA_DAT" || !a.ngayHen || !a.gioHen) {
     return <span className="text-muted small">—</span>;
   }
+  if (a.biAnhHuongNgoaiLe) {
+    return (
+      <span className="text-muted small">
+        <i className="bi bi-exclamation-triangle me-1" aria-hidden />
+        Bác sĩ nghỉ/đổi lịch — chờ đổi giờ
+      </span>
+    );
+  }
   const t0 = thoiDiemGioHenMs(a.ngayHen, a.gioHen);
   if (Number.isNaN(t0)) {
     return <span className="text-muted small">—</span>;
@@ -487,8 +495,11 @@ function AppointmentsPageInner() {
     }
   }, [searchParams, user]);
 
+  const daKhoiTaoNgayBacSi = useRef(false);
   useEffect(() => {
     if (!user || !laChiTaiKhoanBacSiXemLichHomNay(user)) return;
+    if (daKhoiTaoNgayBacSi.current) return;
+    daKhoiTaoNgayBacSi.current = true;
     const t = isoDateLocal(new Date());
     setFrom(t);
     setTo(t);
@@ -527,9 +538,9 @@ function AppointmentsPageInner() {
         setList([]);
         return;
       }
-      const today = isoDateLocal(new Date());
+      const ngayXem = from || isoDateLocal(new Date());
       appointmentsApi
-        .byDoctor(maBacSiTaiLich, today)
+        .byDoctor(maBacSiTaiLich, ngayXem)
         .then((rows) => {
           setError("");
           setList(Array.isArray(rows) ? rows : []);
@@ -595,6 +606,7 @@ function AppointmentsPageInner() {
       const canGui: number[] = [];
       for (const a of rows) {
         if (!a.id || a.trangThai !== "DA_DAT") continue;
+        if (a.biAnhHuongNgoaiLe) continue;
         if (!a.ngayHen || !a.gioHen) continue;
         const t0 = thoiDiemGioHenMs(a.ngayHen, a.gioHen);
         if (Number.isNaN(t0)) continue;
@@ -1222,14 +1234,14 @@ function AppointmentsPageInner() {
           chiTaiKhoanBn
             ? "Lịch khám của bạn"
             : chiBacSiHomNay
-              ? "Lịch khám hôm nay"
+              ? "Lịch khám của tôi"
               : "Lịch khám"
         }
         subtitle={
           chiTaiKhoanBn
             ? "Xem lịch đã đặt, theo dõi trạng thái và đặt thêm lịch mới khi bạn cần."
             : chiBacSiHomNay
-              ? "Chỉ hiển thị lượt khám trong ngày hôm nay. Đặt hoặc chỉnh lịch qua tài khoản lễ tân hoặc quản trị."
+              ? "Chọn ngày để xem lượt khám của bạn. Đặt hoặc chỉnh lịch qua tài khoản lễ tân hoặc quản trị."
               : "Lọc ngày, tìm bác sĩ, trạng thái — xem và mở chi tiết từng lượt khám."
         }
       >
@@ -1416,10 +1428,35 @@ function AppointmentsPageInner() {
             </>
           ) : chiBacSiHomNay ? (
             <div className="d-flex flex-wrap gap-3 align-items-end">
-              <div className="text-muted small mb-2 mb-sm-0">
-                <span className="fw-semibold text-body">Ngày xem:</span>{" "}
-                {formatNgayDdMmYyyyCoThu(from)}
-              </div>
+              <Form.Group style={{ minWidth: "12rem" }}>
+                <Form.Label>Ngày xem</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={from}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setFrom(v);
+                    setTo(v);
+                  }}
+                />
+                <Form.Text className="text-muted">
+                  {formatNgayDdMmYyyyCoThu(from)}
+                </Form.Text>
+              </Form.Group>
+              <Button
+                type="button"
+                variant="outline-primary"
+                size="sm"
+                className="mb-1"
+                onClick={() => {
+                  const t = isoDateLocal(new Date());
+                  setFrom(t);
+                  setTo(t);
+                }}
+              >
+                <i className="bi bi-calendar-event me-1" aria-hidden />
+                Hôm nay
+              </Button>
               <Form.Group style={{ minWidth: "12rem" }}>
                 <Form.Label>Trạng thái</Form.Label>
                 <Form.Select

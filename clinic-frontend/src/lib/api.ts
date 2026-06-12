@@ -36,7 +36,17 @@ export async function api<T>(
   const res = await fetch(`${API_BASE}${path}`, { ...requestOptions, headers });
   const raw = await res.text();
   if (!res.ok) {
-    const message = raw || `HTTP ${res.status}`;
+    let message = raw || `HTTP ${res.status}`;
+    if (raw) {
+      try {
+        const j = JSON.parse(raw) as { message?: unknown };
+        if (typeof j?.message === "string" && j.message.trim()) {
+          message = j.message.trim();
+        }
+      } catch {
+        // Phản hồi lỗi không phải JSON — giữ nguyên nội dung gốc.
+      }
+    }
     if (notifyError && typeof window !== "undefined") {
       notify.error(message);
     }
@@ -73,6 +83,25 @@ export const authApi = {
     api<void>("/xac-thuc/doi-mat-khau", {
       method: "PUT",
       body: JSON.stringify({ matKhauHienTai, matKhauMoi }),
+    }),
+  quenMatKhau: (dinhDanh: string) =>
+    api<{ thongBao: string }>("/xac-thuc/quen-mat-khau", {
+      method: "POST",
+      body: JSON.stringify({ dinhDanh }),
+      notifySuccess: false,
+      notifyError: false,
+    }),
+  kiemTraMaKhoiPhuc: (token: string) =>
+    api<{ hopLe: boolean }>(
+      `/xac-thuc/kiem-tra-ma-khoi-phuc?token=${encodeURIComponent(token)}`,
+      { notifyError: false },
+    ),
+  datLaiMatKhau: (token: string, matKhauMoi: string) =>
+    api<void>("/xac-thuc/dat-lai-mat-khau", {
+      method: "POST",
+      body: JSON.stringify({ token, matKhauMoi }),
+      notifySuccess: false,
+      notifyError: false,
     }),
 };
 

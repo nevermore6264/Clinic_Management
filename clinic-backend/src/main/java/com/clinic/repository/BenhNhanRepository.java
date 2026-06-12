@@ -17,6 +17,11 @@ public interface BenhNhanRepository extends JpaRepository<BenhNhan, Long> {
     List<BenhNhan> findByHoatDongTrue();
     List<BenhNhan> findByHoTenContainingIgnoreCaseAndHoatDongTrue(String ten);
 
+    boolean existsBySoDienThoai(String soDienThoai);
+    boolean existsBySoDienThoaiAndIdNot(String soDienThoai, Long id);
+    boolean existsBySoCccd(String soCccd);
+    boolean existsBySoCccdAndIdNot(String soCccd, Long id);
+
     @Query("""
             SELECT b FROM BenhNhan b WHERE
             (:ten IS NULL OR :ten = '' OR

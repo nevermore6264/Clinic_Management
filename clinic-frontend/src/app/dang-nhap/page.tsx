@@ -202,10 +202,18 @@ function LoginPageInner() {
                   </InputGroup>
                 </Form.Group>
                 <Form.Group className="mb-4">
-                  <Form.Label className="small fw-semibold text-secondary">
-                    Mật khẩu
-                  </Form.Label>
-                  <InputGroup className="login-password-group">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <Form.Label className="small fw-semibold text-secondary mb-0">
+                      Mật khẩu
+                    </Form.Label>
+                    <Link
+                      href="/quen-mat-khau"
+                      className="small fw-semibold text-decoration-none"
+                    >
+                      Quên mật khẩu?
+                    </Link>
+                  </div>
+                  <InputGroup className="login-password-group mt-1">
                     <InputGroup.Text className="login-input-icon">
                       <i className="bi bi-key" aria-hidden />
                     </InputGroup.Text>

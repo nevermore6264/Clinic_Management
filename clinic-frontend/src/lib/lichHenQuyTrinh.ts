@@ -21,12 +21,11 @@ const VAI_TRO_DUOC_CHUYEN_TOI: Record<string, readonly string[]> = {
   VANG: ["LE_TAN", "BAC_SI"],
 };
 
-export function laQuanTriLichHen(cacVaiTro?: Iterable<string> | null): boolean {
+export function laQuanTriLichHen(
+  cacVaiTro?: Iterable<string> | readonly string[] | null,
+): boolean {
   if (!cacVaiTro) return false;
-  for (const r of cacVaiTro) {
-    if (r === "QUAN_TRI") return true;
-  }
-  return false;
+  return Array.from(cacVaiTro).includes("QUAN_TRI");
 }
 
 function chiSoTrongQuyTrinh(trangThai?: string): number {
